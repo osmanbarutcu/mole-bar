@@ -152,7 +152,7 @@ final class CacheCleaner: ObservableObject {
         let groups = home.appendingPathComponent("Library/Group Containers")
         let names = (try? FileManager.default.contentsOfDirectory(atPath: groups.path)) ?? []
         for name in names where name.lowercased().contains("orbstack") { found.append(("OrbStack", groups.appendingPathComponent(name))) }
-        for (label, relative) in [("OrbStack", ".orbstack"), ("Docker Desktop", "Library/Containers/com.docker.docker")] {
+        for (label, relative) in [("OrbStack", ".orbstack"), ("Docker Desktop", "Library/Containers/com.docker.docker"), ("Spotlight dizini", "Library/Metadata")] {
             let url = home.appendingPathComponent(relative)
             if FileManager.default.fileExists(atPath: url.path) { found.append((label, url)) }
         }
@@ -346,6 +346,12 @@ struct CachePage: View {
             }
             if cleaner.containers.contains(where: { $0.name == "Mail" }) {
                 Text("Mail: Mail uygulamasında Posta Kutusu > Ek Dosyaları Kaldır ile yer açabilirsiniz. MoleBar Mail verisine dokunmaz.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if cleaner.containers.contains(where: { $0.name == "Spotlight dizini" }) {
+                Text("Spotlight dizini: Boyut anormal büyükse Terminal'de `sudo mdutil -E /` dizini yeniden kurar. Kurulum saatler sürebilir. MoleBar dokunmaz.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
