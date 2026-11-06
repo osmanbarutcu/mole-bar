@@ -111,11 +111,13 @@ struct PanelView: View {
                         }
                     }
                 }
+                .shadowSafeScroll()
             }
             footer
         }
         .padding(12)
         .frame(width: 344, height: panelHeight)
+        .background(Color(nsColor: .controlBackgroundColor))
         .transaction { $0.animation = nil }
     }
 
