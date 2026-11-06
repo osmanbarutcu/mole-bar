@@ -353,6 +353,7 @@ struct PanelView: View {
             LaunchItemsCard()
             SecurityCard()
             PortScanCard()
+            ConnectionCard()
             HomebrewCard()
         }
     }
