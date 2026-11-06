@@ -23,6 +23,17 @@ struct MoleBarApp: App {
         }
         .defaultSize(width: 920, height: 680)
         .defaultLaunchBehavior(.presented)
+        .commands {
+            CommandMenu("Sayfa") {
+                ForEach(Array(MainSection.allCases.enumerated()), id: \.element) { index, section in
+                    Button(section.rawValue) {
+                        UserDefaults.standard.set(section.rawValue, forKey: "mainSection")
+                    }
+                    // ⌘1 ... ⌘9, onuncu sayfa ⌘0.
+                    .keyboardShortcut(KeyEquivalent(Character(String((index + 1) % 10))), modifiers: .command)
+                }
+            }
+        }
     }
 }
 
