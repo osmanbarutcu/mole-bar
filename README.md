@@ -4,6 +4,10 @@ MoleBar, macOS menü çubuğunda CPU, bellek ve disk kullanımını gösterir. [
 
 MoleBar, Mole'un resmi uygulaması değildir. Kişisel kullanım için yazıldı. Mole GPL-3.0 lisanslıdır.
 
+## Lisans
+
+MoleBar MIT lisanslıdır. Ayrıntı `LICENSE` dosyasındadır. Mole ayrı bir programdır. MoleBar onu `mo` komutuyla çalıştırır. Mole kodu bu depoda yoktur.
+
 ## Gereksinimler
 
 - macOS 15 veya üstü. Liquid Glass görünümü macOS 26 ve üstünde çalışır. Eski sürümde yedek materyal kullanılır.
