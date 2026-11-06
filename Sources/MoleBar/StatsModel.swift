@@ -24,6 +24,10 @@ final class StatsModel: ObservableObject {
     @Published var systemInfo = SystemInfo.sample()
     /// Pil sağlığı yavaş değişir. Pil varsa uygulama açılışında bir kez okunur.
     @Published var batteryHealth: BatteryHealth?
+    /// CPU/GPU sıcaklığı ve fan hızı (SMC, salt okunur). SMC açılamazsa nil kalır.
+    @Published var sensors: SensorReading?
+    private let smc = SMCReader()
+    private var sensorsLoading = false
     /// Süreç başına ağ hızı (bayt/sn). Yalnızca Süreçler sayfası "Ağ" sıralamasındayken güncellenir.
     @Published var netByPid: [Int32: Double] = [:]
     private var netLoading = false
@@ -68,6 +72,7 @@ final class StatsModel: ObservableObject {
         if tick % 3 == 1 { volumes = sampleVolumes() }
         if tick % 2 == 0 { processGroups = procSampler.sample() }
         if tick % 15 == 1 { refreshHealth(); systemInfo = SystemInfo.sample() }
+        if tick % 5 == 1 { refreshSensors() }
         if tick == 1, systemInfo.battery != nil {
             Task { batteryHealth = await Task.detached(priority: .utility) { BatteryHealth.fetch() }.value }
         }
@@ -108,6 +113,16 @@ final class StatsModel: ObservableObject {
             let result = await Task.detached(priority: .utility) { NetPerProcess.sample() }.value
             netByPid = result
             netLoading = false
+        }
+    }
+
+    private func refreshSensors() {
+        guard let smc, !sensorsLoading else { return }
+        sensorsLoading = true
+        Task {
+            let reading = await Task.detached(priority: .utility) { smc.read() }.value
+            sensors = reading.isEmpty ? nil : reading
+            sensorsLoading = false
         }
     }
 

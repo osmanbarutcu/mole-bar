@@ -93,6 +93,7 @@ struct SystemInfo: Equatable {
 struct SystemInfoCard: View {
     let info: SystemInfo
     var health: BatteryHealth?
+    var sensors: SensorReading?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -110,6 +111,14 @@ struct SystemInfoCard: View {
                 }
             }
             row("thermometer.medium", "Isı durumu", SystemInfo.thermalText(info.thermal))
+            if let sensors {
+                if let text = Self.temperatureText(sensors.summary) {
+                    row("thermometer.high", "Sıcaklık", text)
+                }
+                if !sensors.fanRPM.isEmpty {
+                    row("fan", "Fan", sensors.fanRPM.map { "\($0) dev/dk" }.joined(separator: " · "))
+                }
+            }
             row("clock", "Açık kalma", SystemInfo.uptimeText(info.uptime))
             if info.needsReboot {
                 Text("Mac \(SystemInfo.rebootHintDays) günden uzun süredir açık. Yeniden başlatmak belleği ve geçici dosyaları temizler.")
@@ -121,6 +130,13 @@ struct SystemInfoCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
+    }
+
+    static func temperatureText(_ summary: SensorSummary) -> String? {
+        var parts: [String] = []
+        if let cpu = summary.cpu { parts.append("CPU \(Int(cpu.rounded())) °C") }
+        if let gpu = summary.gpu { parts.append("GPU \(Int(gpu.rounded())) °C") }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     private func row(_ symbol: String, _ title: String, _ value: String) -> some View {
