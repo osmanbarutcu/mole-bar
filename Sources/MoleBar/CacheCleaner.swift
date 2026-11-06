@@ -355,7 +355,7 @@ struct CachePage: View {
                 }
             }
             if cleaner.containers.contains(where: { $0.name == "Mail" }) {
-                Text("Mail: Mail uygulamasında Posta Kutusu > Ek Dosyaları Kaldır ile yer açabilirsiniz. MoleBar Mail verisine dokunmaz.")
+                Text("Mail: Mail'de iletileri seçip İleti > İlişikleri Sil ile yer açabilirsiniz. Ek iletiden kalıcı çıkar. MoleBar Mail verisine dokunmaz.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

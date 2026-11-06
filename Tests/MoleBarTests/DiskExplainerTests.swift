@@ -64,6 +64,46 @@ struct DiskExplainerTests {
         #expect(section("Uygulama önbelleği") == .caches)
         #expect(section("Proje çıktıları") == .projects)
     }
+
+    @Test("her satırın bir eylemi var")
+    func everyRowHasAnAction() {
+        let entries = DiskExplainer.entries(
+            containers: [("OrbStack", 2 * gb), ("Docker Desktop", 2 * gb), ("Spotlight dizini", 2 * gb), ("Mail", 2 * gb)],
+            cacheBytes: Int(2 * gb), trashBytes: Int(2 * gb), projectsByDisk: [boot: 2 * gb], bootDisk: boot)
+        #expect(entries.count == 7)
+        for entry in entries { #expect(entry.action != nil, "\(entry.name) eylemsiz") }
+    }
+
+    @Test("konteyner eylemleri uygulamayı açar veya komutu kopyalar")
+    func outsideActions() {
+        let entries = DiskExplainer.entries(
+            containers: [("OrbStack", 2 * gb), ("Docker Desktop", 2 * gb), ("Spotlight dizini", 2 * gb), ("Mail", 2 * gb)],
+            cacheBytes: -1, trashBytes: -1, projectsByDisk: [:], bootDisk: boot)
+        func action(_ name: String) -> DiskExplainer.Action? { entries.first { $0.name == name }?.action }
+        #expect(action("Mail") == .openApp(bundleID: "com.apple.mail", name: "Mail", label: "Mail'i aç"))
+        #expect(action("OrbStack") == .openApp(bundleID: "dev.kdrag0n.MacVirt", name: "OrbStack", label: "OrbStack'i aç"))
+        #expect(action("Docker Desktop") == .openApp(bundleID: "com.docker.docker", name: "Docker Desktop", label: "Docker'ı aç"))
+        #expect(action("Spotlight dizini") == .copyCommand("sudo mdutil -E /"))
+    }
+
+    @Test("kendi öğeleri sayfa açar")
+    func ownRowsOpenPages() {
+        let entries = DiskExplainer.entries(
+            containers: [], cacheBytes: Int(2 * gb), trashBytes: Int(2 * gb), projectsByDisk: [boot: 2 * gb], bootDisk: boot)
+        func action(_ name: String) -> DiskExplainer.Action? { entries.first { $0.name == name }?.action }
+        #expect(action("Uygulama önbelleği") == .openPage(.caches))
+        #expect(action("Çöp Kutusu") == .openPage(.caches))
+        #expect(action("Proje çıktıları") == .openPage(.projects))
+    }
+
+    @Test("Mail önerisi doğrulanmış menü adını kullanır")
+    func mailAdviceUsesVerifiedMenuName() {
+        let entries = DiskExplainer.entries(
+            containers: [("Mail", 2 * gb)], cacheBytes: -1, trashBytes: -1, projectsByDisk: [:], bootDisk: boot)
+        let advice = entries.first { $0.name == "Mail" }?.advice ?? ""
+        #expect(advice.contains("İlişikleri Sil"))
+        #expect(!advice.contains("Ek Dosyaları Kaldır"))
+    }
 }
 
 @Suite("ProjectDiskTotals")

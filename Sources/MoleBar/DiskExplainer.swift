@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// Proje çıktısı toplamlarının disk bazında kaydı. UserDefaults'a JSON olarak yazılır.
@@ -24,7 +25,24 @@ enum DiskExplainer {
         let section: MainSection?
         let disk: String
         var id: String { disk + "/" + name }
+        /// Her satırın bir eylemi var. Kendi öğelerinde sayfa açılır. Konteynerlerde uygulama açılır veya komut kopyalanır.
+        /// Hiçbiri veriyi silmez. Silmeyi ilgili uygulama veya kullanıcı yapar.
+        var action: Action? { section.map(Action.openPage) ?? DiskExplainer.outsideActions[name] }
     }
+
+    enum Action: Equatable {
+        case openPage(MainSection)
+        case openApp(bundleID: String, name: String, label: String)
+        case copyCommand(String)
+    }
+
+    /// MoleBar'ın silmediği öğeler için eylemler. OrbStack kimliği kurulu uygulamanın Info.plist dosyasından okundu.
+    static let outsideActions: [String: Action] = [
+        "Mail": .openApp(bundleID: "com.apple.mail", name: "Mail", label: "Mail'i aç"),
+        "OrbStack": .openApp(bundleID: "dev.kdrag0n.MacVirt", name: "OrbStack", label: "OrbStack'i aç"),
+        "Docker Desktop": .openApp(bundleID: "com.docker.docker", name: "Docker Desktop", label: "Docker'ı aç"),
+        "Spotlight dizini": .copyCommand("sudo mdutil -E /")
+    ]
 
     struct Group: Identifiable {
         let disk: String
@@ -38,7 +56,7 @@ enum DiskExplainer {
         "OrbStack": "Docker temizliği imajı küçültmez. OrbStack'te disk küçültmeyi deneyin.",
         "Docker Desktop": "Docker Desktop ayarlarında disk imajını küçültün.",
         "Spotlight dizini": "Boyut anormalse Terminal'de `sudo mdutil -E /` dizini yeniden kurar.",
-        "Mail": "Mail'de Posta Kutusu > Ek Dosyaları Kaldır."
+        "Mail": "Mail'de iletileri seçin, İleti menüsünden İlişikleri Sil'i seçin. Ek, iletiden kalıcı çıkar."
     ]
 
     /// Kapsayıcı, önbellek ve Çöp Kutusu ev klasöründedir, yani ana diskte. Proje çıktısı her diskte ayrı girdidir.
@@ -112,6 +130,9 @@ struct DiskExplainerCard: View {
                  : "Taranmadı: \(missing.joined(separator: ", ")). Listede eksik olabilir.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
+            if let notice = cleaner.notice {
+                Text(notice).font(.caption).foregroundStyle(.secondary)
+            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -126,9 +147,35 @@ struct DiskExplainerCard: View {
             }
             Spacer(minLength: 8)
             Text(formatBytes(entry.bytes)).font(.subheadline.weight(.medium).monospacedDigit())
-            if let section = entry.section {
-                Button("Aç") { open(section) }.glassButton().controlSize(.small)
+            if let action = entry.action {
+                Button(label(action)) { run(action) }.glassButton().controlSize(.small)
             }
+        }
+    }
+
+    private func label(_ action: DiskExplainer.Action) -> String {
+        switch action {
+        case .openPage: return "Aç"
+        case .openApp(_, _, let label): return label
+        case .copyCommand: return "Komutu kopyala"
+        }
+    }
+
+    private func run(_ action: DiskExplainer.Action) {
+        switch action {
+        case .openPage(let section):
+            open(section)
+        case .openApp(let bundleID, let name, _):
+            guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
+                cleaner.notice = "\(name) uygulaması bulunamadı."
+                return
+            }
+            NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+            cleaner.notice = "\(name) açıldı. MoleBar silmez. Satırdaki adımı \(name) içinde uygulayın."
+        case .copyCommand(let command):
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(command, forType: .string)
+            cleaner.notice = "Komut panoya kopyalandı: \(command). Terminal'de siz çalıştırın."
         }
     }
 }
