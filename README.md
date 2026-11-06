@@ -25,6 +25,13 @@ MoleBar MIT lisanslıdır. Ayrıntı `LICENSE` dosyasındadır. Mole ayrı bir p
 
 Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar. Yalnızca derlemek için `./make-app.sh` çalıştırın.
 
+Derlemeden kurmak için Homebrew kullanın:
+
+1. Depoyu ekleyin: `brew tap osmanbarutcu/mole-bar https://github.com/osmanbarutcu/mole-bar`
+2. Kurun: `brew install --cask molebar`
+
+Uygulama ad-hoc imzalıdır ve notarize edilmemiştir. İlk açılışta sağ tık > Aç gerekir. Cask kurulumu bu makinede doğrulanmadı.
+
 ## Kullanım
 
 - Menü çubuğundaki metne tıklayın. Panel açılır: Genel, Diskler, Süreçler, Araçlar.
@@ -77,6 +84,7 @@ Otomatik test kapsamayan adımlar [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md)
 
 ## Geliştirme
 
+- Sürüm çıkarmak için: `Casks/molebar.rb` içindeki `version` ve `sha256` değerlerini güncelleyin. Sonra `git tag vX.Y.Z` ve `git push --tags` çalıştırın. `.github/workflows/release.yml` zip ve DMG üretip release'e yükler.
 - DMG üretin: `./make-app.sh`, ardından `./scripts/make-dmg.sh`. Çıktı `dist/MoleBar-<sürüm>.dmg` dosyasıdır. Uygulama ad-hoc imzalıdır, notarize edilmez. İlk açılışta sağ tık > Aç gerekir. DMG'nin başka Mac'te açılışı doğrulanmadı.
 - Simgeyi yeniden üretin: `swift scripts/make-icon.swift /tmp/AppIcon.iconset`, ardından `iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns`.
 - Testleri çalıştırın: `swift test`. Testler Swift Testing kullanır (`Tests/MoleBarTests`). XCTest gerekmez.

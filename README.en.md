@@ -25,6 +25,13 @@ MoleBar is MIT licensed. See `LICENSE`. Mole is a separate program. MoleBar runs
 
 The script builds the app, copies it to `/Applications/MoleBar.app` and opens it. To build only, run `./make-app.sh`.
 
+To install without building, use Homebrew:
+
+1. Add the repository: `brew tap osmanbarutcu/mole-bar https://github.com/osmanbarutcu/mole-bar`
+2. Install: `brew install --cask molebar`
+
+The cask install is not verified on this machine.
+
 A prebuilt zip is on the Releases page. It is ad-hoc signed and not notarized. On first launch, right-click the app and choose Open.
 
 ## Usage
