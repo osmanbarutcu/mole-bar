@@ -352,6 +352,7 @@ struct PanelView: View {
             LoginItemAuditCard()
             LaunchItemsCard()
             SecurityCard()
+            PortScanCard()
         }
     }
 
