@@ -55,6 +55,15 @@ final class LargeFileFinder: ObservableObject {
     var visibleFiles: [LargeFile] { kind == .all ? files : files.filter { $0.kind == kind } }
     var visibleBytes: UInt64 { visibleFiles.reduce(0) { $0 + $1.bytes } }
 
+    /// Görünen listeyi CSV dosyasına yazar. Yol kullanıcının seçtiği kaydetme penceresinden gelir.
+    func exportCSV() {
+        let rows = visibleFiles.map { [$0.name, $0.folder, $0.kind.rawValue, String($0.bytes)] }
+        let text = CSVExport.make(header: ["Ad", "Klasör", "Tür", "Boyut (bayt)"], rows: rows)
+        if let name = CSVExport.save(text, suggestedName: "buyuk-dosyalar.csv") {
+            notice = "\(visibleFiles.count) satır \(name) dosyasına kaydedildi."
+        }
+    }
+
     func scanIfNeeded() {
         guard !started else { return }
         scan()
@@ -172,6 +181,10 @@ struct LargeFilesPage: View {
                     Button("Durdur") { finder.cancel() }.glassButton().controlSize(.small)
                 } else if !finder.visibleFiles.isEmpty {
                     Text(formatBytes(finder.visibleBytes)).font(.headline.monospacedDigit())
+                    Button { finder.exportCSV() } label: { Label("CSV", systemImage: "square.and.arrow.up") }
+                        .glassButton()
+                        .controlSize(.small)
+                        .help("Görünen listeyi CSV olarak kaydet")
                 }
             }
             HStack(spacing: 10) {

@@ -33,10 +33,10 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 ## Özellikler
 
 - Genel: CPU, bellek, disk, çekirdekler, pil sağlığı (azami kapasite), CPU/GPU sıcaklığı. Fan hızı yalnızca fanlı Mac'lerde görünür.
-- Analiz: liste veya treemap harita görünümü.
+- Analiz: liste veya treemap harita görünümü. Analiz ve Büyük dosyalar listesi CSV olarak kaydedilir. Kaydetme penceresinde yolu siz seçersiniz.
 - Uygulamalar: kaldırma ve yetim artıklar (kurulu uygulaması olmayan `~/Library` kalıntıları, Çöp Kutusu'na taşınır).
 - Araçlar: açık portlar, dış bağlantılar (süreç başına), Homebrew güncellemeleri (yalnızca denetim, komut panoya kopyalanır).
-- Kritik bellek baskısında bir kez bildirim gelir.
+- Kritik bellek baskısında bir kez bildirim gelir. Bildirime tıklayınca ilgili sayfa açılır.
 
 ## Güvenlik
 

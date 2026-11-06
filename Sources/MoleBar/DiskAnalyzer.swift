@@ -64,6 +64,16 @@ final class DiskAnalyzer: ObservableObject {
 
     func rescan() { scan(current) }
 
+    /// Geçerli klasörün listesini CSV dosyasına yazar. Yol kullanıcının seçtiği kaydetme penceresinden gelir.
+    func exportCSV() {
+        let rows = entries.map { [$0.name, $0.isDirectory ? "Klasör" : "Dosya", String($0.bytes), String($0.items)] }
+        let text = CSVExport.make(header: ["Ad", "Tür", "Boyut (bayt)", "Öğe sayısı"], rows: rows)
+        let folder = current.lastPathComponent.isEmpty ? "disk" : current.lastPathComponent
+        if let name = CSVExport.save(text, suggestedName: "analiz-\(folder).csv") {
+            notice = "\(entries.count) satır \(name) dosyasına kaydedildi."
+        }
+    }
+
     /// Öğeyi Çöp Kutusu'na taşır. Geri alınabilir. Başarılıysa listeden çıkarır.
     func moveToTrash(_ entry: DiskEntry) throws {
         guard TrashGuard.canTrash(entry.url) else { throw CocoaError(.fileWriteNoPermission) }
@@ -294,6 +304,10 @@ struct AnalyzePage: View {
             Button { analyzer.rescan() } label: { Image(systemName: "arrow.clockwise") }
                 .glassButton()
                 .help("Yeniden tara")
+            Button { analyzer.exportCSV() } label: { Image(systemName: "square.and.arrow.up") }
+                .glassButton()
+                .disabled(analyzer.entries.isEmpty || analyzer.isScanning)
+                .help("Bu klasörün listesini CSV olarak kaydet")
             Button { NSWorkspace.shared.open(analyzer.current) } label: { Image(systemName: "folder") }
                 .glassButton()
                 .help("Finder'da aç")
