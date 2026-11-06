@@ -33,6 +33,11 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Diskler sayfasındaki "Kazanılabilir alan" kartı, son taramaların sonucunu gösterir. Kategoriler çakışabilir, toplam yoktur.
 - Önbellek sayfası; uygulama önbelleklerini, günlükleri ve geliştirici önbelleklerini listeler. Seçilenler Çöp Kutusu'na taşınır. "Çöp Kutusu'nu boşalt" kalıcıdır ve ayrı onay ister.
 - Yinelenenler sayfasında "Gizli klasörleri ve Library'yi de tara" anahtarı vardır. Varsayılan kapalıdır.
+- Genel sayfasında pil, ısı durumu ve açık kalma süresi görünür. Mac 30 günden uzun açıksa uyarı çıkar.
+- Süreçler sayfası CPU, Bellek ve Ağ sıralaması sunar.
+- Önbellek sayfası OrbStack/Docker ve Mail boyutunu yalnızca gösterir. MoleBar bunları silmez.
+- Araçlar sayfası hedefi eksik giriş öğelerini listeler. Silmez.
+- Ayarlar sayfasında tema, son işlemler ve son hatalar bulunur. Ana pencerede ⌘1–⌘0 sayfa değiştirir.
 - Uygulamalar sayfası, uygulamayı ve `~/Library` artıklarını Çöp Kutusu'na taşır. Çalışan uygulama engellenir. Kalıcı silme yoktur.
 - Süreç sonlandırma `SIGTERM` gönderir. Sistem süreçleri korunur.
 - Gerçek `mo optimize` Terminal'de çalışır, çünkü yönetici izni ister.
@@ -53,3 +58,4 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Testleri çalıştırın: `swift test`. Testler Swift Testing kullanır (`Tests/MoleBarTests`). XCTest gerekmez.
 - Kaynak dosya değişince ilk `swift test` çalıştırması `TestingMacros` eklenti hatası verebilir. Komutu bir kez daha çalıştırın.
 - Panel görünümünü pencerede görmek için: `MOLEBAR_PANEL_PREVIEW=1 /Applications/MoleBar.app/Contents/MacOS/MoleBar`.
+- Ekran görüntüleri: `scripts/ui-shots.sh [klasör] [system|light|dark]`. Terminal için Erişilebilirlik izni gerekir.
