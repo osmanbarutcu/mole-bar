@@ -634,7 +634,9 @@ struct PanelView: View {
 
                     MoveHistoryCard()
                 }
+                .padding(.vertical, 8)
             }
         }
+        .shadowSafeScroll()
     }
 }
