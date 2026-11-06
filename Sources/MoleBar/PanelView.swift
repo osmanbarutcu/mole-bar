@@ -71,7 +71,7 @@ struct PanelView: View {
                         case .disks: disksPage
                         case .processes: processesPage
                         case .tools: toolsPage
-                        case .settings: EmptyView()
+                        case .settings, .analyze: EmptyView()
                         }
                     }
                 }
@@ -263,6 +263,10 @@ struct PanelView: View {
                 toolRow(symbol: "trash.slash", title: "Temizlik", detail: "Önizleme, sonra onaylı temizlik") {
                     openPreview(.cleanPreview)
                 }
+                toolRow(symbol: "chart.pie", title: "Disk analizi", detail: "Klasör boyutları, büyük pencerede") {
+                    UserDefaults.standard.set(MainSection.analyze.rawValue, forKey: "mainSection")
+                    NotificationCenter.default.post(name: .molebarOpenMain, object: nil)
+                }
                 toolRow(symbol: "wrench.and.screwdriver", title: "Bakım (optimize)", detail: "Önizleme. Çalıştırma Terminal'de") {
                     openPreview(.optimizePreview)
                 }
@@ -273,7 +277,7 @@ struct PanelView: View {
 
             VStack(alignment: .leading, spacing: 10) {
                 CardHeader(symbol: "terminal", title: "Terminal'de aç")
-                toolRow(symbol: "chart.pie", title: "Disk analizi", detail: "mo analyze") { TerminalBridge.run("mo analyze") }
+                toolRow(symbol: "chart.pie", title: "Disk analizi (TUI)", detail: "mo analyze") { TerminalBridge.run("mo analyze") }
                 toolRow(symbol: "app.badge.checkmark", title: "Uygulama kaldır", detail: "mo uninstall") { TerminalBridge.run("mo uninstall") }
                 toolRow(symbol: "folder.badge.minus", title: "Proje artıkları", detail: "mo purge (upstream hata, doğrulanmadı)") { TerminalBridge.run("mo purge") }
                 toolRow(symbol: "shippingbox", title: "Kurulum dosyaları", detail: "mo installer") { TerminalBridge.run("mo installer") }

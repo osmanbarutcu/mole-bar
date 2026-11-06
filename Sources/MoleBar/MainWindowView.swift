@@ -3,6 +3,7 @@ import SwiftUI
 enum MainSection: String, CaseIterable, Identifiable {
     case general = "Genel"
     case disks = "Diskler"
+    case analyze = "Analiz"
     case processes = "Süreçler"
     case tools = "Araçlar"
     case settings = "Ayarlar"
@@ -13,6 +14,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "gauge.with.dots.needle.50percent"
         case .disks: return "internaldrive"
+        case .analyze: return "chart.pie"
         case .processes: return "list.number"
         case .tools: return "wrench.and.screwdriver"
         case .settings: return "gearshape"
@@ -25,6 +27,7 @@ struct MainWindowView: View {
     @ObservedObject var stats: StatsModel
     @ObservedObject var preview: CleanPreview
     @AppStorage("mainSection") private var storedSection = MainSection.general.rawValue
+    @StateObject private var analyzer = DiskAnalyzer()
 
     var body: some View {
         let current = MainSection(rawValue: storedSection) ?? .general
@@ -39,9 +42,15 @@ struct MainWindowView: View {
             }
             .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
         } detail: {
-            PanelView(stats: stats, preview: preview, embedded: current)
-                .id(current)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            Group {
+                if current == .analyze {
+                    AnalyzePage(analyzer: analyzer, volumes: stats.volumes)
+                } else {
+                    PanelView(stats: stats, preview: preview, embedded: current)
+                        .id(current)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .navigationTitle("MoleBar")
         .frame(minWidth: 820, minHeight: 560)
