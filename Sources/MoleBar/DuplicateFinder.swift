@@ -102,18 +102,31 @@ final class DuplicateFinder: ObservableObject {
 
     /// Toplu kuralın taşıyacağı kopyalar. Her grupta tek kopya kalır. Korumalı yollar taşınmaz.
     func bulkPlan() -> [(url: URL, bytes: UInt64, groupID: String)] {
-        var plan: [(url: URL, bytes: UInt64, groupID: String)] = []
-        for group in groups {
-            let dated = group.files.map { url in
-                (url, (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantFuture)
-            }
-            guard dated.count > 1,
-                  let keep = (keepOldest ? dated.min { $0.1 < $1.1 } : dated.max { $0.1 < $1.1 })?.0 else { continue }
-            for (url, _) in dated where url != keep && TrashGuard.canTrash(url) {
-                plan.append((url, group.size, group.id))
+        Self.plan(groups: groups, keepOldest: keepOldest, canTrash: TrashGuard.canTrash, modified: Self.modificationDate)
+    }
+
+    nonisolated static func modificationDate(_ url: URL) -> Date {
+        (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantFuture
+    }
+
+    /// Saf mantık: dosya sistemine dokunmaz, bu yüzden test edilebilir.
+    nonisolated static func plan(
+        groups: [DuplicateGroup],
+        keepOldest: Bool,
+        canTrash: (URL) -> Bool,
+        modified: (URL) -> Date
+    ) -> [(url: URL, bytes: UInt64, groupID: String)] {
+        var result: [(url: URL, bytes: UInt64, groupID: String)] = []
+        for group in groups where group.files.count > 1 {
+            let dated = group.files.map { ($0, modified($0)) }
+            // Eşit tarihte ilk dosya kalır. Böylece sonuç kararlıdır.
+            var keep = dated[0]
+            for entry in dated.dropFirst() where keepOldest ? entry.1 < keep.1 : entry.1 > keep.1 { keep = entry }
+            for (url, _) in dated where url != keep.0 && canTrash(url) {
+                result.append((url, group.size, group.id))
             }
         }
-        return plan
+        return result
     }
 
     func applyBulk() {
