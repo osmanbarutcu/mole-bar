@@ -11,6 +11,24 @@ final class MoveHistoryModel: ObservableObject {
         MoveLog.clear()
         reload()
     }
+
+    /// Geri alma sonucu. Başarıda kayıt listeden çıkar.
+    @Published var notice: String?
+
+    func restore(_ record: MoveRecord) {
+        do {
+            try MoveRestore.restore(record)
+            MoveLog.remove(id: record.id)
+            notice = "\(record.name) özgün yerine geri konuldu."
+        } catch let failure as MoveRestore.Failure {
+            notice = failure.message
+            ErrorLog.add(source: "Geri alma", message: "\(record.name): \(failure.message)")
+        } catch {
+            notice = "\(record.name) geri alınamadı: \(error.localizedDescription)"
+            ErrorLog.add(source: "Geri alma", message: "\(record.name): \(error.localizedDescription)")
+        }
+        reload()
+    }
 }
 
 /// Ayarlar sayfasında son 50 taşımayı listeler. Dosyaları silmez. "Temizle" yalnızca listeyi boşaltır.
@@ -40,12 +58,17 @@ struct MoveHistoryCard: View {
                         }
                         Spacer(minLength: 6)
                         Text(formatBytes(record.bytes)).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                        Button("Geri al") { model.restore(record) }
+                            .glassButton()
+                            .controlSize(.small)
+                            .help("Dosyayı özgün yerine geri koyar")
                         Button { reveal(record) } label: { Image(systemName: "magnifyingglass") }
                             .buttonStyle(.plain)
                             .foregroundStyle(.secondary)
                             .help("Çöp Kutusu'nda göster")
                     }
                 }
+                if let notice = model.notice { Text(notice).font(.caption).foregroundStyle(.secondary) }
                 Button("Listeyi temizle") { model.clear() }
                     .buttonStyle(.plain)
                     .font(.caption)

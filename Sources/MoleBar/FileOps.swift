@@ -91,6 +91,11 @@ enum MoveLog {
 
     static func clear() { UserDefaults.standard.removeObject(forKey: key) }
 
+    static func remove(id: UUID) {
+        let rest = load().filter { $0.id != id }
+        if let data = try? JSONEncoder().encode(rest) { UserDefaults.standard.set(data, forKey: key) }
+    }
+
     static func add(_ record: MoveRecord) {
         let all = Array(([record] + load()).prefix(limit))
         if let data = try? JSONEncoder().encode(all) { UserDefaults.standard.set(data, forKey: key) }
@@ -112,6 +117,44 @@ extension TrashGuard {
             originalPath: url.path, trashedPath: (result as URL?)?.path,
             bytes: bytes, source: source
         ))
+    }
+}
+
+/// Çöp Kutusu'na taşınan öğeyi özgün yoluna geri koyar. Hiçbir şeyin üzerine yazmaz, klasör oluşturmaz.
+enum MoveRestore {
+    enum Failure: Error, Equatable {
+        case noTrashedPath, notInTrash, trashedMissing, destinationNotAllowed, destinationExists, parentMissing
+
+        var message: String {
+            switch self {
+            case .noTrashedPath: return "Kayıtta Çöp Kutusu yolu yok. Finder'da arayın."
+            case .notInTrash: return "Dosya Çöp Kutusu'nda değil. Geri alınmadı."
+            case .trashedMissing: return "Dosya Çöp Kutusu'nda bulunamadı. Boşaltılmış olabilir."
+            case .destinationNotAllowed: return "Özgün yol korumalı. Finder'dan elle geri alın."
+            case .destinationExists: return "Özgün yolda aynı adlı öğe var. Üzerine yazılmadı."
+            case .parentMissing: return "Özgün klasör artık yok. Geri alınmadı."
+            }
+        }
+    }
+
+    /// Kayıtlı yolun gerçekten bir Çöp Kutusu klasöründe olduğunu doğrular. Sahte kayıt başka dosyayı taşıyamaz.
+    private static func isInTrash(_ path: String) -> Bool {
+        let resolved = TrashGuard.resolved(URL(fileURLWithPath: path))
+        return resolved.contains("/.Trash/") || resolved.contains("/.Trashes/")
+    }
+
+    static func restore(_ record: MoveRecord, isAllowed: (URL) -> Bool = TrashGuard.canTrash) throws {
+        guard let trashedPath = record.trashedPath else { throw Failure.noTrashedPath }
+        guard isInTrash(trashedPath) else { throw Failure.notInTrash }
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: trashedPath) else { throw Failure.trashedMissing }
+        let original = URL(fileURLWithPath: record.originalPath)
+        guard isAllowed(original) else { throw Failure.destinationNotAllowed }
+        guard !fm.fileExists(atPath: original.path) else { throw Failure.destinationExists }
+        var isDirectory: ObjCBool = false
+        guard fm.fileExists(atPath: original.deletingLastPathComponent().path, isDirectory: &isDirectory), isDirectory.boolValue
+        else { throw Failure.parentMissing }
+        try fm.moveItem(at: URL(fileURLWithPath: trashedPath), to: original)
     }
 }
 
