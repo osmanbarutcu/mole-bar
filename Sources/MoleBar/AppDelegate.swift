@@ -34,6 +34,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.applyAppearance(UserDefaults.standard.string(forKey: "appearance") ?? "system")
         if Bundle.main.bundleIdentifier != nil { UNUserNotificationCenter.current().delegate = self }
+        // Kapatma veya oturum kapatma başlayınca çıkış engellenmez. Engellemek sistemi bekletirdi.
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main) { _ in
+            QuitPolicy.shared.systemIsEnding()
+        }
+        // Pencere açılınca Dock simgesi geri gelir. Menü çubuğuna inmişken simge gizlidir.
+        NotificationCenter.default.addObserver(forName: .molebarOpenMain, object: nil, queue: .main) { _ in
+            NSApp.setActivationPolicy(QuitPolicy.activationWhenWindowOpens)
+        }
         if StatusItemController.isEnabled() {
             let controller = StatusItemController(stats: StatsModel.shared)
             StatusItemController.shared = controller
@@ -81,8 +89,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         }
     }
 
-    /// Ana pencere kapanınca uygulama çıkmaz. Menü çubuğu öğesi çalışmaya devam eder. Çıkış için panelde "Çık" ya da ⌘Q kullanılır.
+    /// Ana pencere kapanınca uygulama çıkmaz. Menü çubuğu öğesi çalışmaya devam eder.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+
+    /// ⌘Q ve Dock "Çık" uygulamayı kapatmaz. Pencereleri kapatır, Dock simgesini gizler ve menü çubuğunda kalır.
+    /// Gerçek çıkış panelde "Çık" düğmesiyle veya sistem kapanışında olur.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard QuitPolicy.shared.decision() == .keepInMenuBar else { return .terminateNow }
+        for window in NSApp.windows where window.identifier?.rawValue.contains("main") == true { window.close() }
+        NSApp.setActivationPolicy(QuitPolicy.activationAfterKeepingInMenuBar)
+        return .terminateCancel
+    }
 
     /// Dock simgesine tıklanınca görünür pencere yoksa ana pencere açılır.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

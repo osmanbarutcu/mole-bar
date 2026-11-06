@@ -165,9 +165,12 @@ struct PanelView: View {
                 .glassButton()
                 .help("Büyük pencereyi aç")
             Spacer()
-            Button("Çık") { NSApplication.shared.terminate(nil) }
+            Button("Çık") {
+                QuitPolicy.shared.allowQuit()
+                NSApplication.shared.terminate(nil)
+            }
                 .glassButton()
-                .keyboardShortcut("q")
+                .help("MoleBar'ı tamamen kapatır. ⌘Q yalnızca pencereleri kapatır.")
         }
     }
 
