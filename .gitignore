@@ -3,3 +3,5 @@ graphify-out/
 *.app
 .DS_Store
 .swiftpm/
+memory-bank/
+.claude/
