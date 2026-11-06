@@ -29,6 +29,22 @@ enum LocalSnapshots {
         }
     }
 
+    /// Time Machine yerel görüntüleri normalde en çok bir gün tutulur. 3 günden eskisi olağandışıdır.
+    static let unusualAge: TimeInterval = 3 * 86_400
+
+    static func isUnusuallyOld(_ date: Date, now: Date = Date()) -> Bool {
+        now.timeIntervalSince(date) > unusualAge
+    }
+
+    /// "5 dk önce", "3 saat önce", "4 gün önce". Gelecek tarih ve bir dakikadan yeni kayıt "az önce" olur.
+    static func ageText(of date: Date, now: Date = Date()) -> String {
+        let seconds = Int(now.timeIntervalSince(date))
+        if seconds < 60 { return "az önce" }
+        if seconds < 3_600 { return "\(seconds / 60) dk önce" }
+        if seconds < 86_400 { return "\(seconds / 3_600) saat önce" }
+        return "\(seconds / 86_400) gün önce"
+    }
+
     static func deleteCommand(for snapshot: LocalSnapshot) -> String {
         "sudo tmutil deletelocalsnapshots \(snapshot.stamp)"
     }

@@ -35,3 +35,26 @@ struct LocalSnapshotsTests {
         #expect(LocalSnapshots.deleteCommand(for: snapshot) == "sudo tmutil deletelocalsnapshots 2026-11-05-123456")
     }
 }
+
+struct SnapshotAgeTests {
+    private let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    @Test func minutesHoursAndDays() {
+        #expect(LocalSnapshots.ageText(of: now.addingTimeInterval(-5 * 60), now: now) == "5 dk önce")
+        #expect(LocalSnapshots.ageText(of: now.addingTimeInterval(-3 * 3_600), now: now) == "3 saat önce")
+        #expect(LocalSnapshots.ageText(of: now.addingTimeInterval(-4 * 86_400), now: now) == "4 gün önce")
+    }
+
+    @Test func justNowForUnderOneMinute() {
+        #expect(LocalSnapshots.ageText(of: now.addingTimeInterval(-20), now: now) == "az önce")
+    }
+
+    @Test func futureDatesAreTreatedAsJustNow() {
+        #expect(LocalSnapshots.ageText(of: now.addingTimeInterval(500), now: now) == "az önce")
+    }
+
+    @Test func snapshotsOlderThanThreeDaysAreUnusual() {
+        #expect(LocalSnapshots.isUnusuallyOld(now.addingTimeInterval(-4 * 86_400), now: now))
+        #expect(!LocalSnapshots.isUnusuallyOld(now.addingTimeInterval(-2 * 86_400), now: now))
+    }
+}

@@ -379,9 +379,15 @@ struct CachePage: View {
                 HStack {
                     Text("\(cleaner.snapshots.count) adet").font(.caption)
                     Spacer(minLength: 8)
-                    Text("en eskisi \(oldest.formatted(date: .abbreviated, time: .shortened))")
+                    Text("en eskisi \(LocalSnapshots.ageText(of: oldest)) · \(oldest.formatted(date: .abbreviated, time: .shortened))")
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
+                }
+                if LocalSnapshots.isUnusuallyOld(oldest) {
+                    Text("En eski görüntü \(Int(LocalSnapshots.unusualAge / 86_400)) günden eski. Time Machine yedeği takılmış olabilir. Sistem Ayarları > Time Machine'i kontrol edin.")
+                        .font(.caption2)
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 Text("Boyutu okunamaz. macOS alan gerekince bunları kendisi siler. Elle silmek için komutu kopyalayın ve Terminal'de çalıştırın. MoleBar çalıştırmaz.")
                     .font(.caption2)
