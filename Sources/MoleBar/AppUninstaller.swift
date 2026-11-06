@@ -136,17 +136,41 @@ final class AppUninstaller: ObservableObject {
 
 struct UninstallPage: View {
     @ObservedObject var model: AppUninstaller
+    @StateObject private var orphans = OrphanModel()
+    @AppStorage("uninstallMode") private var mode = "apps"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Uygulamalar").font(.title2.weight(.semibold))
+                Picker("Görünüm", selection: $mode) {
+                    Text("Uygulamalar").tag("apps")
+                    Text("Yetim artıklar").tag("orphans")
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 240)
                 Spacer()
-                if model.isLoading { ProgressView().controlSize(.small) }
-                Button { model.reload() } label: { Image(systemName: "arrow.clockwise") }
-                    .glassButton()
-                    .help("Yeniden tara")
+                if mode == "apps" {
+                    if model.isLoading { ProgressView().controlSize(.small) }
+                    Button { model.reload() } label: { Image(systemName: "arrow.clockwise") }
+                        .glassButton()
+                        .help("Yeniden tara")
+                }
             }
+            if mode == "orphans" {
+                OrphanPage(model: orphans)
+            } else {
+                appsContent
+            }
+        }
+        .padding(24)
+        .onAppear { model.loadIfNeeded() }
+    }
+
+    @ViewBuilder
+    private var appsContent: some View {
+        VStack(alignment: .leading, spacing: 14) {
             if let notice = model.notice {
                 Text(notice).font(.caption).foregroundStyle(.secondary)
             }
@@ -158,8 +182,6 @@ struct UninstallPage: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(24)
-        .onAppear { model.loadIfNeeded() }
     }
 
     private var list: some View {
