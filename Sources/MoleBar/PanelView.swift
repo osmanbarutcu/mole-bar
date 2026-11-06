@@ -86,7 +86,7 @@ struct PanelView: View {
     }
 
     private var panelBody: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             header
             if layout.showPreview {
                 CleanPreviewPage(preview: preview)
@@ -109,13 +109,15 @@ struct PanelView: View {
                             case .tools: toolsPage
                             }
                         }
+                        .padding(.vertical, 8)
                     }
                 }
                 .shadowSafeScroll()
             }
             footer
         }
-        .padding(12)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 16)
         .frame(width: 344, height: panelHeight)
         .background(Color(nsColor: .controlBackgroundColor))
         .transaction { $0.animation = nil }
