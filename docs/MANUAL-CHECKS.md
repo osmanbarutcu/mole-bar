@@ -12,6 +12,14 @@ Sonucu "Geçti" veya "Kaldı" olarak not edin.
 5. Beklenen: Pencere öndeyse kapanır.
 6. Hata varsa Ayarlar'da turuncu metin görünür. Günlük: `/usr/bin/log show --predicate 'subsystem == "local.molebar"' --last 5m`
 
+Deneysel seçenek:
+
+1. Ayarlar > Menü çubuğu > "Özel menü çubuğu öğesi (deneysel)" anahtarını açın. MoleBar'ı yeniden başlatın.
+2. Menü çubuğunda tek MoleBar öğesi olmalıdır. İkinci öğe görünüyorsa Kaldı yazın.
+3. ⌥⌘M tuşuna basın. Beklenen: Menü çubuğu paneli açılır. Yeniden basınca kapanır.
+4. Panelin dışına tıklayın. Beklenen: Panel kapanır.
+5. Öğeye fareyle tıklayın. Beklenen: Panel açılır ve kapanır.
+
 ## 2. Bildirime tıklama
 
 1. Ayarlar'da Önbellek uyarısını 1 GB yapın.

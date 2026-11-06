@@ -4,7 +4,8 @@ import SwiftUI
 @main
 struct MoleBarApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @StateObject private var stats = StatsModel()
+    @ObservedObject private var stats = StatsModel.shared
+    @AppStorage(StatusItemController.defaultsKey) private var customStatusItem = false
 
     init() {
         let enabled = UserDefaults.standard.object(forKey: "hotkeyEnabled") as? Bool ?? true
@@ -13,7 +14,8 @@ struct MoleBarApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra {
+        // Özel durum çubuğu öğesi açıksa sistem öğesi gizlenir. Aksi halde iki öğe görünürdü.
+        MenuBarExtra(isInserted: Binding(get: { !customStatusItem }, set: { _ in })) {
             PanelView(stats: stats, preview: stats.cleanPreview)
         } label: {
             MenuBarLabel(stats: stats)

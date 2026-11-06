@@ -8,6 +8,9 @@ struct HistoryPoint {
 
 @MainActor
 final class StatsModel: ObservableObject {
+    /// Uygulama genelinde tek örnek. Menü çubuğu paneli, ana pencere ve özel durum çubuğu öğesi aynı ölçümleri paylaşır.
+    static let shared = StatsModel()
+
     @Published var cpuTotal: Double = 0
     @Published var cpuPerCore: [Double] = []
     @Published var memory = MemorySnapshot(usedBytes: 0, totalBytes: ProcessInfo.processInfo.physicalMemory)

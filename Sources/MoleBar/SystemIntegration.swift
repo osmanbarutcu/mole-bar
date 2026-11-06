@@ -72,6 +72,12 @@ enum PanelToggle {
 
     @MainActor
     static func toggle() {
+        // Özel durum çubuğu öğesi açıksa kısayol gerçek paneli açar ve kapatır.
+        if let controller = StatusItemController.shared, controller.isInstalled {
+            integrationLog.info("Kısayol: panel değiştirildi")
+            controller.toggle()
+            return
+        }
         for window in NSApp.windows where isStatusItemWindow(className: String(describing: type(of: window)), level: window.level.rawValue) {
             if let button = firstButton(in: window.contentView), button.action != nil {
                 integrationLog.info("Panel düğmesine tıklandı")

@@ -34,6 +34,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.applyAppearance(UserDefaults.standard.string(forKey: "appearance") ?? "system")
         if Bundle.main.bundleIdentifier != nil { UNUserNotificationCenter.current().delegate = self }
+        if StatusItemController.isEnabled() {
+            let controller = StatusItemController(stats: StatsModel.shared)
+            StatusItemController.shared = controller
+            controller.install()
+            // Geliştirme: MOLEBAR_DIAG_POPOVER=1 paneli 3 sn sonra bir kez açar. Ekran görüntüsü içindir.
+            if ProcessInfo.processInfo.environment["MOLEBAR_DIAG_POPOVER"] != nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { MainActor.assumeIsolated { PanelToggle.toggle() } }
+            }
+        }
         // Giriş öğesi olarak başlatıldıysa pencere açılmaz, yalnızca menü çubuğu kalır.
         let event = NSAppleEventManager.shared().currentAppleEvent
         let launchedAtLogin = event?.paramDescriptor(forKeyword: AEKeyword(keyAEPropData))?.enumCodeValue

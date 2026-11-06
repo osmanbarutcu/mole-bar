@@ -37,6 +37,7 @@ struct PanelView: View {
     @AppStorage("memoryAlertEnabled") private var memoryAlertEnabled = true
     @AppStorage("graphMetric") private var graphMetric = "cpu"
     @AppStorage("updateCheckEnabled") private var updateCheckEnabled = false
+    @AppStorage(StatusItemController.defaultsKey) private var customStatusItem = false
     @AppStorage("diskAlertThreshold") private var diskAlertThreshold = 90
     @AppStorage("cacheAlertGB") private var cacheAlertGB = 0
     @AppStorage("procSort") private var procSort = "cpu"
@@ -633,6 +634,13 @@ struct PanelView: View {
                         }
                         .pickerStyle(.segmented)
                         .labelsHidden()
+                        Toggle("Özel menü çubuğu öğesi (deneysel)", isOn: $customStatusItem)
+                            .toggleStyle(RightSwitchStyle())
+                            .controlSize(.small)
+                        Text("Açıkken ⌥⌘M menü çubuğu panelini açar ve kapatır. Kapalıyken kısayol ana pencereyi açar. Değişiklik için MoleBar'ı yeniden başlatın.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                         if displayMode == "graph" {
                             Picker("Grafik ölçümü", selection: $graphMetric) {
                                 ForEach(GraphMetric.allCases, id: \.rawValue) { Text($0.title).tag($0.rawValue) }

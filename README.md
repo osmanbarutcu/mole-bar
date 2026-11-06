@@ -68,7 +68,7 @@ Otomatik test kapsamayan adımlar [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md)
 ## Bilinen sınırlar
 
 - Uygulama yerel Apple Development sertifikasıyla imzalanır. Sertifika yoksa ad-hoc imza kullanılır. Başka bir Mac'e kopyalarsanız Gatekeeper uyarı verebilir.
-- ⌥⌘M kısayolu menü çubuğu panelini değil, ana pencereyi açar. macOS 27 paneli koddan açmaya izin vermez.
+- ⌥⌘M kısayolu varsayılan olarak menü çubuğu panelini değil, ana pencereyi açar. macOS 27 `MenuBarExtra` panelini koddan açmaya izin vermez. Ayarlar'daki "Özel menü çubuğu öğesi (deneysel)" anahtarı kendi `NSStatusItem` ve `NSPopover` öğemizi kurar. Açıkken kısayol gerçek paneli açar. Değişiklik için yeniden başlatın. Panel kısayolla açma ekran görüntüsüyle doğrulandı, gerçek tuş basışı doğrulanmadı.
 - Yeni sürüm denetimi isteğe bağlıdır ve varsayılan kapalıdır. Açarsanız günde en çok 1 kez api.github.com adresine istek gider. GitHub IP adresinizi görür.
 - Arayüz yalnızca Türkçedir. İngilizce yerelleştirme yapılmadı.
 - Disk analizi ve Büyük dosyalar sayfası, bazı klasörler için Tam Disk Erişimi ister. Erişilemeyen öğe sayısı ekranda görünür. İzin yoksa sonuçlar eksik kalır. Örnek: 426 bin dosya görüldü, izinli betik 626 bin dosya gördü.
@@ -81,4 +81,5 @@ Otomatik test kapsamayan adımlar [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md)
 - Testleri çalıştırın: `swift test`. Testler Swift Testing kullanır (`Tests/MoleBarTests`). XCTest gerekmez.
 - `swift test` bazen `TestingMacros` eklenti hatası verir ve tekrar çalıştırmak yetmeyebilir. Kalıcı çözüm: `swift test -Xswiftc -plugin-path -Xswiftc /Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing`.
 - Panel görünümünü pencerede görmek için: `MOLEBAR_PANEL_PREVIEW=1 /Applications/MoleBar.app/Contents/MacOS/MoleBar`.
+- Özel menü çubuğu öğesinde paneli 3 sn sonra açmak için: `defaults write local.molebar customStatusItem -bool true`, sonra `MOLEBAR_DIAG_POPOVER=1 /Applications/MoleBar.app/Contents/MacOS/MoleBar`.
 - Ekran görüntüleri: `scripts/ui-shots.sh [klasör] [system|light|dark]`. Terminal için Erişilebilirlik izni gerekir.
