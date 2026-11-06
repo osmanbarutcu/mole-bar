@@ -1,0 +1,49 @@
+import SwiftUI
+
+enum MainSection: String, CaseIterable, Identifiable {
+    case general = "Genel"
+    case disks = "Diskler"
+    case processes = "Süreçler"
+    case tools = "Araçlar"
+    case settings = "Ayarlar"
+
+    var id: String { rawValue }
+
+    var symbol: String {
+        switch self {
+        case .general: return "gauge.with.dots.needle.50percent"
+        case .disks: return "internaldrive"
+        case .processes: return "list.number"
+        case .tools: return "wrench.and.screwdriver"
+        case .settings: return "gearshape"
+        }
+    }
+}
+
+/// Çift tıklayınca açılan ana pencere. Yan menü seçimine göre panelle aynı sayfaları gösterir.
+struct MainWindowView: View {
+    @ObservedObject var stats: StatsModel
+    @ObservedObject var preview: CleanPreview
+    @AppStorage("mainSection") private var storedSection = MainSection.general.rawValue
+
+    var body: some View {
+        let current = MainSection(rawValue: storedSection) ?? .general
+        let selection = Binding<MainSection?>(
+            get: { current },
+            set: { storedSection = ($0 ?? .general).rawValue }
+        )
+        NavigationSplitView {
+            List(MainSection.allCases, selection: selection) { section in
+                Label(section.rawValue, systemImage: section.symbol)
+                    .tag(section)
+            }
+            .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
+        } detail: {
+            PanelView(stats: stats, preview: preview, embedded: current)
+                .id(current)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .navigationTitle("MoleBar")
+        .frame(minWidth: 820, minHeight: 560)
+    }
+}
