@@ -34,6 +34,28 @@ extension View {
             self.buttonStyle(.bordered)
         }
     }
+
+    @ViewBuilder
+    func glassProminentButton() -> some View {
+        if #available(macOS 26.0, *) {
+            self.buttonStyle(.glassProminent)
+        } else {
+            self.buttonStyle(.borderedProminent)
+        }
+    }
+}
+
+/// Anahtar sağa hizalı, etiket solda.
+struct RightSwitchStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+            Spacer(minLength: 8)
+            Toggle(isOn: configuration.$isOn) { EmptyView() }
+                .toggleStyle(.switch)
+                .labelsHidden()
+        }
+    }
 }
 
 /// Cam öğeleri tek kapta toplar. macOS 26+ için birleşme ve performans sağlar.

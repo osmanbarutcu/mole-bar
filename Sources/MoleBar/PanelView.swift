@@ -61,7 +61,8 @@ struct PanelView: View {
         } else if section == .settings {
             settingsPage
                 .padding(20)
-                .frame(maxWidth: 560)
+                .frame(maxWidth: 640, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             ScrollView {
                 GlassGroup(spacing: 12) {
@@ -239,7 +240,8 @@ struct PanelView: View {
                 Label("Temizlik önizlemesi", systemImage: "sparkles")
                     .frame(maxWidth: .infinity)
             }
-            .glassButton()
+            .glassProminentButton()
+            .controlSize(.large)
             HStack(spacing: 8) {
                 RateChip(symbol: "arrow.down.doc", label: "Disk okuma", value: formatRate(stats.diskRead))
                 RateChip(symbol: "arrow.up.doc", label: "Disk yazma", value: formatRate(stats.diskWrite))
@@ -403,6 +405,7 @@ struct PanelView: View {
 
     private var processesPage: some View {
         let rows = topProcesses
+        let peak = max(rows.map { procSort == "cpu" ? $0.cpu : Double($0.memoryBytes) }.max() ?? 1, 0.0001)
         return VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "list.number", title: "En çok kullanan 10")
             Picker("Sıralama", selection: $procSort) {
@@ -417,7 +420,7 @@ struct PanelView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            ForEach(rows) { processRow($0) }
+            ForEach(rows) { processRow($0, peak: peak) }
 
             Text("Aynı uygulamanın süreçleri toplanır. Bellek, çalışan küme (RSS) değeridir.")
                 .font(.caption2)
@@ -435,8 +438,9 @@ struct PanelView: View {
         return Array(sorted.prefix(10))
     }
 
-    private func processRow(_ row: ProcessGroup) -> some View {
-        HStack(spacing: 8) {
+    private func processRow(_ row: ProcessGroup, peak: Double) -> some View {
+        let value = procSort == "cpu" ? row.cpu : Double(row.memoryBytes)
+        return HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(row.name)
                     .font(.subheadline)
@@ -465,11 +469,13 @@ struct PanelView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize()
             } else {
+                UsageBar(percent: value / peak * 100, height: 4, color: .accentColor)
+                    .frame(width: 56)
                 Text(procSort == "cpu" ? String(format: "%.1f%%", row.cpu) : formatBytes(row.memoryBytes))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
-                    .fixedSize()
+                    .frame(minWidth: 58, alignment: .trailing)
             }
 
             if layout.pendingKill != row.id, row.killable {
@@ -477,6 +483,8 @@ struct PanelView: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Sonlandır")
+            } else if layout.pendingKill != row.id {
+                Color.clear.frame(width: 16, height: 1)
             }
         }
     }
@@ -507,7 +515,7 @@ struct PanelView: View {
                         Toggle("Disk", isOn: $showDisk)
                         Toggle("Etiketler", isOn: $showLabels)
                     }
-                    .toggleStyle(.switch)
+                    .toggleStyle(RightSwitchStyle())
                     .controlSize(.small)
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -537,7 +545,7 @@ struct PanelView: View {
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .toggleStyle(.switch)
+                    .toggleStyle(RightSwitchStyle())
                     .controlSize(.small)
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -546,7 +554,7 @@ struct PanelView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         CardHeader(symbol: "bell.badge", title: "Disk uyarısı")
                         Toggle("Eşik aşılınca bildir", isOn: $diskAlertEnabled)
-                            .toggleStyle(.switch)
+                            .toggleStyle(RightSwitchStyle())
                             .controlSize(.small)
                         Stepper("Eşik: %\(diskAlertThreshold)", value: $diskAlertThreshold, in: 70...98)
                             .disabled(!diskAlertEnabled)

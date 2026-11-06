@@ -52,7 +52,8 @@ struct MainWindowView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .navigationTitle("MoleBar")
+        .navigationTitle(current.rawValue)
+        .navigationSubtitle("MoleBar")
         .frame(minWidth: 820, minHeight: 560)
     }
 }
