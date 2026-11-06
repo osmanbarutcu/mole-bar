@@ -18,6 +18,12 @@ struct SystemIntegrationTests {
         #expect(!PanelToggle.isStatusItemWindow(className: "SwiftUI.AppKitWindow", level: NSWindow.Level.normal.rawValue))
     }
 
+    @Test @MainActor func appStaysInMenuBarAfterLastWindowCloses() {
+        let delegate = AppDelegate()
+        let terminates = delegate.applicationShouldTerminateAfterLastWindowClosed(NSApplication.shared)
+        #expect(!terminates)
+    }
+
     @Test func hotKeyClosesMainWindowOnlyWhenVisibleAndActive() {
         #expect(PanelToggle.shouldCloseMain(isVisible: true, isActive: true))
         #expect(!PanelToggle.shouldCloseMain(isVisible: true, isActive: false))
