@@ -21,7 +21,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 
 - Menü çubuğundaki metne tıklayın. Panel açılır: Genel, Diskler, Süreçler, Araçlar.
 - `⌥⌘M` paneli açar.
-- Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Büyük dosyalar, Uygulamalar, Süreçler, Araçlar, Ayarlar.
+- Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Büyük dosyalar, Yinelenenler, Uygulamalar, Süreçler, Araçlar, Ayarlar.
 - Ayarlar'da menü çubuğu görünümü (metin veya ikon), disk uyarı eşiği, girişte başlatma ve haftalık tarama bulunur.
 
 ## Güvenlik
@@ -29,6 +29,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Temizlik önizlemesi (`mo clean --dry-run`) hiçbir şey silmez.
 - Gerçek temizlik yalnızca onaydan sonra çalışır. Yalnızca kullanıcı seviyesi dosyaları siler. Geri alınamaz.
 - Disk analizi salt okunurdur. Çöp ikonu öğeyi Çöp Kutusu'na taşır. Ev klasörünün doğrudan alt öğeleri korunur.
+- Yinelenenler sayfası ev klasöründe (gizli klasörler ve ~/Library hariç) aynı içerikli dosyaları SHA-256 ile bulur. Taşıma Çöp Kutusu'nadır. Her gruptaki son kopya taşınamaz.
 - Uygulamalar sayfası, uygulamayı ve `~/Library` artıklarını Çöp Kutusu'na taşır. Çalışan uygulama engellenir. Kalıcı silme yoktur.
 - Süreç sonlandırma `SIGTERM` gönderir. Sistem süreçleri korunur.
 - Gerçek `mo optimize` Terminal'de çalışır, çünkü yönetici izni ister.
