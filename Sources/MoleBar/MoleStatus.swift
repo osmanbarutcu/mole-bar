@@ -70,9 +70,21 @@ enum TerminalBridge {
 
 enum DiskNotifier {
     static func notify(percent: Double) {
+        let defaults = UserDefaults.standard
+        let parts: [(label: String, key: ReclaimStore.Key)] = [
+            ("Önbellek", .cache), ("büyük dosyalar", .large), ("kopyalar", .duplicates)
+        ]
+        // Değer -1 taranmadı demektir. Taranmamış ve sıfır değerler metne girmez.
+        let known = parts.compactMap { part -> String? in
+            let bytes = defaults.object(forKey: part.key.rawValue) as? Int ?? -1
+            return bytes > 0 ? "\(part.label) \(formatBytes(UInt64(bytes)))" : nil
+        }
+        let hint = known.isEmpty
+            ? "MoleBar panelinden temizlik önizlemesi açabilirsiniz."
+            : "Kazanılabilir: " + known.joined(separator: ", ") + "."
         post(
             title: "Disk neredeyse dolu",
-            body: String(format: "Ana disk %%%.0f dolu. MoleBar panelinden temizlik önizlemesi açabilirsiniz.", percent),
+            body: String(format: "Ana disk %%%.0f dolu. ", percent) + hint,
             id: "molebar.disk"
         )
     }
