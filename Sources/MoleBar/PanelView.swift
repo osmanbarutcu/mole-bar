@@ -263,13 +263,14 @@ struct PanelView: View {
         Group {
             VStack(alignment: .leading, spacing: 10) {
                 CardHeader(symbol: "sparkles", title: "Uygulama içinde")
-                toolRow(symbol: "trash.slash", title: "Temizlik", detail: "Önizleme, sonra onaylı temizlik") {
+                toolRow(symbol: "trash.slash", title: "Mole temizliği", detail: "mo clean önizlemesi, sonra onaylı temizlik") {
                     openPreview(.cleanPreview)
                 }
-                toolRow(symbol: "chart.pie", title: "Disk analizi", detail: "Klasör boyutları, büyük pencerede") {
-                    UserDefaults.standard.set(MainSection.analyze.rawValue, forKey: "mainSection")
-                    NotificationCenter.default.post(name: .molebarOpenMain, object: nil)
-                }
+                toolRow(symbol: "chart.pie", title: "Disk analizi", detail: "Klasör boyutları, büyük pencerede") { openMain(.analyze) }
+                toolRow(symbol: "doc.text.magnifyingglass", title: "Büyük dosyalar", detail: "Eşik üstü dosyalar, büyük pencerede") { openMain(.large) }
+                toolRow(symbol: "square.on.square", title: "Yinelenen dosyalar", detail: "Aynı içerikli kopyalar, büyük pencerede") { openMain(.duplicates) }
+                toolRow(symbol: "archivebox", title: "Önbellek ve Çöp Kutusu", detail: "Önbellek listesi, büyük pencerede") { openMain(.caches) }
+                toolRow(symbol: "square.stack.3d.up", title: "Uygulamalar", detail: "Kaldırma ve artık dosyalar, büyük pencerede") { openMain(.apps) }
                 toolRow(symbol: "wrench.and.screwdriver", title: "Bakım (optimize)", detail: "Önizleme. Çalıştırma Terminal'de") {
                     openPreview(.optimizePreview)
                 }
@@ -281,7 +282,7 @@ struct PanelView: View {
             VStack(alignment: .leading, spacing: 10) {
                 CardHeader(symbol: "terminal", title: "Terminal'de aç")
                 toolRow(symbol: "chart.pie", title: "Disk analizi (TUI)", detail: "mo analyze") { TerminalBridge.run("mo analyze") }
-                toolRow(symbol: "app.badge.checkmark", title: "Uygulama kaldır", detail: "mo uninstall") { TerminalBridge.run("mo uninstall") }
+                toolRow(symbol: "app.badge.checkmark", title: "Uygulama kaldır (Mole)", detail: "mo uninstall") { TerminalBridge.run("mo uninstall") }
                 toolRow(symbol: "folder.badge.minus", title: "Proje artıkları", detail: "mo purge (upstream hata, doğrulanmadı)") { TerminalBridge.run("mo purge") }
                 toolRow(symbol: "shippingbox", title: "Kurulum dosyaları", detail: "mo installer") { TerminalBridge.run("mo installer") }
                 toolRow(symbol: "touchid", title: "Touch ID ile sudo", detail: "mo touchid") { TerminalBridge.run("mo touchid") }
@@ -293,6 +294,12 @@ struct PanelView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCard()
         }
+    }
+
+    /// Ana pencereyi verilen bölümde açar.
+    private func openMain(_ section: MainSection) {
+        UserDefaults.standard.set(section.rawValue, forKey: "mainSection")
+        NotificationCenter.default.post(name: .molebarOpenMain, object: nil)
     }
 
     private func toolRow(symbol: String, title: String, detail: String, action: @escaping () -> Void) -> some View {
