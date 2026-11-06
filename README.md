@@ -1,5 +1,7 @@
 # MoleBar
 
+[English README](README.en.md)
+
 MoleBar, macOS menü çubuğunda CPU, bellek ve disk kullanımını gösterir. [Mole](https://github.com/tw93/mole) ile temizlik ve bakım önizlemesi sunar.
 
 MoleBar, Mole'un resmi uygulaması değildir. Kişisel kullanım için yazıldı. Mole GPL-3.0 lisanslıdır.
@@ -66,7 +68,9 @@ Otomatik test kapsamayan adımlar [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md)
 ## Bilinen sınırlar
 
 - Uygulama yerel Apple Development sertifikasıyla imzalanır. Sertifika yoksa ad-hoc imza kullanılır. Başka bir Mac'e kopyalarsanız Gatekeeper uyarı verebilir.
-- ⌥⌘M kısayolu sistemin iç sınıf adlarına dayanır. macOS güncellemesinde bozulabilir.
+- ⌥⌘M kısayolu menü çubuğu panelini değil, ana pencereyi açar. macOS 27 paneli koddan açmaya izin vermez.
+- Yeni sürüm denetimi isteğe bağlıdır ve varsayılan kapalıdır. Açarsanız günde en çok 1 kez api.github.com adresine istek gider. GitHub IP adresinizi görür.
+- Arayüz yalnızca Türkçedir. İngilizce yerelleştirme yapılmadı.
 - Disk analizi ve Büyük dosyalar sayfası, bazı klasörler için Tam Disk Erişimi ister. Erişilemeyen öğe sayısı ekranda görünür. İzin yoksa sonuçlar eksik kalır. Örnek: 426 bin dosya görüldü, izinli betik 626 bin dosya gördü.
 - `mo purge` Mole'da hata verebilir (`discovered[@]: unbound variable`). Doğrulanmadı.
 - Gerçek `mo clean` çıktı biçimi doğrulanmadı. Boşalan alan diskten ölçülür.
