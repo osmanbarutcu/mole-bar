@@ -84,7 +84,7 @@ final class CacheCleaner: ObservableObject {
         var moved: UInt64 = 0
         var failed = 0
         for item in items where selection.contains(item.url) {
-            guard DiskAnalyzer.canTrash(item.url) else { failed += 1; continue }
+            guard TrashGuard.canTrash(item.url) else { failed += 1; continue }
             do {
                 try FileManager.default.trashItem(at: item.url, resultingItemURL: nil)
                 moved += item.bytes
@@ -117,7 +117,7 @@ final class CacheCleaner: ObservableObject {
     // MARK: Tarama
 
     private nonisolated static func trashSize() -> UInt64 {
-        AppUninstaller.size(of: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash"))
+        FileSizer.size(of: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash"))
     }
 
     private nonisolated static func stream() -> AsyncStream<CacheItem> {
@@ -125,7 +125,7 @@ final class CacheCleaner: ObservableObject {
             let worker = Task.detached {
                 for (url, category) in candidates() {
                     if Task.isCancelled { break }
-                    let bytes = AppUninstaller.size(of: url)
+                    let bytes = FileSizer.size(of: url)
                     if bytes > 0 { continuation.yield(CacheItem(url: url, category: category, bytes: bytes)) }
                 }
                 continuation.finish()

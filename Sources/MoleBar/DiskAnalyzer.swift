@@ -64,36 +64,9 @@ final class DiskAnalyzer: ObservableObject {
 
     func rescan() { scan(current) }
 
-    /// Ev klasöründe yasak yollar. Posta, mesaj, anahtar zinciri, iCloud ve kimlik bilgileri taşınamaz.
-    private nonisolated static let protectedHomePrefixes = [
-        "Library/Mail", "Library/Messages", "Library/Keychains", "Library/Mobile Documents",
-        "Library/CloudStorage", "Library/Safari", "Library/Accounts", "Library/Calendars",
-        "Library/Contacts", "Library/Photos", "Library/Suggestions", "Library/Biome",
-        "Library/Group Containers", "Library/Application Support/AddressBook",
-        ".ssh", ".gnupg", ".aws", ".kube", ".password-store"
-    ]
-
-    /// Çöp Kutusu'na taşıma yalnızca ev klasörünün ikinci düzeyinden itibaren ve harici disklerde açıktır.
-    /// Ev klasörünün doğrudan alt öğeleri, yasak yollar ve medya kütüphaneleri (.photoslibrary vb.) korunur.
-    nonisolated static func canTrash(_ url: URL) -> Bool {
-        let path = url.standardizedFileURL.path
-        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL.path
-        let mediaLibraries = [".photoslibrary", ".musiclibrary", ".tvlibrary", ".photolibrary"]
-        if mediaLibraries.contains(where: { path.lowercased().contains($0) }) { return false }
-        if path.hasPrefix(home + "/") {
-            let relative = String(path.dropFirst(home.count + 1))
-            if protectedHomePrefixes.contains(where: { relative == $0 || relative.hasPrefix($0 + "/") }) { return false }
-            return relative.split(separator: "/").count >= 2
-        }
-        if path.hasPrefix("/Volumes/") {
-            return path.dropFirst("/Volumes/".count).split(separator: "/").count >= 2
-        }
-        return false
-    }
-
     /// Öğeyi Çöp Kutusu'na taşır. Geri alınabilir. Başarılıysa listeden çıkarır.
     func moveToTrash(_ entry: DiskEntry) throws {
-        guard Self.canTrash(entry.url) else { throw CocoaError(.fileWriteNoPermission) }
+        guard TrashGuard.canTrash(entry.url) else { throw CocoaError(.fileWriteNoPermission) }
         try FileManager.default.trashItem(at: entry.url, resultingItemURL: nil)
         entries.removeAll { $0.url == entry.url }
     }
@@ -355,7 +328,7 @@ struct AnalyzePage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Finder'da göster")
-                let allowed = DiskAnalyzer.canTrash(entry.url)
+                let allowed = TrashGuard.canTrash(entry.url)
                 Button { analyzer.pendingTrash = entry.url } label: { Image(systemName: "trash") }
                     .buttonStyle(.plain)
                     .foregroundStyle(allowed ? Color.secondary : Color.secondary.opacity(0.3))

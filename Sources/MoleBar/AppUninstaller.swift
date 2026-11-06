@@ -45,7 +45,7 @@ final class AppUninstaller: ObservableObject {
             apps = found
             isLoading = false
             for app in found {
-                let bytes = await Task.detached { Self.size(of: app.url) }.value
+                let bytes = await Task.detached { FileSizer.size(of: app.url) }.value
                 if let index = apps.firstIndex(where: { $0.id == app.id }) {
                     apps[index].bytes = bytes
                     apps[index].sized = true
@@ -128,26 +128,9 @@ final class AppUninstaller: ObservableObject {
         for (dir, file) in names {
             let url = library.appendingPathComponent(dir).appendingPathComponent(file)
             guard FileManager.default.fileExists(atPath: url.path), seen.insert(url).inserted else { continue }
-            result.append(Leftover(url: url, bytes: size(of: url)))
+            result.append(Leftover(url: url, bytes: FileSizer.size(of: url)))
         }
         return result.sorted { $0.bytes > $1.bytes }
-    }
-
-    nonisolated static func size(of url: URL) -> UInt64 {
-        let keys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .isDirectoryKey]
-        var isDir: ObjCBool = false
-        guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) else { return 0 }
-        if !isDir.boolValue {
-            return UInt64((try? url.resourceValues(forKeys: [.totalFileAllocatedSizeKey]))?.totalFileAllocatedSize ?? 0)
-        }
-        var total: UInt64 = 0
-        guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: keys, options: [], errorHandler: { _, _ in true }) else { return 0 }
-        for case let file as URL in enumerator {
-            let values = try? file.resourceValues(forKeys: Set(keys))
-            if values?.isDirectory == true { continue }
-            total += UInt64(values?.totalFileAllocatedSize ?? 0)
-        }
-        return total
     }
 }
 

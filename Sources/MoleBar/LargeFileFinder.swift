@@ -97,7 +97,7 @@ final class LargeFileFinder: ObservableObject {
 
     func moveToTrash(_ file: LargeFile) {
         pendingTrash = nil
-        guard DiskAnalyzer.canTrash(file.url) else {
+        guard TrashGuard.canTrash(file.url) else {
             notice = "\(file.name) korumalı bir yolda. Finder'da gösterin."
             return
         }
@@ -262,7 +262,7 @@ struct LargeFilesPage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Finder'da göster")
-                let allowed = DiskAnalyzer.canTrash(file.url)
+                let allowed = TrashGuard.canTrash(file.url)
                 Button { finder.pendingTrash = file.url } label: { Image(systemName: "trash") }
                     .buttonStyle(.plain)
                     .foregroundStyle(allowed ? Color.secondary : Color.secondary.opacity(0.3))

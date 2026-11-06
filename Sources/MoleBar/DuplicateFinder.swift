@@ -78,7 +78,7 @@ final class DuplicateFinder: ObservableObject {
     func moveToTrash(_ url: URL, from groupID: String) {
         pendingTrash = nil
         guard let index = groups.firstIndex(where: { $0.id == groupID }), groups[index].files.count > 1 else { return }
-        guard DiskAnalyzer.canTrash(url) else {
+        guard TrashGuard.canTrash(url) else {
             notice = "\(url.lastPathComponent) korumalı bir yolda. Finder'da gösterin."
             return
         }
@@ -315,7 +315,7 @@ struct DuplicatesPage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Finder'da göster")
-                let allowed = DiskAnalyzer.canTrash(url) && group.files.count > 1
+                let allowed = TrashGuard.canTrash(url) && group.files.count > 1
                 Button { finder.pendingTrash = url } label: { Image(systemName: "trash") }
                     .buttonStyle(.plain)
                     .foregroundStyle(allowed ? Color.secondary : Color.secondary.opacity(0.3))
