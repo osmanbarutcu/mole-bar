@@ -17,6 +17,13 @@ enum FullDiskAccess {
         return .unknown
     }
 
+    /// Erişilemeyen öğe notu. İzin verilmişse sistem korumalı öğeler olduğunu söyler, izin istemez.
+    static func inaccessibleNote(_ count: Int) -> String {
+        status() == .granted
+            ? "\(count) öğe okunamadı (sistem korumalı). Sonuçlar bu öğeler dışında eksiksizdir."
+            : "\(count) öğeye erişilemedi (izin yok). Sonuçlar eksik. Sistem Ayarları > Gizlilik > Tam Disk Erişimi altında MoleBar'a izin verin."
+    }
+
     static func openSettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
             NSWorkspace.shared.open(url)

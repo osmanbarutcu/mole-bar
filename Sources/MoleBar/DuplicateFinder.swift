@@ -288,7 +288,7 @@ struct DuplicatesPage: View {
                     .foregroundStyle(.orange)
             }
             if finder.finished, finder.inaccessible > 0 {
-                Text("\(finder.inaccessible) öğeye erişilemedi (izin yok). Sonuçlar eksik olabilir.")
+                Text(FullDiskAccess.inaccessibleNote(finder.inaccessible))
                     .font(.caption2)
                     .foregroundStyle(.orange)
             }

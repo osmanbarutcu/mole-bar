@@ -271,7 +271,7 @@ struct AnalyzePage: View {
                 Divider().opacity(0.4)
             }
             if analyzer.inaccessible > 0 {
-                Text("\(analyzer.inaccessible) öğeye erişilemedi (izin yok). Sonuçlar eksik olabilir.")
+                Text(FullDiskAccess.inaccessibleNote(analyzer.inaccessible))
                     .font(.caption2)
                     .foregroundStyle(.orange)
                     .padding(.top, 8)

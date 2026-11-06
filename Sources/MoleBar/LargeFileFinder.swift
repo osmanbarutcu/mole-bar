@@ -198,7 +198,7 @@ struct LargeFilesPage: View {
             .labelsHidden()
             .frame(maxWidth: 420)
             if !finder.isScanning, finder.scanned > 0 {
-                Text("\(finder.scanned) dosya tarandı." + (finder.inaccessible > 0 ? " \(finder.inaccessible) öğeye erişilemedi (izin yok). Sonuçlar eksik. Sistem Ayarları > Gizlilik > Tam Disk Erişimi altında MoleBar'a izin verin." : ""))
+                Text("\(finder.scanned) dosya tarandı." + (finder.inaccessible > 0 ? " " + FullDiskAccess.inaccessibleNote(finder.inaccessible) : ""))
                     .font(.caption2)
                     .foregroundStyle(finder.inaccessible > 0 ? Color.orange : Color.secondary)
             }

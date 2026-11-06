@@ -8,6 +8,7 @@ enum TrashGuard {
         "Library/CloudStorage", "Library/Safari", "Library/Accounts", "Library/Calendars",
         "Library/Contacts", "Library/Photos", "Library/Suggestions", "Library/Biome",
         "Library/Group Containers", "Library/Application Support/AddressBook",
+        "Library/Metadata", // Spotlight dizin verisi. mds kullanır, elle taşımak dizini bozar.
         ".ssh", ".gnupg", ".aws", ".kube", ".password-store"
     ]
 

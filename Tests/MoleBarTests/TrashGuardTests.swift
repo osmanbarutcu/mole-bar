@@ -19,7 +19,7 @@ struct TrashGuardTests {
     @Test("korumalı ev yolları kapalıdır", arguments: [
         "/Library/Mail/V10/x", "/Library/Messages/chat.db", "/Library/Keychains/login.keychain-db",
         "/Library/Mobile Documents/com~apple~CloudDocs/a", "/Library/Safari/History.db",
-        "/Library/Group Containers/group.x/y", "/.ssh/id_ed25519", "/.gnupg/pubring.kbx",
+        "/Library/Group Containers/group.x/y", "/Library/Metadata/CoreSpotlight/DocumentProcessing/x.journal", "/.ssh/id_ed25519", "/.gnupg/pubring.kbx",
         "/.aws/credentials", "/.kube/config", "/.password-store/a.gpg"
     ])
     func blocksProtectedHomePaths(_ suffix: String) {
