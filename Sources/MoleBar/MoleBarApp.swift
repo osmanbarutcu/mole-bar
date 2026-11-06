@@ -54,6 +54,11 @@ struct MenuBarLabel: View {
         Group {
             if displayMode == "icon" {
                 Image(systemName: "gauge.with.dots.needle.50percent")
+            } else if displayMode == "graph" {
+                HStack(spacing: 4) {
+                    Image(nsImage: MenuBarGraph.image(values: stats.recentCPU))
+                    Text(String(format: "%.0f%%", stats.cpuTotal)).monospacedDigit()
+                }
             } else {
                 Text(stats.barText(cpu: showCPU, ram: showRAM, disk: showDisk, labels: showLabels))
                     .monospacedDigit()

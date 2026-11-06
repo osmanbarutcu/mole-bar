@@ -600,6 +600,7 @@ struct PanelView: View {
                         Picker("Görünüm", selection: $displayMode) {
                             Text("Metin").tag("text")
                             Text("İkon").tag("icon")
+                            Text("Grafik").tag("graph")
                         }
                         .pickerStyle(.segmented)
                         .labelsHidden()
@@ -620,8 +621,8 @@ struct PanelView: View {
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .glassCard()
-                    .disabled(displayMode == "icon")
-                    .opacity(displayMode == "icon" ? 0.5 : 1)
+                    .disabled(displayMode != "text")
+                    .opacity(displayMode == "text" ? 1 : 0.5)
 
                     VStack(alignment: .leading, spacing: 10) {
                         CardHeader(symbol: "power", title: "Başlatma ve kısayol")

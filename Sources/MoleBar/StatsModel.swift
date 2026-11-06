@@ -34,6 +34,8 @@ final class StatsModel: ObservableObject {
     @Published var diskAlert = false
     /// Son 1 saat, 30 saniyelik örnek (en çok 120 nokta). Yalnızca bellekte tutulur.
     @Published var history: [HistoryPoint] = []
+    /// Menü çubuğu grafiği için son 30 CPU örneği. Her turda bir örnek alınır.
+    @Published private(set) var recentCPU: [Double] = []
 
     let cleanPreview = CleanPreview()
     /// Panel ve ana pencere aynı önbellek modelini paylaşır.
@@ -80,6 +82,7 @@ final class StatsModel: ObservableObject {
         if tick == 30 || tick % 900 == 0 { cleanPreview.startIfDue() }
         let cpuResult = cpu.sample()
         cpuTotal = cpuResult.total
+        recentCPU = MenuBarGraph.push(recentCPU, cpuResult.total, limit: 30)
         cpuPerCore = cpuResult.perCore
         memory = sampleMemory()
         pressure = MemoryPressure.sample()
