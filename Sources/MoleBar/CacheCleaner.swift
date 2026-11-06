@@ -92,6 +92,9 @@ final class CacheCleaner: ObservableObject {
     private func persist() {
         ReclaimStore.save(.cache, bytes: items.reduce(0) { $0 + $1.bytes })
         ReclaimStore.save(.trash, bytes: trashBytes)
+        var sizes = ["Önbellek": items.reduce(0) { $0 + $1.bytes }, "Çöp Kutusu": trashBytes]
+        for container in containers { if let bytes = container.bytes { sizes[container.name] = bytes } }
+        FolderLog.record(sizes)
     }
 
     func toggle(_ item: CacheItem) {

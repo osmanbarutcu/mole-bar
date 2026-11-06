@@ -21,6 +21,8 @@ enum DiskLog {
     }()
 
     static func date(of sample: DiskSample) -> Date? { dayFormat.date(from: sample.day) }
+    static func date(day: String) -> Date? { dayFormat.date(from: day) }
+    static func dayString(_ date: Date) -> String { dayFormat.string(from: date) }
 
     static func load() -> [DiskSample] {
         guard let data = UserDefaults.standard.data(forKey: key) else { return [] }
@@ -41,8 +43,12 @@ enum DiskLog {
 @MainActor
 final class DiskGrowthModel: ObservableObject {
     @Published private(set) var samples: [DiskSample] = []
+    @Published private(set) var growing: [FolderGrowthEntry] = []
 
-    func reload() { samples = Array(DiskLog.load().suffix(30)) }
+    func reload() {
+        samples = Array(DiskLog.load().suffix(30))
+        growing = Array(FolderGrowth.compute(Array(FolderLog.load().suffix(30))).prefix(5))
+    }
 
     /// Son 7 günlük değişim. Ölçüm penceresi 7 günden kısaysa eldeki en eski ölçümle karşılaştırılır.
     var weekDelta: (bytes: Int64, days: Int)? {
@@ -68,6 +74,7 @@ struct DiskGrowthCard: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(delta.bytes > 0 ? Color.orange : Color.green)
                 trend
+                growingList
             } else {
                 Text("Ölçüm birikiyor. MoleBar günde bir kez kullanılan alanı kaydeder. En az iki gün gerekir.")
                     .font(.caption)
@@ -79,6 +86,27 @@ struct DiskGrowthCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
         .onAppear { model.reload() }
+    }
+
+    /// Önbellek sayfası taranınca kaydedilen klasörlerin büyümesi. Veri yoksa hiçbir şey göstermez.
+    @ViewBuilder
+    private var growingList: some View {
+        if !model.growing.isEmpty {
+            Divider().opacity(0.4)
+            Text("En çok büyüyenler").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            ForEach(model.growing) { entry in
+                HStack {
+                    Text(entry.name).font(.caption)
+                    Spacer(minLength: 8)
+                    Text("+\(formatBytes(entry.bytes)) · \(entry.days) gün")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Text("Yalnızca Önbellek sayfasında taranan öğeler izlenir. Ev klasörünün tamamı taranmaz.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
     }
 
     private var trend: some View {
