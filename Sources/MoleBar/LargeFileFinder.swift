@@ -181,7 +181,7 @@ struct LargeFilesPage: View {
                         .glassCard()
                 }
             }
-            .scrollClipDisabled()
+            .shadowSafeScroll()
             Text("Tarama ev klasörünü okur ve hiçbir şey değiştirmez. Çöp ikonu dosyayı Çöp Kutusu'na taşır; kalıcı silmez. Uygulama paketlerinin içi taranmaz.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)

@@ -133,7 +133,7 @@ final class AppUninstaller: ObservableObject {
         return result.sorted { $0.bytes > $1.bytes }
     }
 
-    private nonisolated static func size(of url: URL) -> UInt64 {
+    nonisolated static func size(of url: URL) -> UInt64 {
         let keys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .isDirectoryKey]
         var isDir: ObjCBool = false
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) else { return 0 }

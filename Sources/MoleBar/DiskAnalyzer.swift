@@ -208,7 +208,7 @@ struct AnalyzePage: View {
                         .glassCard()
                 }
             }
-            .scrollClipDisabled()
+            .shadowSafeScroll()
             if let notice = analyzer.notice {
                 Text(notice).font(.caption).foregroundStyle(.secondary)
             }

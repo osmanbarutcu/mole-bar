@@ -10,6 +10,13 @@ func levelColor(_ percent: Double) -> Color {
 }
 
 extension View {
+    /// Cam gölgesi yatayda kırpılmasın, dikeyde liste alttaki öğelerin üstüne taşmasın.
+    func shadowSafeScroll() -> some View {
+        self
+            .scrollClipDisabled()
+            .mask(Rectangle().padding(.horizontal, -24))
+    }
+
     /// macOS 26+: Liquid Glass. Eski sürümler: ince materyal + ince çerçeve.
     @ViewBuilder
     func glassCard(cornerRadius: CGFloat = 18, tint: Color? = nil) -> some View {

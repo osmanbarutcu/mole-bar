@@ -72,14 +72,14 @@ struct PanelView: View {
                         case .disks: disksPage
                         case .processes: processesPage
                         case .tools: toolsPage
-                        case .settings, .analyze, .apps, .large, .duplicates: EmptyView()
+                        case .settings, .analyze, .apps, .large, .duplicates, .caches: EmptyView()
                         }
                     }
                 }
                 .padding(20)
                 .frame(maxWidth: 760)
             }
-            .scrollClipDisabled()
+            .shadowSafeScroll()
         }
     }
 

@@ -6,6 +6,7 @@ enum MainSection: String, CaseIterable, Identifiable {
     case analyze = "Analiz"
     case large = "Büyük dosyalar"
     case duplicates = "Yinelenenler"
+    case caches = "Önbellek"
     case apps = "Uygulamalar"
     case processes = "Süreçler"
     case tools = "Araçlar"
@@ -20,6 +21,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .analyze: return "chart.pie"
         case .large: return "doc.text.magnifyingglass"
         case .duplicates: return "square.on.square"
+        case .caches: return "archivebox"
         case .apps: return "square.stack.3d.up"
         case .processes: return "list.number"
         case .tools: return "wrench.and.screwdriver"
@@ -37,6 +39,7 @@ struct MainWindowView: View {
     @StateObject private var uninstaller = AppUninstaller()
     @StateObject private var largeFinder = LargeFileFinder()
     @StateObject private var duplicateFinder = DuplicateFinder()
+    @StateObject private var cacheCleaner = CacheCleaner()
 
     var body: some View {
         let current = MainSection(rawValue: storedSection) ?? .general
@@ -58,6 +61,8 @@ struct MainWindowView: View {
                     LargeFilesPage(finder: largeFinder)
                 } else if current == .duplicates {
                     DuplicatesPage(finder: duplicateFinder)
+                } else if current == .caches {
+                    CachePage(cleaner: cacheCleaner)
                 } else if current == .apps {
                     UninstallPage(model: uninstaller)
                 } else {

@@ -25,6 +25,7 @@ final class DuplicateFinder: ObservableObject {
     @Published private(set) var inaccessible = 0
     @Published private(set) var finished = false
     @Published var minSizeIndex = 1
+    @Published var includeHidden = false
     @Published var pendingTrash: URL?
     @Published var notice: String?
 
@@ -43,9 +44,10 @@ final class DuplicateFinder: ObservableObject {
         pendingTrash = nil
         isScanning = true
         let minSize = Self.minSizes[minSizeIndex].bytes
+        let hidden = includeHidden
         let cap = maxGroups
         task = Task { [weak self] in
-            for await event in Self.stream(minSize: minSize) {
+            for await event in Self.stream(minSize: minSize, includeHidden: hidden) {
                 if Task.isCancelled { break }
                 guard let self else { return }
                 switch event {
@@ -96,10 +98,10 @@ final class DuplicateFinder: ObservableObject {
         case group(DuplicateGroup)
     }
 
-    private nonisolated static func stream(minSize: UInt64) -> AsyncStream<Event> {
+    private nonisolated static func stream(minSize: UInt64, includeHidden: Bool) -> AsyncStream<Event> {
         AsyncStream { continuation in
             let worker = Task.detached {
-                run(minSize: minSize) { continuation.yield($0) }
+                run(minSize: minSize, includeHidden: includeHidden) { continuation.yield($0) }
                 continuation.finish()
             }
             continuation.onTermination = { _ in worker.cancel() }
@@ -107,9 +109,9 @@ final class DuplicateFinder: ObservableObject {
     }
 
     /// Senkron iş akışı. Async bağlamda NSEnumerator kullanılmaz.
-    private nonisolated static func run(minSize: UInt64, emit: (Event) -> Void) {
+    private nonisolated static func run(minSize: UInt64, includeHidden: Bool, emit: (Event) -> Void) {
         var errors = 0
-        let bySize = collect(minSize: minSize, errors: &errors, emit: emit)
+        let bySize = collect(minSize: minSize, includeHidden: includeHidden, errors: &errors, emit: emit)
         let candidates = bySize.filter { $0.value.count > 1 }
         let total = candidates.values.reduce(0) { $0 + $1.count }
         var done = 0
@@ -138,7 +140,7 @@ final class DuplicateFinder: ObservableObject {
         }
     }
 
-    private nonisolated static func collect(minSize: UInt64, errors: inout Int, emit: (Event) -> Void) -> [UInt64: [URL]] {
+    private nonisolated static func collect(minSize: UInt64, includeHidden: Bool, errors: inout Int, emit: (Event) -> Void) -> [UInt64: [URL]] {
         let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey, .isVolumeKey, .fileSizeKey]
         let home = FileManager.default.homeDirectoryForCurrentUser
         let library = home.appendingPathComponent("Library").path
@@ -146,7 +148,7 @@ final class DuplicateFinder: ObservableObject {
         guard let enumerator = FileManager.default.enumerator(
             at: home,
             includingPropertiesForKeys: keys,
-            options: [.skipsPackageDescendants, .skipsHiddenFiles],
+            options: includeHidden ? [.skipsPackageDescendants] : [.skipsPackageDescendants, .skipsHiddenFiles],
             errorHandler: { _, _ in failed += 1; return true }
         ) else { return [:] }
 
@@ -156,7 +158,10 @@ final class DuplicateFinder: ObservableObject {
             if Task.isCancelled { break }
             let values = try? url.resourceValues(forKeys: Set(keys))
             if values?.isDirectory == true {
-                if url.path == library || values?.isVolume == true { enumerator.skipDescendants() }
+                let skipLibrary = !includeHidden && url.path == library
+                // Çöp Kutusu ve git nesneleri her durumda atlanır.
+                let name = url.lastPathComponent
+                if skipLibrary || values?.isVolume == true || name == ".Trash" || name == ".git" { enumerator.skipDescendants() }
                 continue
             }
             guard values?.isRegularFile == true else { continue }
@@ -216,6 +221,15 @@ struct DuplicatesPage: View {
                     .glassProminentButton()
                     .disabled(finder.isScanning)
             }
+            Toggle("Gizli klasörleri ve Library'yi de tara", isOn: $finder.includeHidden)
+                .toggleStyle(RightSwitchStyle())
+                .font(.subheadline)
+                .disabled(finder.isScanning)
+            if finder.includeHidden {
+                Text("Dikkat: uygulama verisi ve önbellek kopyaları bilerek oluşur. Bir kopyayı taşımak uygulamayı bozabilir. Yalnızca ne olduğunu bildiğiniz dosyaları taşıyın.")
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+            }
             if finder.finished, finder.inaccessible > 0 {
                 Text("\(finder.inaccessible) öğeye erişilemedi (izin yok). Sonuçlar eksik olabilir.")
                     .font(.caption2)
@@ -230,8 +244,8 @@ struct DuplicatesPage: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .scrollClipDisabled()
-            Text("Tarama ev klasörünü okur, hiçbir şey değiştirmez. Gizli klasörler ve ~/Library taranmaz. APFS klonları gerçekte yer kaplamayabilir. Her gruptaki son kopya taşınamaz.")
+            .shadowSafeScroll()
+            Text("Tarama ev klasörünü okur, hiçbir şey değiştirmez. Gizli klasörler ve ~/Library varsayılan olarak taranmaz. APFS klonları gerçekte yer kaplamayabilir. Her gruptaki son kopya taşınamaz.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }

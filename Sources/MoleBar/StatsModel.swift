@@ -108,7 +108,8 @@ final class StatsModel: ObservableObject {
 }
 
 func formatBytes(_ bytes: UInt64) -> String {
-    ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .binary)
+    if bytes == 0 { return "0 KB" }
+    return ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .binary)
 }
 
 func formatRate(_ bytesPerSecond: Double) -> String {
