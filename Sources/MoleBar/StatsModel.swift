@@ -70,6 +70,7 @@ final class StatsModel: ObservableObject {
         diskRead = io.read
         diskWrite = io.write
         evaluateDiskAlert()
+        if tick % 15 == 1 { DiskLog.record(disk) }
         if tick % 15 == 1 {
             history.append(HistoryPoint(cpu: cpuTotal, memory: memory.percent))
             if history.count > 120 { history.removeFirst(history.count - 120) }
