@@ -32,5 +32,14 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-codesign --force --sign - "$APP"
+# Sabit imza, Tam Disk Erişimi ve Finder izninin kurulumlar arasında kalmasını sağlar.
+# SIGN_IDENTITY ile geçersiz kılınır. Sertifika yoksa ad-hoc imza kullanılır.
+IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning | sed -n 's/.*"\(Apple Development: .*\)"/\1/p' | head -1)}"
+if [ -n "$IDENTITY" ]; then
+  echo "İmza: $IDENTITY"
+  codesign --force --sign "$IDENTITY" "$APP"
+else
+  echo "Sertifika bulunamadı. Ad-hoc imza kullanılıyor (izinler her kurulumda sıfırlanabilir)."
+  codesign --force --sign - "$APP"
+fi
 echo "Hazır: $(pwd)/$APP"
