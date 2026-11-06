@@ -73,6 +73,12 @@ struct PortScanTests {
         #expect(PortScan.parse("bozuk\nçıktı\nn:::").isEmpty)
     }
 
+    @Test func detailTextHasNoThousandsSeparator() {
+        let port = ListeningPort(pid: 25746, process: "OrbStack Helper", address: "*", port: 8001, scope: .all)
+        #expect(port.detail == "PID 25746 · *:8001")
+        #expect(!port.detail.contains("."))
+    }
+
     @Test func exposedCountOnlyCountsAllInterfaces() {
         #expect(PortScan.exposedCount(PortScan.parse(sample)) == 1)
     }

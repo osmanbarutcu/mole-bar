@@ -21,6 +21,10 @@ struct ListeningPort: Identifiable, Equatable {
     let port: Int
     let scope: Scope
     var id: String { "\(pid)/\(port)/\(scope.rawValue)" }
+
+    /// Satır altı metni. PID ve port kimliktir, binlik ayraç almaz.
+    /// `Text("\(sayı)")` tamsayıyı yerel ayara göre biçimler (8001 → 8.001). Bu yüzden düz String kurulur.
+    var detail: String { "PID \(pid) · \(address):\(port)" }
 }
 
 /// Dinleyen TCP portlarını listeler. Yalnızca `lsof` çıktısını okur. MoleBar hiçbir süreci kapatmaz.
@@ -130,7 +134,7 @@ struct PortScanCard: View {
                     HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 0) {
                             Text(port.process.isEmpty ? "bilinmeyen" : port.process).font(.caption).lineLimit(1)
-                            Text("PID \(port.pid) · \(port.address):\(port.port)").font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+                            Text(verbatim: port.detail).font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                         }
                         Spacer(minLength: 6)
                         Text(port.scope.label)
