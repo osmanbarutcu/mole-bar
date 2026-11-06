@@ -7,6 +7,7 @@ struct DiskEntry: Identifiable {
     var bytes: UInt64 = 0
     var items = 0
     var sized = false
+    var isPackage = false
     var id: URL { url }
     var name: String { url.lastPathComponent }
 }
@@ -63,14 +64,26 @@ final class DiskAnalyzer: ObservableObject {
 
     func rescan() { scan(current) }
 
+    /// Ev klasöründe yasak yollar. Posta, mesaj, anahtar zinciri, iCloud ve kimlik bilgileri taşınamaz.
+    private nonisolated static let protectedHomePrefixes = [
+        "Library/Mail", "Library/Messages", "Library/Keychains", "Library/Mobile Documents",
+        "Library/CloudStorage", "Library/Safari", "Library/Accounts", "Library/Calendars",
+        "Library/Contacts", "Library/Photos", "Library/Suggestions", "Library/Biome",
+        "Library/Group Containers", "Library/Application Support/AddressBook",
+        ".ssh", ".gnupg", ".aws", ".kube", ".password-store"
+    ]
+
     /// Çöp Kutusu'na taşıma yalnızca ev klasörünün ikinci düzeyinden itibaren ve harici disklerde açıktır.
-    /// Ev klasörünün doğrudan alt öğeleri (Library, Documents, Desktop...) ve sistem yolları korunur.
+    /// Ev klasörünün doğrudan alt öğeleri, yasak yollar ve medya kütüphaneleri (.photoslibrary vb.) korunur.
     nonisolated static func canTrash(_ url: URL) -> Bool {
         let path = url.standardizedFileURL.path
         let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL.path
+        let mediaLibraries = [".photoslibrary", ".musiclibrary", ".tvlibrary", ".photolibrary"]
+        if mediaLibraries.contains(where: { path.lowercased().contains($0) }) { return false }
         if path.hasPrefix(home + "/") {
-            let depth = path.dropFirst(home.count + 1).split(separator: "/").count
-            return depth >= 2
+            let relative = String(path.dropFirst(home.count + 1))
+            if protectedHomePrefixes.contains(where: { relative == $0 || relative.hasPrefix($0 + "/") }) { return false }
+            return relative.split(separator: "/").count >= 2
         }
         if path.hasPrefix("/Volumes/") {
             return path.dropFirst("/Volumes/".count).split(separator: "/").count >= 2
@@ -136,18 +149,21 @@ final class DiskAnalyzer: ObservableObject {
     }
 
     private nonisolated static func children(of url: URL) throws -> [DiskEntry] {
-        let keys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey]
+        let keys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey, .isPackageKey]
         let urls = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: keys, options: [])
         return urls.map { child in
             let values = try? child.resourceValues(forKeys: Set(keys))
             let isLink = values?.isSymbolicLink ?? false
-            return DiskEntry(url: child, isDirectory: !isLink && (values?.isDirectory ?? false))
+            let isPackage = !isLink && (values?.isPackage ?? false)
+            var entry = DiskEntry(url: child, isDirectory: !isLink && !isPackage && (values?.isDirectory ?? false))
+            entry.isPackage = isPackage
+            return entry
         }
     }
 
     private nonisolated static func measure(_ entry: DiskEntry) -> Measured {
         let sizeKeys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .isDirectoryKey, .isVolumeKey]
-        if !entry.isDirectory {
+        if !entry.isDirectory && !entry.isPackage {
             let size = (try? entry.url.resourceValues(forKeys: [.totalFileAllocatedSizeKey]))?.totalFileAllocatedSize ?? 0
             return Measured(url: entry.url, bytes: UInt64(size), items: 1, errors: 0)
         }
@@ -303,7 +319,7 @@ struct AnalyzePage: View {
     private func row(_ entry: DiskEntry) -> some View {
         let share = analyzer.largestBytes == 0 ? 0 : Double(entry.bytes) / Double(analyzer.largestBytes) * 100
         return HStack(spacing: 10) {
-            Image(systemName: entry.isDirectory ? "folder.fill" : "doc")
+            Image(systemName: entry.isPackage ? "shippingbox" : (entry.isDirectory ? "folder.fill" : "doc"))
                 .foregroundStyle(entry.isDirectory ? Color.accentColor : Color.secondary)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 4) {
