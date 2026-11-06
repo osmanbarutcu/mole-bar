@@ -23,6 +23,7 @@ final class CacheCleaner: ObservableObject {
     @Published private(set) var items: [CacheItem] = []
     @Published private(set) var isScanning = false
     @Published private(set) var trashBytes: UInt64 = 0
+    @Published private(set) var hasScanned = false
     @Published var selection = Set<URL>()
     @Published var confirmingMove = false
     @Published var confirmingEmpty = false
@@ -57,7 +58,10 @@ final class CacheCleaner: ObservableObject {
                 self.items.sort { $0.bytes > $1.bytes }
             }
             self?.isScanning = false
-            if !Task.isCancelled { self?.persist() }
+            if !Task.isCancelled {
+                self?.hasScanned = true
+                self?.persist()
+            }
         }
     }
 

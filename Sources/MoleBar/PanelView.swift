@@ -275,6 +275,7 @@ struct PanelView: View {
                 UserDefaults.standard.set(section.rawValue, forKey: "mainSection")
                 NotificationCenter.default.post(name: .molebarOpenMain, object: nil)
             }
+            QuickCleanCard(cleaner: stats.cacheCleaner) { openMain(.caches) }
             Button { openPreview() } label: {
                 Label("Mole temizlik önizlemesi", systemImage: "sparkles")
                     .frame(maxWidth: .infinity)

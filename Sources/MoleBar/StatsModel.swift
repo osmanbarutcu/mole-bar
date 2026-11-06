@@ -24,6 +24,8 @@ final class StatsModel: ObservableObject {
     @Published var history: [HistoryPoint] = []
 
     let cleanPreview = CleanPreview()
+    /// Panel ve ana pencere aynı önbellek modelini paylaşır.
+    let cacheCleaner = CacheCleaner()
     private var procSampler = ProcessSampler()
     private var healthLoading = false
     private var diskNotified = false

@@ -39,7 +39,6 @@ struct MainWindowView: View {
     @StateObject private var uninstaller = AppUninstaller()
     @StateObject private var largeFinder = LargeFileFinder()
     @StateObject private var duplicateFinder = DuplicateFinder()
-    @StateObject private var cacheCleaner = CacheCleaner()
 
     var body: some View {
         // Geliştirme: MOLEBAR_PANEL_PREVIEW=1 ile pencere menü çubuğu panelini çizer. Ekran görüntüsü almak içindir.
@@ -72,7 +71,7 @@ struct MainWindowView: View {
                 } else if current == .duplicates {
                     DuplicatesPage(finder: duplicateFinder)
                 } else if current == .caches {
-                    CachePage(cleaner: cacheCleaner)
+                    CachePage(cleaner: stats.cacheCleaner)
                 } else if current == .apps {
                     UninstallPage(model: uninstaller)
                 } else {
