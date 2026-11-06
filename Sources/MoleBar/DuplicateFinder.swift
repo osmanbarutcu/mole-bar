@@ -28,6 +28,11 @@ final class DuplicateFinder: ObservableObject {
     @Published var includeHidden = false
     @Published var pendingTrash: URL?
     @Published var notice: String?
+    /// Toplu kural: true ise her grupta en eski kopya kalır, false ise en yeni kopya kalır.
+    @Published var keepOldest = true
+    @Published var confirmingBulk = false
+    /// Son tarama gizli klasörleri ve Library'yi kapsadıysa toplu işlem kapalıdır.
+    @Published private(set) var scannedHidden = false
 
     private var task: Task<Void, Never>?
     private let maxGroups = 150
@@ -42,6 +47,8 @@ final class DuplicateFinder: ObservableObject {
         inaccessible = 0
         finished = false
         pendingTrash = nil
+        confirmingBulk = false
+        scannedHidden = includeHidden
         isScanning = true
         let minSize = Self.minSizes[minSizeIndex].bytes
         let hidden = includeHidden
@@ -91,6 +98,41 @@ final class DuplicateFinder: ObservableObject {
         } catch {
             notice = "\(url.lastPathComponent) taşınamadı: \(error.localizedDescription)"
         }
+    }
+
+    /// Toplu kuralın taşıyacağı kopyalar. Her grupta tek kopya kalır. Korumalı yollar taşınmaz.
+    func bulkPlan() -> [(url: URL, bytes: UInt64, groupID: String)] {
+        var plan: [(url: URL, bytes: UInt64, groupID: String)] = []
+        for group in groups {
+            let dated = group.files.map { url in
+                (url, (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantFuture)
+            }
+            guard dated.count > 1,
+                  let keep = (keepOldest ? dated.min { $0.1 < $1.1 } : dated.max { $0.1 < $1.1 })?.0 else { continue }
+            for (url, _) in dated where url != keep && TrashGuard.canTrash(url) {
+                plan.append((url, group.size, group.id))
+            }
+        }
+        return plan
+    }
+
+    func applyBulk() {
+        confirmingBulk = false
+        var moved: UInt64 = 0
+        var failed = 0
+        for item in bulkPlan() {
+            guard let index = groups.firstIndex(where: { $0.id == item.groupID }), groups[index].files.count > 1 else { continue }
+            do {
+                try TrashGuard.trash(item.url, bytes: item.bytes, source: "Yinelenenler (toplu)")
+                groups[index].files.removeAll { $0 == item.url }
+                if groups[index].files.count < 2 { groups.remove(at: index) }
+                moved += item.bytes
+            } catch { failed += 1 }
+        }
+        ReclaimStore.save(.duplicates, bytes: totalWasted)
+        notice = failed == 0
+            ? "\(formatBytes(moved)) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
+            : "\(formatBytes(moved)) taşındı. \(failed) dosya taşınamadı."
     }
 
     // MARK: Tarama
@@ -240,6 +282,7 @@ struct DuplicatesPage: View {
             if let notice = finder.notice {
                 Text(notice).font(.caption).foregroundStyle(.secondary)
             }
+            if !finder.groups.isEmpty, !finder.isScanning { bulkBar }
             ScrollView {
                 GlassGroup(spacing: 12) {
                     VStack(alignment: .leading, spacing: 12) { content }
@@ -252,6 +295,36 @@ struct DuplicatesPage: View {
                 .foregroundStyle(.secondary)
         }
         .padding(20)
+    }
+
+    @ViewBuilder
+    private var bulkBar: some View {
+        let plan = finder.bulkPlan()
+        let bytes = plan.reduce(UInt64(0)) { $0 + $1.bytes }
+        HStack(spacing: 10) {
+            Text("Her grupta koru").font(.caption).foregroundStyle(.secondary)
+            Picker("Koru", selection: $finder.keepOldest) {
+                Text("En eski").tag(true)
+                Text("En yeni").tag(false)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 150)
+            .onChange(of: finder.keepOldest) { _, _ in finder.confirmingBulk = false }
+            Spacer(minLength: 8)
+            if finder.scannedHidden {
+                Text("Gizli klasör taramasında toplu işlem kapalı.").font(.caption2).foregroundStyle(.orange)
+            } else if finder.confirmingBulk {
+                Text("\(plan.count) dosya · \(formatBytes(bytes)) taşınacak").font(.caption)
+                Button("Taşı") { finder.applyBulk() }.glassProminentButton().controlSize(.small)
+                Button("Vazgeç") { finder.confirmingBulk = false }.glassButton().controlSize(.small)
+            } else {
+                Button { finder.confirmingBulk = true } label: { Label("Kalanları taşı", systemImage: "trash") }
+                    .glassButton()
+                    .controlSize(.small)
+                    .disabled(plan.isEmpty)
+            }
+        }
     }
 
     private var progressText: String {
