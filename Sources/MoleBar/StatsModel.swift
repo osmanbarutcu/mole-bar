@@ -19,6 +19,7 @@ final class StatsModel: ObservableObject {
     @Published var volumes: [VolumeInfo] = []
     @Published var processGroups: [ProcessGroup] = []
     @Published var health: MoleHealth?
+    @Published var systemInfo = SystemInfo.sample()
     /// Süreç başına ağ hızı (bayt/sn). Yalnızca Süreçler sayfası "Ağ" sıralamasındayken güncellenir.
     @Published var netByPid: [Int32: Double] = [:]
     private var netLoading = false
@@ -61,7 +62,7 @@ final class StatsModel: ObservableObject {
         tick += 1
         if tick % 3 == 1 { volumes = sampleVolumes() }
         if tick % 2 == 0 { processGroups = procSampler.sample() }
-        if tick % 15 == 1 { refreshHealth() }
+        if tick % 15 == 1 { refreshHealth(); systemInfo = SystemInfo.sample() }
         if tick % 3 == 0, UserDefaults.standard.string(forKey: "procSort") == "net" { refreshNet() }
         if tick == 30 || tick % 900 == 0 { cleanPreview.startIfDue() }
         let cpuResult = cpu.sample()
