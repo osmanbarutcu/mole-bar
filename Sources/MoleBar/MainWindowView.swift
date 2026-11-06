@@ -71,6 +71,7 @@ struct MainWindowView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(Color(nsColor: .controlBackgroundColor))
         }
         .navigationTitle(current.rawValue)
         .navigationSubtitle("MoleBar")
