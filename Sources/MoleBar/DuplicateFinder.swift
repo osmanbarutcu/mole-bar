@@ -83,7 +83,7 @@ final class DuplicateFinder: ObservableObject {
             return
         }
         do {
-            try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+            try TrashGuard.trash(url, bytes: groups[index].size, source: "Yinelenenler")
             groups[index].files.removeAll { $0 == url }
             if groups[index].files.count < 2 { groups.remove(at: index) }
             ReclaimStore.save(.duplicates, bytes: totalWasted)

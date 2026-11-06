@@ -49,3 +49,45 @@ enum FileSizer {
         return total
     }
 }
+
+/// Çöp Kutusu'na taşınan bir öğenin kaydı.
+struct MoveRecord: Codable, Identifiable {
+    let id: UUID
+    let date: Date
+    let name: String
+    let originalPath: String
+    let trashedPath: String?
+    let bytes: UInt64
+    let source: String
+}
+
+/// Son taşımaların kalıcı listesi. Yalnızca UserDefaults'a yazar, dosyalara dokunmaz.
+enum MoveLog {
+    private static let key = "moveLog"
+    private static let limit = 50
+
+    static func load() -> [MoveRecord] {
+        guard let data = UserDefaults.standard.data(forKey: key) else { return [] }
+        return (try? JSONDecoder().decode([MoveRecord].self, from: data)) ?? []
+    }
+
+    static func clear() { UserDefaults.standard.removeObject(forKey: key) }
+
+    static func add(_ record: MoveRecord) {
+        let all = Array(([record] + load()).prefix(limit))
+        if let data = try? JSONEncoder().encode(all) { UserDefaults.standard.set(data, forKey: key) }
+    }
+}
+
+extension TrashGuard {
+    /// Öğeyi Çöp Kutusu'na taşır ve geçmişe yazar. Tüm sayfalar bu işlevi kullanır.
+    static func trash(_ url: URL, bytes: UInt64 = 0, source: String) throws {
+        var result: NSURL?
+        try FileManager.default.trashItem(at: url, resultingItemURL: &result)
+        MoveLog.add(MoveRecord(
+            id: UUID(), date: Date(), name: url.lastPathComponent,
+            originalPath: url.path, trashedPath: (result as URL?)?.path,
+            bytes: bytes, source: source
+        ))
+    }
+}

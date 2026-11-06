@@ -614,7 +614,9 @@ struct PanelView: View {
                             .controlSize(.small)
                         Stepper("Eşik: %\(diskAlertThreshold)", value: $diskAlertThreshold, in: 70...98)
                             .disabled(!diskAlertEnabled)
+                            .controlSize(.small)
                         Stepper(cacheAlertGB == 0 ? "Önbellek uyarısı: kapalı" : "Önbellek uyarısı: \(cacheAlertGB) GB", value: $cacheAlertGB, in: 0...50)
+                            .controlSize(.small)
                         Text("Haftalık tarama önbellek toplamı eşiği aşarsa ayrı bildirim gönderir. 0 kapatır.")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
@@ -623,6 +625,8 @@ struct PanelView: View {
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .glassCard()
+
+                    MoveHistoryCard()
                 }
             }
         }

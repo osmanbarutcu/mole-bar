@@ -102,7 +102,7 @@ final class LargeFileFinder: ObservableObject {
             return
         }
         do {
-            try FileManager.default.trashItem(at: file.url, resultingItemURL: nil)
+            try TrashGuard.trash(file.url, bytes: file.bytes, source: "Büyük dosyalar")
             files.removeAll { $0.url == file.url }
             ReclaimStore.save(.large, bytes: totalBytes)
             notice = "\(file.name) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."

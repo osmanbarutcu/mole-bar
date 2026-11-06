@@ -86,7 +86,7 @@ final class CacheCleaner: ObservableObject {
         for item in items where selection.contains(item.url) {
             guard TrashGuard.canTrash(item.url) else { failed += 1; continue }
             do {
-                try FileManager.default.trashItem(at: item.url, resultingItemURL: nil)
+                try TrashGuard.trash(item.url, bytes: item.bytes, source: "Önbellek")
                 moved += item.bytes
             } catch { failed += 1 }
         }

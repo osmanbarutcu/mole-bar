@@ -80,7 +80,7 @@ final class AppUninstaller: ObservableObject {
         confirming = false
         var failed: [String] = []
         for url in [app.url] + leftovers.map(\.url) {
-            do { try FileManager.default.trashItem(at: url, resultingItemURL: nil) }
+            do { try TrashGuard.trash(url, bytes: url == app.url ? app.bytes : (leftovers.first { $0.url == url }?.bytes ?? 0), source: "Uygulamalar") }
             catch { failed.append(url.lastPathComponent) }
         }
         if failed.isEmpty {

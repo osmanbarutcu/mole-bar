@@ -67,7 +67,7 @@ final class DiskAnalyzer: ObservableObject {
     /// Öğeyi Çöp Kutusu'na taşır. Geri alınabilir. Başarılıysa listeden çıkarır.
     func moveToTrash(_ entry: DiskEntry) throws {
         guard TrashGuard.canTrash(entry.url) else { throw CocoaError(.fileWriteNoPermission) }
-        try FileManager.default.trashItem(at: entry.url, resultingItemURL: nil)
+        try TrashGuard.trash(entry.url, bytes: entry.bytes, source: "Analiz")
         entries.removeAll { $0.url == entry.url }
     }
 
