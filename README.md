@@ -28,9 +28,10 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 Derlemeden kurmak için Homebrew kullanın:
 
 1. Depoyu ekleyin: `brew tap osmanbarutcu/mole-bar https://github.com/osmanbarutcu/mole-bar`
-2. Kurun: `brew install --cask molebar`
+2. Depoya güvenin: `brew trust osmanbarutcu/mole-bar`. Homebrew 7 bu adım olmadan cask'ı yüklemez.
+3. Kurun: `brew install --cask osmanbarutcu/mole-bar/molebar`
 
-Uygulama ad-hoc imzalıdır ve notarize edilmemiştir. İlk açılışta sağ tık > Aç gerekir. Cask kurulumu bu makinede doğrulanmadı.
+Uygulama ad-hoc imzalıdır ve notarize edilmemiştir. İlk açılışta sağ tık > Aç gerekir. Cask kurulumu doğrulanmadı. `brew tap` çalıştı. `brew trust` ve kurulum çalıştırılmadı.
 
 ## Kullanım
 

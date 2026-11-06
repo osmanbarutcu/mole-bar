@@ -28,9 +28,10 @@ The script builds the app, copies it to `/Applications/MoleBar.app` and opens it
 To install without building, use Homebrew:
 
 1. Add the repository: `brew tap osmanbarutcu/mole-bar https://github.com/osmanbarutcu/mole-bar`
-2. Install: `brew install --cask molebar`
+2. Trust the tap: `brew trust osmanbarutcu/mole-bar`. Homebrew 7 refuses to load the cask without this step.
+3. Install: `brew install --cask osmanbarutcu/mole-bar/molebar`
 
-The cask install is not verified on this machine.
+The cask install is not verified. `brew tap` worked. `brew trust` and the install were not run.
 
 A prebuilt zip is on the Releases page. It is ad-hoc signed and not notarized. On first launch, right-click the app and choose Open.
 
