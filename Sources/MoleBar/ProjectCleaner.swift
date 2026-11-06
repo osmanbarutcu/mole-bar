@@ -80,6 +80,23 @@ enum ProjectFilter {
             .sorted { $0.bytes > $1.bytes }
     }
 
+    /// Boşlukla ayrılmış her sözcük metinde geçmeli. Büyük/küçük harf ve aksan duyarsızdır. Boş sorgu her şeyle eşleşir.
+    static func matches(_ haystack: String, query: String) -> Bool {
+        let text = fold(haystack)
+        return query.split(whereSeparator: \.isWhitespace).allSatisfy { text.contains(fold(String($0))) }
+    }
+
+    /// Harf büyüklüğünü ve aksanı kaldırır. Noktasız ı aksan sayılmaz, elle i yapılır.
+    private static func fold(_ text: String) -> String {
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil).replacingOccurrences(of: "ı", with: "i")
+    }
+
+    /// Proje adı, yol ve tür üzerinde arar.
+    static func search(_ items: [ProjectArtifact], query: String) -> [ProjectArtifact] {
+        guard !query.trimmingCharacters(in: .whitespaces).isEmpty else { return items }
+        return items.filter { matches("\($0.project) \($0.kind) \($0.url.path)", query: query) }
+    }
+
     /// Öğesi olmayan diskler de listelenir. Böylece taranan her disk seçicide görünür.
     static func diskNames(_ items: [ProjectArtifact], scanned: [String] = []) -> [String] {
         Set(items.map(\.disk)).union(scanned).sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
@@ -111,10 +128,51 @@ final class ProjectCleaner: ObservableObject {
     @Published var selected = Set<URL>()
     @Published var confirming = false
     @Published var notice: String?
+    @Published var query = ""
+    @Published private(set) var projectSizes: [URL: UInt64] = [:]
+    private var sizing = Set<URL>()
     private var started = false
 
+    /// Arama doluyken yaş süzgeci uygulanmaz. Aktif bir projeyi aramak mümkün olmalı.
+    var isSearching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
+
     var visible: [ProjectArtifact] {
-        ProjectFilter.apply(items, disk: diskFilter, minDays: Self.ageOptions[ageIndex].days)
+        let minDays = isSearching ? 0 : Self.ageOptions[ageIndex].days
+        return ProjectFilter.search(ProjectFilter.apply(items, disk: diskFilter, minDays: minDays), query: query)
+    }
+
+    struct MatchedProject: Identifiable {
+        let dir: URL
+        let artifactBytes: UInt64
+        var id: URL { dir }
+        var name: String { dir.lastPathComponent }
+    }
+
+    /// Aramayla eşleşen proje klasörleri ve her birindeki çıktı toplamı. Arama boşsa liste boştur.
+    var matchedProjects: [MatchedProject] {
+        guard isSearching else { return [] }
+        var bytes: [URL: UInt64] = [:]
+        for item in visible { bytes[item.url.deletingLastPathComponent(), default: 0] += item.bytes }
+        return bytes.map { MatchedProject(dir: $0.key, artifactBytes: $0.value) }.sorted { $0.artifactBytes > $1.artifactBytes }
+    }
+
+    /// Docker eşleştirmesinde aday olarak kullanılan proje adları.
+    var projectNames: [String] { Array(Set(items.map(\.project))) }
+
+    /// En çok bu kadar proje klasörünün toplam boyutu ölçülür. Büyük klasörde tarama uzun sürer.
+    static let maxSizedProjects = 6
+
+    /// Eşleşen proje klasörlerinin toplam boyutunu arka planda ölçer. Aynı klasör bir kez ölçülür.
+    func sizeMatchedProjects() {
+        for project in matchedProjects.prefix(Self.maxSizedProjects) where projectSizes[project.dir] == nil && !sizing.contains(project.dir) {
+            let dir = project.dir
+            sizing.insert(dir)
+            Task {
+                let bytes = await Task.detached { FileSizer.size(of: dir) }.value
+                projectSizes[dir] = bytes
+                sizing.remove(dir)
+            }
+        }
     }
     var diskNames: [String] { ProjectFilter.diskNames(items, scanned: scannedDisks) }
     /// Yaş süzgecine uyan öğelerin disk bazında toplamı. Disk seçici etiketinde görünür.
@@ -131,6 +189,7 @@ final class ProjectCleaner: ObservableObject {
         started = true
         isScanning = true
         items = []
+        projectSizes = [:]
         selected = []
         confirming = false
         Task {
@@ -216,15 +275,22 @@ struct ProjectsPage: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 .frame(width: 300)
+                .disabled(cleaner.isSearching)
+                if cleaner.isSearching { Text("Arama yaş süzgecini yok sayar.").font(.caption2).foregroundStyle(.secondary) }
             }
+            searchField
             if cleaner.diskNames.count > 1 { diskPicker }
             if let notice = cleaner.notice { Text(notice).font(.caption).foregroundStyle(.secondary) }
             ScrollView {
                 GlassGroup(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 0) { content }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .glassCard()
+                    VStack(alignment: .leading, spacing: 14) {
+                        if cleaner.isSearching && !cleaner.matchedProjects.isEmpty { matchedCard }
+                        DockerProjectsCard(query: cleaner.query, candidates: cleaner.projectNames)
+                        VStack(alignment: .leading, spacing: 0) { content }
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .glassCard()
+                    }
                 }
             }
             .shadowSafeScroll()
@@ -232,6 +298,64 @@ struct ProjectsPage: View {
         }
         .padding(24)
         .onAppear { cleaner.scanIfNeeded() }
+        .onChange(of: cleaner.query) { cleaner.sizeMatchedProjects() }
+        .onChange(of: cleaner.items.count) { cleaner.sizeMatchedProjects() }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+            TextField("Proje ara (örn. mia-erp)", text: $cleaner.query)
+                .textFieldStyle(.plain)
+            if cleaner.isSearching {
+                Button { cleaner.query = "" } label: { Image(systemName: "xmark.circle.fill") }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .help("Aramayı temizle")
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .frame(maxWidth: 420)
+        .glassCard()
+    }
+
+    /// Aramayla eşleşen projelerin klasör toplamı ve içindeki çıktılar. Klasör toplamı arka planda ölçülür.
+    private var matchedCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            CardHeader(symbol: "folder", title: "Eşleşen projeler", trailing: "\(cleaner.matchedProjects.count) proje")
+            ForEach(Array(cleaner.matchedProjects.enumerated()), id: \.element.id) { index, project in
+                HStack(alignment: .firstTextBaseline) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(project.name).font(.subheadline.weight(.medium))
+                        Text(project.dir.path.replacingOccurrences(of: NSHomeDirectory(), with: "~"))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.head)
+                    }
+                    Spacer(minLength: 8)
+                    VStack(alignment: .trailing, spacing: 0) {
+                        if let total = cleaner.projectSizes[project.dir] {
+                            Text(formatBytes(total)).font(.subheadline.monospacedDigit())
+                            Text("klasör toplamı").font(.caption2).foregroundStyle(.secondary)
+                        } else if index < ProjectCleaner.maxSizedProjects {
+                            ProgressView().controlSize(.mini)
+                        } else {
+                            Text("ölçülmedi").font(.caption2).foregroundStyle(.secondary)
+                        }
+                        Text("çıktılar \(formatBytes(project.artifactBytes))").font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            Text("Klasör toplamı projenin tüm dosyalarını sayar. Yalnızca çıktısı (node_modules, vendor vb.) olan projeler bulunur. En çok \(ProjectCleaner.maxSizedProjects) proje ölçülür.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
     }
 
     /// Birden fazla disk varsa hangisini listeleyeceğinizi seçersiniz. Etiketlerde yaş süzgecine uyan toplam görünür.
@@ -253,7 +377,7 @@ struct ProjectsPage: View {
     @ViewBuilder
     private var content: some View {
         if cleaner.visible.isEmpty {
-            Text(cleaner.isScanning ? "Taranıyor..." : "Bu süreden eski proje çıktısı yok.")
+            Text(cleaner.isScanning ? "Taranıyor..." : (cleaner.isSearching ? "Aramayla eşleşen proje çıktısı yok." : "Bu süreden eski proje çıktısı yok."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {

@@ -183,10 +183,14 @@ final class CacheCleaner: ObservableObject {
     }
 
     /// `docker system df` çıktısını okur. Docker kapalıysa veya kurulu değilse boş döner. En çok 8 saniye bekler.
-    nonisolated static func dockerUsage() -> [DockerRow] {
+    nonisolated static func dockerExecutable() -> String? {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         let candidates = ["/usr/local/bin/docker", "/opt/homebrew/bin/docker", "\(home)/.orbstack/bin/docker"]
-        guard let path = candidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) else { return [] }
+        return candidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) })
+    }
+
+    nonisolated static func dockerUsage() -> [DockerRow] {
+        guard let path = dockerExecutable() else { return [] }
         let process = Process()
         process.executableURL = URL(fileURLWithPath: path)
         process.arguments = ["system", "df", "--format", "{{json .}}"]
