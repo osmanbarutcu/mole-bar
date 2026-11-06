@@ -13,6 +13,8 @@ struct ContainerData: Identifiable {
     let url: URL
     /// nil ise boyut okunamadı (izin yok).
     let bytes: UInt64?
+    /// Verinin gerçekte durduğu diskin adı. nil ise ana disk sayılır.
+    var disk: String? = nil
     var id: URL { url }
 }
 
@@ -166,10 +168,10 @@ final class CacheCleaner: ObservableObject {
             let image = url.appendingPathComponent("data/data.img.raw")
             if url.path.contains("Group Containers") {
                 let size = (try? image.resourceValues(forKeys: [.totalFileAllocatedSizeKey]))?.totalFileAllocatedSize
-                return ContainerData(name: label, url: url, bytes: size.map { UInt64($0) })
+                return ContainerData(name: label, url: url, bytes: size.map { UInt64($0) }, disk: DiskExplainer.volumeName(of: url))
             }
             let bytes = FileSizer.size(of: url)
-            return bytes >= 1 << 20 ? ContainerData(name: label, url: url, bytes: bytes) : nil
+            return bytes >= 1 << 20 ? ContainerData(name: label, url: url, bytes: bytes, disk: DiskExplainer.volumeName(of: url)) : nil
         }
         return (sized + mailData(home: home) + DeveloperData.displayOnlyEntries(home: home)).sorted { ($0.bytes ?? 0) > ($1.bytes ?? 0) }
     }

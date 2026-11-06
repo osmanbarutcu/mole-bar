@@ -15,6 +15,30 @@ struct DiskExplainerTests {
         #expect(entries.map(\.name) == ["OrbStack", "Spotlight dizini", "Proje çıktıları", "Mail", "Uygulama önbelleği"])
     }
 
+    @Test("kapsayıcı başka bir diskteyse o diskin grubuna yazılır, ana diske eklenmez")
+    func containerOnAnotherDisk() {
+        let entries = DiskExplainer.entries(
+            containers: [(name: "OrbStack", bytes: 42 * gb, disk: "brtc-disk"), (name: "Mail", bytes: 2 * gb, disk: nil)],
+            cacheBytes: 0, trashBytes: 0, projectsByDisk: [:], bootDisk: boot)
+        #expect(entries.first { $0.name == "OrbStack" }?.disk == "brtc-disk")
+        #expect(entries.first { $0.name == "Mail" }?.disk == boot)
+        let groups = DiskExplainer.grouped(entries, bootDisk: boot)
+        #expect(groups.first?.disk == boot)
+        #expect(groups.first?.total == 2 * gb)
+        #expect(groups.last?.disk == "brtc-disk")
+        #expect(groups.last?.total == 42 * gb)
+    }
+
+    @Test("sembolik bağ çözülür ve gerçek yolun diski bulunur")
+    func volumeNameFollowsSymbolicLinks() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("molebar-vol-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let link = directory.appendingPathComponent("bag")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: URL(fileURLWithPath: "/"))
+        #expect(DiskExplainer.volumeName(of: link) == ProjectFilter.bootDiskName())
+    }
+
     @Test("100 MB altı ve okunamayan öğeler listelenmez")
     func filtersSmallAndUnknown() {
         let entries = DiskExplainer.entries(

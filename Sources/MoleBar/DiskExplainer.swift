@@ -59,13 +59,27 @@ enum DiskExplainer {
         "Mail": "Mail'de iletileri seçin, İleti menüsünden İlişikleri Sil'i seçin. Ek, iletiden kalıcı çıkar."
     ]
 
-    /// Kapsayıcı, önbellek ve Çöp Kutusu ev klasöründedir, yani ana diskte. Proje çıktısı her diskte ayrı girdidir.
-    /// `cacheBytes` negatifse taranmadı demektir (ReclaimStore varsayılanı -1).
+    /// Yolun gerçek diskinin adı. Sembolik bağ önce çözülür. OrbStack verisi `~/Library` altındaki bağdan `brtc-disk`'e gider.
+    static func volumeName(of url: URL) -> String? {
+        (try? url.resolvingSymlinksInPath().resourceValues(forKeys: [.volumeNameKey]))?.volumeName
+    }
+
+    /// Disk bilgisi olmayan kapsayıcılar ana diskte sayılır.
+    @_disfavoredOverload
     static func entries(containers: [(name: String, bytes: UInt64?)], cacheBytes: Int, trashBytes: Int,
+                        projectsByDisk: [String: UInt64], bootDisk: String) -> [Entry] {
+        entries(containers: containers.map { (name: $0.name, bytes: $0.bytes, disk: nil) }, cacheBytes: cacheBytes,
+                trashBytes: trashBytes, projectsByDisk: projectsByDisk, bootDisk: bootDisk)
+    }
+
+    /// Önbellek ve Çöp Kutusu ev klasöründedir, yani ana diskte. Kapsayıcı ve proje çıktısı kendi diskine yazılır.
+    /// `cacheBytes` negatifse taranmadı demektir (ReclaimStore varsayılanı -1).
+    static func entries(containers: [(name: String, bytes: UInt64?, disk: String?)], cacheBytes: Int, trashBytes: Int,
                         projectsByDisk: [String: UInt64], bootDisk: String) -> [Entry] {
         var result: [Entry] = containers.compactMap { item in
             guard let bytes = item.bytes else { return nil }
-            return Entry(name: item.name, bytes: bytes, advice: adviceByContainer[item.name] ?? "MoleBar dokunmaz.", section: nil, disk: bootDisk)
+            return Entry(name: item.name, bytes: bytes, advice: adviceByContainer[item.name] ?? "MoleBar dokunmaz.", section: nil,
+                         disk: item.disk ?? bootDisk)
         }
         func add(_ name: String, _ value: Int, _ advice: String, _ section: MainSection) {
             if value > 0 { result.append(Entry(name: name, bytes: UInt64(value), advice: advice, section: section, disk: bootDisk)) }
@@ -107,7 +121,7 @@ struct DiskExplainerCard: View {
         let boot = ProjectFilter.bootDiskName()
         let projects = ProjectDiskTotals.decode(projectsJSON)
         let entries = DiskExplainer.entries(
-            containers: cleaner.containers.map { ($0.name, $0.bytes) },
+            containers: cleaner.containers.map { (name: $0.name, bytes: $0.bytes, disk: $0.disk) },
             cacheBytes: cache, trashBytes: trash, projectsByDisk: projects, bootDisk: boot)
         let missing = DiskExplainer.unscanned(cacheBytes: cache, projectsScanned: !projectsJSON.isEmpty)
         VStack(alignment: .leading, spacing: 12) {
