@@ -1,0 +1,47 @@
+# MoleBar
+
+MoleBar, macOS menü çubuğunda CPU, bellek ve disk kullanımını gösterir. [Mole](https://github.com/tw93/mole) ile temizlik ve bakım önizlemesi sunar.
+
+MoleBar, Mole'un resmi uygulaması değildir. Kişisel kullanım için yazıldı. Mole GPL-3.0 lisanslıdır.
+
+## Gereksinimler
+
+- macOS 15 veya üstü. Liquid Glass görünümü macOS 26 ve üstünde çalışır. Eski sürümde yedek materyal kullanılır.
+- Swift 6 araçları (Command Line Tools yeterlidir, Xcode gerekmez).
+- Mole: `brew install mole`. Mole yoksa sağlık skoru, temizlik ve bakım önizlemesi çalışmaz.
+
+## Kurulum
+
+1. Depoyu açın: `cd mole`
+2. Kurun: `./install.sh`
+
+Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar. Yalnızca derlemek için `./make-app.sh` çalıştırın.
+
+## Kullanım
+
+- Menü çubuğundaki metne tıklayın. Panel açılır: Genel, Diskler, Süreçler, Araçlar.
+- `⌥⌘M` paneli açar.
+- Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Süreçler, Araçlar, Ayarlar.
+- Ayarlar'da menü çubuğu görünümü (metin veya ikon), disk uyarı eşiği, girişte başlatma ve haftalık tarama bulunur.
+
+## Güvenlik
+
+- Temizlik önizlemesi (`mo clean --dry-run`) hiçbir şey silmez.
+- Gerçek temizlik yalnızca onaydan sonra çalışır. Yalnızca kullanıcı seviyesi dosyaları siler. Geri alınamaz.
+- Disk analizi salt okunurdur.
+- Süreç sonlandırma `SIGTERM` gönderir. Sistem süreçleri korunur.
+- Gerçek `mo optimize` Terminal'de çalışır, çünkü yönetici izni ister.
+- Korunan yollar `mo clean --whitelist` ile Terminal'de yönetilir. Uygulama bu dosyayı yazmaz. Dosya varsa Mole'un varsayılan korumalarını değiştirir.
+
+## Bilinen sınırlar
+
+- Uygulama ad-hoc imzalıdır. Başka bir Mac'e kopyalarsanız Gatekeeper uyarı verebilir.
+- ⌥⌘M kısayolu sistemin iç sınıf adlarına dayanır. macOS güncellemesinde bozulabilir.
+- Disk analizinde bazı klasörler için Tam Disk Erişimi gerekir. Erişilemeyen öğe sayısı ekranda görünür.
+- `mo purge` Mole'da hata verebilir (`discovered[@]: unbound variable`). Doğrulanmadı.
+- Gerçek `mo clean` çıktı biçimi doğrulanmadı. Boşalan alan diskten ölçülür.
+
+## Geliştirme
+
+- Simgeyi yeniden üretin: `swift scripts/make-icon.swift /tmp/AppIcon.iconset`, ardından `iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns`.
+- Karar günlüğü ve ilerleme: `memory-bank/`.
