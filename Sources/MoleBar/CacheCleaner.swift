@@ -116,6 +116,11 @@ final class CacheCleaner: ObservableObject {
 
     // MARK: Tarama
 
+    /// Arka plan bildirimi için önbellek toplamını okur. Listeyi ve seçimi değiştirmez.
+    nonisolated static func totalCacheBytes() -> UInt64 {
+        candidates().reduce(0) { $0 + FileSizer.size(of: $1.0) }
+    }
+
     private nonisolated static func trashSize() -> UInt64 {
         FileSizer.size(of: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash"))
     }

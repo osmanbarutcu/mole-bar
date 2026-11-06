@@ -154,11 +154,15 @@ final class CleanPreview: ObservableObject {
                 let value = summary.components(separatedBy: "|").first?
                     .split(separator: ":", maxSplits: 1).last?
                     .trimmingCharacters(in: .whitespaces) ?? ""
-                DiskNotifier.post(
-                    title: "Haftalık tarama bitti",
-                    body: "Temizlenebilir alan: \(value). Araçlar sekmesinden inceleyin. Hiçbir şey silinmedi.",
-                    id: "molebar.scan"
-                )
+                Task {
+                    let cache = await Task.detached { CacheCleaner.totalCacheBytes() }.value
+                    ReclaimStore.save(.cache, bytes: cache)
+                    DiskNotifier.post(
+                        title: "Haftalık tarama bitti",
+                        body: "Temizlenebilir alan: \(value). Önbellek: \(formatBytes(cache)). Araçlar sekmesinden inceleyin. Hiçbir şey silinmedi.",
+                        id: "molebar.scan"
+                    )
+                }
             }
         }
         backgroundRun = false
