@@ -92,12 +92,22 @@ struct SystemInfo: Equatable {
 
 struct SystemInfoCard: View {
     let info: SystemInfo
+    var health: BatteryHealth?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "macbook", title: "Sistem")
             if let battery = info.battery {
                 row("battery.100", "Pil", SystemInfo.batteryText(battery) + (battery.cycleCount.map { " · \($0) döngü" } ?? ""))
+            }
+            if let health {
+                row("heart.text.square", "Pil sağlığı", "%\(health.maximumCapacity) kapasite · \(health.condition)")
+                if health.needsAttention {
+                    Text("Pil kapasitesi %\(BatteryHealth.attentionBelow) altında. Apple bu düzeyde pil değişimini önerir.")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             row("thermometer.medium", "Isı durumu", SystemInfo.thermalText(info.thermal))
             row("clock", "Açık kalma", SystemInfo.uptimeText(info.uptime))

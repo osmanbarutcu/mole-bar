@@ -178,7 +178,7 @@ struct PanelView: View {
             coresCard
             historyCard
             memoryCard
-            SystemInfoCard(info: stats.systemInfo)
+            SystemInfoCard(info: stats.systemInfo, health: stats.batteryHealth)
             HStack(spacing: 12) {
                 RateChip(symbol: "arrow.down.circle", label: "İndirme", value: formatRate(stats.netDown))
                 RateChip(symbol: "arrow.up.circle", label: "Yükleme", value: formatRate(stats.netUp))

@@ -22,6 +22,8 @@ final class StatsModel: ObservableObject {
     @Published var processGroups: [ProcessGroup] = []
     @Published var health: MoleHealth?
     @Published var systemInfo = SystemInfo.sample()
+    /// Pil sağlığı yavaş değişir. Pil varsa uygulama açılışında bir kez okunur.
+    @Published var batteryHealth: BatteryHealth?
     /// Süreç başına ağ hızı (bayt/sn). Yalnızca Süreçler sayfası "Ağ" sıralamasındayken güncellenir.
     @Published var netByPid: [Int32: Double] = [:]
     private var netLoading = false
@@ -66,6 +68,9 @@ final class StatsModel: ObservableObject {
         if tick % 3 == 1 { volumes = sampleVolumes() }
         if tick % 2 == 0 { processGroups = procSampler.sample() }
         if tick % 15 == 1 { refreshHealth(); systemInfo = SystemInfo.sample() }
+        if tick == 1, systemInfo.battery != nil {
+            Task { batteryHealth = await Task.detached(priority: .utility) { BatteryHealth.fetch() }.value }
+        }
         if tick % 3 == 0, UserDefaults.standard.string(forKey: "procSort") == "net" { refreshNet() }
         if tick == 30 || tick % 900 == 0 { cleanPreview.startIfDue() }
         let cpuResult = cpu.sample()
