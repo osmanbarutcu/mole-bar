@@ -69,3 +69,53 @@ struct MoveHistoryCard: View {
         }
     }
 }
+
+@MainActor
+final class ErrorHistoryModel: ObservableObject {
+    @Published private(set) var records: [ErrorRecord] = []
+
+    func reload() { records = ErrorLog.load() }
+
+    func clear() {
+        ErrorLog.clear()
+        reload()
+    }
+}
+
+/// Ayarlar sayfasında son hataları listeler. Hata yoksa kısa bir not gösterir.
+struct ErrorHistoryCard: View {
+    @StateObject private var model = ErrorHistoryModel()
+
+    private static let dateFormat: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.dateFormat = "d MMM HH:mm"
+        return formatter
+    }()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            CardHeader(symbol: "exclamationmark.triangle", title: "Son hatalar", trailing: model.records.isEmpty ? "" : "\(model.records.count) kayıt")
+            if model.records.isEmpty {
+                Text("Kayıtlı hata yok.").font(.caption).foregroundStyle(.secondary)
+            } else {
+                ForEach(model.records.prefix(6)) { record in
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(record.message).font(.caption).fixedSize(horizontal: false, vertical: true)
+                        Text("\(record.source) · \(Self.dateFormat.string(from: record.date))")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Button("Listeyi temizle") { model.clear() }
+                    .buttonStyle(.plain)
+                    .font(.caption)
+                    .foregroundStyle(Color.accentColor)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard()
+        .onAppear { model.reload() }
+    }
+}

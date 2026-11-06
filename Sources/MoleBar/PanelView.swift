@@ -652,6 +652,7 @@ struct PanelView: View {
                     .glassCard()
 
                     MoveHistoryCard()
+                    ErrorHistoryCard()
                 }
                 .padding(.vertical, 8)
             }

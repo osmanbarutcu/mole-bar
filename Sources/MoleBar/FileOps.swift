@@ -97,11 +97,42 @@ extension TrashGuard {
     /// Öğeyi Çöp Kutusu'na taşır ve geçmişe yazar. Tüm sayfalar bu işlevi kullanır.
     static func trash(_ url: URL, bytes: UInt64 = 0, source: String) throws {
         var result: NSURL?
-        try FileManager.default.trashItem(at: url, resultingItemURL: &result)
+        do {
+            try FileManager.default.trashItem(at: url, resultingItemURL: &result)
+        } catch {
+            ErrorLog.add(source: source, message: "\(url.lastPathComponent) taşınamadı: \(error.localizedDescription)")
+            throw error
+        }
         MoveLog.add(MoveRecord(
             id: UUID(), date: Date(), name: url.lastPathComponent,
             originalPath: url.path, trashedPath: (result as URL?)?.path,
             bytes: bytes, source: source
         ))
+    }
+}
+
+/// Son hataların kalıcı listesi. Taşıma hataları `TrashGuard.trash` içinden yazılır.
+struct ErrorRecord: Codable, Identifiable {
+    let id: UUID
+    let date: Date
+    let source: String
+    let message: String
+}
+
+enum ErrorLog {
+    private static let key = "errorLog"
+    private static let limit = 30
+
+    static func load() -> [ErrorRecord] {
+        guard let data = UserDefaults.standard.data(forKey: key) else { return [] }
+        return (try? JSONDecoder().decode([ErrorRecord].self, from: data)) ?? []
+    }
+
+    static func clear() { UserDefaults.standard.removeObject(forKey: key) }
+
+    static func add(source: String, message: String) {
+        let record = ErrorRecord(id: UUID(), date: Date(), source: source, message: message)
+        let all = Array(([record] + load()).prefix(limit))
+        if let data = try? JSONEncoder().encode(all) { UserDefaults.standard.set(data, forKey: key) }
     }
 }
