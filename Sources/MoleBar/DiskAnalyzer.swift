@@ -28,6 +28,8 @@ final class DiskAnalyzer: ObservableObject {
     @Published private(set) var pending = 0
     @Published private(set) var inaccessible = 0
     @Published private(set) var listError: String?
+    @Published var pendingTrash: URL?
+    @Published var notice: String?
 
     private var stack: [URL] = []
     private var task: Task<Void, Never>?
@@ -60,6 +62,28 @@ final class DiskAnalyzer: ObservableObject {
     }
 
     func rescan() { scan(current) }
+
+    /// Çöp Kutusu'na taşıma yalnızca ev klasörünün ikinci düzeyinden itibaren ve harici disklerde açıktır.
+    /// Ev klasörünün doğrudan alt öğeleri (Library, Documents, Desktop...) ve sistem yolları korunur.
+    nonisolated static func canTrash(_ url: URL) -> Bool {
+        let path = url.standardizedFileURL.path
+        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL.path
+        if path.hasPrefix(home + "/") {
+            let depth = path.dropFirst(home.count + 1).split(separator: "/").count
+            return depth >= 2
+        }
+        if path.hasPrefix("/Volumes/") {
+            return path.dropFirst("/Volumes/".count).split(separator: "/").count >= 2
+        }
+        return false
+    }
+
+    /// Öğeyi Çöp Kutusu'na taşır. Geri alınabilir. Başarılıysa listeden çıkarır.
+    func moveToTrash(_ entry: DiskEntry) throws {
+        guard Self.canTrash(entry.url) else { throw CocoaError(.fileWriteNoPermission) }
+        try FileManager.default.trashItem(at: entry.url, resultingItemURL: nil)
+        entries.removeAll { $0.url == entry.url }
+    }
 
     func cancel() {
         task?.cancel()
@@ -184,7 +208,10 @@ struct AnalyzePage: View {
                         .glassCard()
                 }
             }
-            Text("Yalnızca okur. Hiçbir şey silinmez. Bağlı birimler arası geçilmez; harici diskler kendi kısayolundan taranır.")
+            if let notice = analyzer.notice {
+                Text(notice).font(.caption).foregroundStyle(.secondary)
+            }
+            Text("Tarama salt okunurdur. Çöp ikonu öğeyi Çöp Kutusu'na taşır; kalıcı silmez. Ev klasörünün doğrudan alt öğeleri korunur. Harici diskler kendi kısayolundan taranır.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -262,6 +289,16 @@ struct AnalyzePage: View {
         }
     }
 
+    private func trash(_ entry: DiskEntry) {
+        analyzer.pendingTrash = nil
+        do {
+            try analyzer.moveToTrash(entry)
+            analyzer.notice = "\(entry.name) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
+        } catch {
+            analyzer.notice = "\(entry.name) taşınamadı: \(error.localizedDescription)"
+        }
+    }
+
     private func row(_ entry: DiskEntry) -> some View {
         let share = analyzer.largestBytes == 0 ? 0 : Double(entry.bytes) / Double(analyzer.largestBytes) * 100
         return HStack(spacing: 10) {
@@ -284,12 +321,30 @@ struct AnalyzePage: View {
             } else {
                 ProgressView().controlSize(.mini)
             }
-            Button {
-                NSWorkspace.shared.activateFileViewerSelecting([entry.url])
-            } label: { Image(systemName: "magnifyingglass.circle") }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .help("Finder'da göster")
+            if analyzer.pendingTrash == entry.url {
+                Button("Çöp Kutusu'na taşı") { trash(entry) }
+                    .glassButton()
+                    .controlSize(.small)
+                    .fixedSize()
+                Button("Vazgeç") { analyzer.pendingTrash = nil }
+                    .buttonStyle(.plain)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize()
+            } else {
+                Button {
+                    NSWorkspace.shared.activateFileViewerSelecting([entry.url])
+                } label: { Image(systemName: "magnifyingglass.circle") }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .help("Finder'da göster")
+                let allowed = DiskAnalyzer.canTrash(entry.url)
+                Button { analyzer.pendingTrash = entry.url } label: { Image(systemName: "trash") }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(allowed ? Color.secondary : Color.secondary.opacity(0.3))
+                    .disabled(!allowed)
+                    .help(allowed ? "Çöp Kutusu'na taşı" : "Bu öğe korumalı")
+            }
             if entry.isDirectory {
                 Image(systemName: "chevron.right")
                     .font(.caption)

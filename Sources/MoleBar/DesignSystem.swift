@@ -142,8 +142,11 @@ struct CoreBar: View {
                 }
             }
             .frame(width: 10, height: 44)
+            Text(String(format: "%.0f", percent))
+                .font(.system(size: 9, weight: .semibold).monospacedDigit())
+                .lineLimit(1)
             Text("\(index + 1)")
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 8, weight: .medium))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
