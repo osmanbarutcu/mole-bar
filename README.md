@@ -77,6 +77,7 @@ Otomatik test kapsamayan adımlar [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md)
 
 ## Geliştirme
 
+- DMG üretin: `./make-app.sh`, ardından `./scripts/make-dmg.sh`. Çıktı `dist/MoleBar-<sürüm>.dmg` dosyasıdır. Uygulama ad-hoc imzalıdır, notarize edilmez. İlk açılışta sağ tık > Aç gerekir. DMG'nin başka Mac'te açılışı doğrulanmadı.
 - Simgeyi yeniden üretin: `swift scripts/make-icon.swift /tmp/AppIcon.iconset`, ardından `iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns`.
 - Testleri çalıştırın: `swift test`. Testler Swift Testing kullanır (`Tests/MoleBarTests`). XCTest gerekmez.
 - `swift test` bazen `TestingMacros` eklenti hatası verir ve tekrar çalıştırmak yetmeyebilir. Kalıcı çözüm: `swift test -Xswiftc -plugin-path -Xswiftc /Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing`.

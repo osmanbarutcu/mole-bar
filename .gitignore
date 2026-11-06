@@ -1,6 +1,7 @@
 graphify-out/
 .build/
 *.app
+dist/
 .DS_Store
 .swiftpm/
 memory-bank/

@@ -63,6 +63,7 @@ A prebuilt zip is on the Releases page. It is ad-hoc signed and not notarized. O
 
 ## Development
 
+- Build a DMG: run `./make-app.sh`, then `./scripts/make-dmg.sh`. The output is `dist/MoleBar-<version>.dmg`. The app is ad-hoc signed and not notarized. Opening the DMG on another Mac is not verified.
 - Run the tests: `swift test`. Tests use Swift Testing (`Tests/MoleBarTests`). XCTest is not required.
 - If `swift test` reports a `TestingMacros` plugin error, run: `swift test -Xswiftc -plugin-path -Xswiftc /Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing`.
 - To see the panel in a window: `MOLEBAR_PANEL_PREVIEW=1 /Applications/MoleBar.app/Contents/MacOS/MoleBar`.
