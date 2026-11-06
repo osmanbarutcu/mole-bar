@@ -16,6 +16,14 @@ struct ContainerData: Identifiable {
     var id: URL { url }
 }
 
+/// `docker system df` satırı.
+struct DockerRow: Identifiable {
+    let type: String
+    let size: String
+    let reclaimable: String
+    var id: String { type }
+}
+
 struct CacheItem: Identifiable {
     let url: URL
     let category: CacheCategory
@@ -34,6 +42,7 @@ final class CacheCleaner: ObservableObject {
     @Published private(set) var trashBytes: UInt64 = 0
     @Published private(set) var hasScanned = false
     @Published private(set) var containers: [ContainerData] = []
+    @Published private(set) var dockerRows: [DockerRow] = []
     @Published var selection = Set<URL>()
     @Published var confirmingMove = false
     @Published var confirmingEmpty = false
@@ -62,6 +71,7 @@ final class CacheCleaner: ObservableObject {
             let trash = await Task.detached { Self.trashSize() }.value
             self?.trashBytes = trash
             self?.containers = await Task.detached { Self.containerData() }.value
+            self?.dockerRows = await Task.detached { Self.dockerUsage() }.value
             for await item in Self.stream() {
                 if Task.isCancelled { break }
                 guard let self else { return }
@@ -146,7 +156,7 @@ final class CacheCleaner: ObservableObject {
             let url = home.appendingPathComponent(relative)
             if FileManager.default.fileExists(atPath: url.path) { found.append((label, url)) }
         }
-        return found.compactMap { label, url -> ContainerData? in
+        let sized = found.compactMap { label, url -> ContainerData? in
             // OrbStack disk imajı data/data.img.raw dosyasıdır. Okunamıyorsa Tam Disk Erişimi eksiktir.
             let image = url.appendingPathComponent("data/data.img.raw")
             if url.path.contains("Group Containers") {
@@ -156,7 +166,43 @@ final class CacheCleaner: ObservableObject {
             let bytes = FileSizer.size(of: url)
             return bytes >= 1 << 20 ? ContainerData(name: label, url: url, bytes: bytes) : nil
         }
-        .sorted { ($0.bytes ?? 0) > ($1.bytes ?? 0) }
+        return (sized + mailData(home: home)).sorted { ($0.bytes ?? 0) > ($1.bytes ?? 0) }
+    }
+
+    /// Mail verisi korumalıdır. Klasör listelenemiyorsa Tam Disk Erişimi eksiktir ve boyut nil olur.
+    private nonisolated static func mailData(home: URL) -> [ContainerData] {
+        let mail = home.appendingPathComponent("Library/Mail")
+        guard FileManager.default.fileExists(atPath: mail.path) else { return [] }
+        let readable = (try? FileManager.default.contentsOfDirectory(atPath: mail.path)) != nil
+        return [ContainerData(name: "Mail", url: mail, bytes: readable ? FileSizer.size(of: mail) : nil)]
+    }
+
+    /// `docker system df` çıktısını okur. Docker kapalıysa veya kurulu değilse boş döner. En çok 8 saniye bekler.
+    nonisolated static func dockerUsage() -> [DockerRow] {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let candidates = ["/usr/local/bin/docker", "/opt/homebrew/bin/docker", "\(home)/.orbstack/bin/docker"]
+        guard let path = candidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) else { return [] }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: path)
+        process.arguments = ["system", "df", "--format", "{{json .}}"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        do { try process.run() } catch { return [] }
+        let watchdog = DispatchWorkItem { if process.isRunning { process.terminate() } }
+        DispatchQueue.global().asyncAfter(deadline: .now() + 8, execute: watchdog)
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        watchdog.cancel()
+        return parseDockerUsage(String(decoding: data, as: UTF8.self))
+    }
+
+    nonisolated static func parseDockerUsage(_ output: String) -> [DockerRow] {
+        output.split(separator: "\n").compactMap { line in
+            guard let object = try? JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any],
+                  let type = object["Type"] as? String, let size = object["Size"] as? String else { return nil }
+            return DockerRow(type: type, size: size, reclaimable: object["Reclaimable"] as? String ?? "")
+        }
     }
 
     private nonisolated static func trashSize() -> UInt64 {
@@ -220,7 +266,7 @@ struct CachePage: View {
                     .help("Yeniden tara")
             }
             trashCard
-            if !cleaner.containers.isEmpty { containerCard }
+            if !cleaner.containers.isEmpty || !cleaner.dockerRows.isEmpty { containerCard }
             if let notice = cleaner.notice {
                 Text(notice).font(.caption).foregroundStyle(.secondary)
             }
@@ -284,6 +330,25 @@ struct CachePage: View {
                     Spacer(minLength: 8)
                     Text(item.bytes.map(formatBytes) ?? "Okunamadı (Tam Disk Erişimi)").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                 }
+            }
+            if !cleaner.dockerRows.isEmpty {
+                Divider().opacity(0.4)
+                Text("Docker (docker system df)").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                ForEach(cleaner.dockerRows) { row in
+                    HStack {
+                        Text(row.type).font(.caption)
+                        Spacer(minLength: 8)
+                        Text("\(row.size) · geri kazanılabilir \(row.reclaimable)")
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            if cleaner.containers.contains(where: { $0.name == "Mail" }) {
+                Text("Mail: Mail uygulamasında Posta Kutusu > Ek Dosyaları Kaldır ile yer açabilirsiniz. MoleBar Mail verisine dokunmaz.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             Text("MoleBar bunu silmez. İmajlar ve birimler geri alınamaz. Boyut, diskte gerçekten ayrılan alandır. İçeriği görmek için komutu çalıştırın.")
                 .font(.caption2)

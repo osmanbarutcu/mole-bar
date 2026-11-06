@@ -32,3 +32,24 @@ struct NetPerProcessTests {
         #expect(NetPerProcess.parse("rastgele metin").isEmpty)
     }
 }
+
+@Suite("CacheCleaner.parseDockerUsage")
+struct DockerUsageTests {
+    @Test("docker system df JSON satırları ayrıştırılır")
+    func parsesLines() {
+        let output = """
+        {"Active":"3","Reclaimable":"3.923GB (13%)","Size":"28.64GB","TotalCount":"10","Type":"Images"}
+        {"Active":"0","Reclaimable":"5.726GB","Size":"13.48GB","TotalCount":"4","Type":"Build Cache"}
+        """
+        let rows = CacheCleaner.parseDockerUsage(output)
+        #expect(rows.count == 2)
+        #expect(rows[0].type == "Images")
+        #expect(rows[0].reclaimable == "3.923GB (13%)")
+        #expect(rows[1].size == "13.48GB")
+    }
+
+    @Test("bozuk satır atlanır")
+    func skipsGarbage() {
+        #expect(CacheCleaner.parseDockerUsage("Cannot connect to the Docker daemon\n").isEmpty)
+    }
+}
