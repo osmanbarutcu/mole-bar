@@ -38,6 +38,10 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Araçlar: açık portlar, dış bağlantılar (süreç başına), Homebrew güncellemeleri (yalnızca denetim, komut panoya kopyalanır).
 - Kritik bellek baskısında bir kez bildirim gelir. Bildirime tıklayınca ilgili sayfa açılır.
 
+## Doğrulama
+
+Otomatik test kapsamayan adımlar [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md) dosyasındadır. Sürüm öncesi çalıştırın.
+
 ## Güvenlik
 
 - Temizlik önizlemesi (`mo clean --dry-run`) hiçbir şey silmez.
