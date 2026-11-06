@@ -158,7 +158,9 @@ struct OrphanPage: View {
                     .disabled(model.isScanning)
             }
             if let notice = model.notice { Text(notice).font(.caption).foregroundStyle(.secondary) }
-            if model.scanned && model.items.isEmpty {
+            if model.isScanning && model.items.isEmpty {
+                Text("Taranıyor...").font(.caption).foregroundStyle(.secondary)
+            } else if model.scanned && model.items.isEmpty {
                 Text("Yetim kalıntı bulunamadı.").font(.caption).foregroundStyle(.secondary)
             }
             ScrollView {
@@ -183,6 +185,7 @@ struct OrphanPage: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .glassCard(cornerRadius: 16)
+            .onAppear { if !model.scanned { model.scan() } }
             actions
             Text("Kalıntılar kurulu uygulamalarla paket kimliği üzerinden eşleşir. Uygulama başka bir diskteyse yanlış listelenebilir. Her şey Çöp Kutusu'na taşınır. Application Support içinde kullanıcı verisi olabilir, taşımadan önce kontrol edin.")
                 .font(.caption2).foregroundStyle(.secondary)

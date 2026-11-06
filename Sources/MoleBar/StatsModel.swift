@@ -86,7 +86,8 @@ final class StatsModel: ObservableObject {
         cpuPerCore = cpuResult.perCore
         memory = sampleMemory()
         pressure = MemoryPressure.sample()
-        if memoryAlert.shouldNotify(pressure) {
+        let memoryAlertEnabled = UserDefaults.standard.object(forKey: "memoryAlertEnabled") as? Bool ?? true
+        if memoryAlertEnabled, memoryAlert.shouldNotify(pressure) {
             DiskNotifier.post(
                 title: "Bellek baskısı kritik",
                 body: "Mac belleği yetersiz kalıyor. Süreçler sayfasından büyük uygulamaları kapatın.",

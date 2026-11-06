@@ -34,6 +34,7 @@ struct PanelView: View {
     @AppStorage("showDisk") private var showDisk = true
     @AppStorage("showLabels") private var showLabels = true
     @AppStorage("diskAlertEnabled") private var diskAlertEnabled = true
+    @AppStorage("memoryAlertEnabled") private var memoryAlertEnabled = true
     @AppStorage("diskAlertThreshold") private var diskAlertThreshold = 90
     @AppStorage("cacheAlertGB") private var cacheAlertGB = 0
     @AppStorage("procSort") private var procSort = "cpu"
@@ -658,6 +659,9 @@ struct PanelView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         CardHeader(symbol: "bell.badge", title: "Disk uyarısı")
                         Toggle("Eşik aşılınca bildir", isOn: $diskAlertEnabled)
+                            .toggleStyle(RightSwitchStyle())
+                            .controlSize(.small)
+                        Toggle("Bellek baskısı kritikken bildir", isOn: $memoryAlertEnabled)
                             .toggleStyle(RightSwitchStyle())
                             .controlSize(.small)
                         Stepper("Eşik: %\(diskAlertThreshold)", value: $diskAlertThreshold, in: 70...98)

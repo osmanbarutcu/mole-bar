@@ -90,7 +90,7 @@ struct TreemapView: View {
             if inner.width > 56, inner.height > 34 {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(verbatim: entry.name).font(.caption.weight(.medium)).lineLimit(1).truncationMode(.middle)
-                    Text(formatBytes(entry.bytes)).font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+                    Text(formatBytes(entry.bytes)).font(.caption2.monospacedDigit()).foregroundStyle(.primary.opacity(0.75))
                 }
                 .padding(6)
             }
