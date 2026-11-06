@@ -72,7 +72,7 @@ struct PanelView: View {
                         case .disks: disksPage
                         case .processes: processesPage
                         case .tools: toolsPage
-                        case .settings, .analyze, .apps: EmptyView()
+                        case .settings, .analyze, .apps, .large: EmptyView()
                         }
                     }
                 }

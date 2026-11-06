@@ -4,6 +4,7 @@ enum MainSection: String, CaseIterable, Identifiable {
     case general = "Genel"
     case disks = "Diskler"
     case analyze = "Analiz"
+    case large = "Büyük dosyalar"
     case apps = "Uygulamalar"
     case processes = "Süreçler"
     case tools = "Araçlar"
@@ -16,6 +17,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .general: return "gauge.with.dots.needle.50percent"
         case .disks: return "internaldrive"
         case .analyze: return "chart.pie"
+        case .large: return "doc.text.magnifyingglass"
         case .apps: return "square.stack.3d.up"
         case .processes: return "list.number"
         case .tools: return "wrench.and.screwdriver"
@@ -31,6 +33,7 @@ struct MainWindowView: View {
     @AppStorage("mainSection") private var storedSection = MainSection.general.rawValue
     @StateObject private var analyzer = DiskAnalyzer()
     @StateObject private var uninstaller = AppUninstaller()
+    @StateObject private var largeFinder = LargeFileFinder()
 
     var body: some View {
         let current = MainSection(rawValue: storedSection) ?? .general
@@ -48,6 +51,8 @@ struct MainWindowView: View {
             Group {
                 if current == .analyze {
                     AnalyzePage(analyzer: analyzer, volumes: stats.volumes)
+                } else if current == .large {
+                    LargeFilesPage(finder: largeFinder)
                 } else if current == .apps {
                     UninstallPage(model: uninstaller)
                 } else {

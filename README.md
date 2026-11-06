@@ -21,7 +21,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 
 - Menü çubuğundaki metne tıklayın. Panel açılır: Genel, Diskler, Süreçler, Araçlar.
 - `⌥⌘M` paneli açar.
-- Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Uygulamalar, Süreçler, Araçlar, Ayarlar.
+- Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Büyük dosyalar, Uygulamalar, Süreçler, Araçlar, Ayarlar.
 - Ayarlar'da menü çubuğu görünümü (metin veya ikon), disk uyarı eşiği, girişte başlatma ve haftalık tarama bulunur.
 
 ## Güvenlik
@@ -38,7 +38,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 
 - Uygulama ad-hoc imzalıdır. Başka bir Mac'e kopyalarsanız Gatekeeper uyarı verebilir.
 - ⌥⌘M kısayolu sistemin iç sınıf adlarına dayanır. macOS güncellemesinde bozulabilir.
-- Disk analizinde bazı klasörler için Tam Disk Erişimi gerekir. Erişilemeyen öğe sayısı ekranda görünür.
+- Disk analizi ve Büyük dosyalar sayfası, bazı klasörler için Tam Disk Erişimi ister. Erişilemeyen öğe sayısı ekranda görünür. İzin yoksa sonuçlar eksik kalır. Örnek: 426 bin dosya görüldü, izinli betik 626 bin dosya gördü.
 - `mo purge` Mole'da hata verebilir (`discovered[@]: unbound variable`). Doğrulanmadı.
 - Gerçek `mo clean` çıktı biçimi doğrulanmadı. Boşalan alan diskten ölçülür.
 
