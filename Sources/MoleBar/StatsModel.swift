@@ -36,6 +36,17 @@ final class StatsModel: ObservableObject {
     @Published var history: [HistoryPoint] = []
     /// Menü çubuğu grafiği için son 30 CPU örneği. Her turda bir örnek alınır.
     @Published private(set) var recentCPU: [Double] = []
+    @Published private(set) var recentRAM: [Double] = []
+    /// İndirme ve yükleme toplamı, bayt/sn.
+    @Published private(set) var recentNet: [Double] = []
+
+    func recent(_ metric: GraphMetric) -> [Double] {
+        switch metric {
+        case .cpu: return recentCPU
+        case .ram: return recentRAM
+        case .net: return recentNet
+        }
+    }
 
     let cleanPreview = CleanPreview()
     /// Panel ve ana pencere aynı önbellek modelini paylaşır.
@@ -99,6 +110,8 @@ final class StatsModel: ObservableObject {
         let net = network.sample()
         netDown = net.down
         netUp = net.up
+        recentRAM = MenuBarGraph.push(recentRAM, memory.percent, limit: 30)
+        recentNet = MenuBarGraph.push(recentNet, net.down + net.up, limit: 30)
         let io = diskIO.sample()
         diskRead = io.read
         diskWrite = io.write

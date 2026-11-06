@@ -35,3 +35,31 @@ struct MenuBarGraphTests {
         #expect(MenuBarGraph.points(values: [50], width: 20, height: 10).isEmpty)
     }
 }
+
+struct GraphMetricTests {
+    @Test func percentMetricsUseHundredAsCeiling() {
+        #expect(GraphMetric.cpu.ceiling(for: [10, 20]) == 100)
+        #expect(GraphMetric.ram.ceiling(for: [90]) == 100)
+    }
+
+    @Test func networkCeilingFollowsTheBusiestSample() {
+        #expect(GraphMetric.net.ceiling(for: [5_000_000, 2_000_000]) == 5_000_000)
+    }
+
+    @Test func networkCeilingHasAOneMegabyteFloor() {
+        // Küçük trafik tam yükseklikte görünmesin.
+        #expect(GraphMetric.net.ceiling(for: [1_000, 2_000]) == 1_000_000)
+        #expect(GraphMetric.net.ceiling(for: []) == 1_000_000)
+    }
+
+    @Test func unknownStoredValueFallsBackToCPU() {
+        #expect(GraphMetric(stored: "zzz") == .cpu)
+        #expect(GraphMetric(stored: "ram") == .ram)
+    }
+
+    @Test func labelsMatchTheMetric() {
+        #expect(GraphMetric.cpu.label(value: 73.4) == "73%")
+        #expect(GraphMetric.ram.label(value: 80) == "80%")
+        #expect(GraphMetric.net.label(value: 0).hasSuffix("/s"))
+    }
+}

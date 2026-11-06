@@ -45,6 +45,7 @@ struct MenuBarLabel: View {
     @ObservedObject var stats: StatsModel
     @Environment(\.openWindow) private var openWindow
     @AppStorage("displayMode") private var displayMode = "text"
+    @AppStorage("graphMetric") private var graphMetric = "cpu"
     @AppStorage("showCPU") private var showCPU = true
     @AppStorage("showRAM") private var showRAM = true
     @AppStorage("showDisk") private var showDisk = true
@@ -55,9 +56,11 @@ struct MenuBarLabel: View {
             if displayMode == "icon" {
                 Image(systemName: "gauge.with.dots.needle.50percent")
             } else if displayMode == "graph" {
+                let metric = GraphMetric(stored: graphMetric)
+                let values = stats.recent(metric)
                 HStack(spacing: 4) {
-                    Image(nsImage: MenuBarGraph.image(values: stats.recentCPU))
-                    Text(String(format: "%.0f%%", stats.cpuTotal)).monospacedDigit()
+                    Image(nsImage: MenuBarGraph.image(values: values, maximum: metric.ceiling(for: values)))
+                    Text(metric.label(value: values.last ?? 0)).monospacedDigit()
                 }
             } else {
                 Text(stats.barText(cpu: showCPU, ram: showRAM, disk: showDisk, labels: showLabels))

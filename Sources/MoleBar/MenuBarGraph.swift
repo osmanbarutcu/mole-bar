@@ -1,5 +1,35 @@
 import AppKit
 
+/// Menü çubuğu grafiğinde gösterilen ölçüm.
+enum GraphMetric: String, CaseIterable {
+    case cpu, ram, net
+
+    init(stored: String) { self = GraphMetric(rawValue: stored) ?? .cpu }
+
+    var title: String {
+        switch self {
+        case .cpu: return "CPU"
+        case .ram: return "RAM"
+        case .net: return "Ağ"
+        }
+    }
+
+    /// Yüzde ölçümleri 0-100 arası çizilir. Ağda en yoğun örnek tavan olur, tavan en az 1 MB/sn'dir.
+    func ceiling(for values: [Double]) -> Double {
+        switch self {
+        case .cpu, .ram: return 100
+        case .net: return max(values.max() ?? 0, 1_000_000)
+        }
+    }
+
+    func label(value: Double) -> String {
+        switch self {
+        case .cpu, .ram: return String(format: "%.0f%%", value)
+        case .net: return formatRate(value)
+        }
+    }
+}
+
 /// Menü çubuğu için küçük çizgi grafiği. Şablon görüntü üretir, açık ve koyu menü çubuğunda sistem renklendirir.
 enum MenuBarGraph {
     /// Seriye değer ekler ve yalnızca son `limit` değeri tutur.
@@ -18,12 +48,12 @@ enum MenuBarGraph {
     }
 
     /// Şablon `NSImage`. Çizgi 1,5 pt, altı hafif dolgulu.
-    static func image(values: [Double], size: NSSize = NSSize(width: 34, height: 14)) -> NSImage {
+    static func image(values: [Double], maximum: Double = 100, size: NSSize = NSSize(width: 34, height: 14)) -> NSImage {
         let image = NSImage(size: size, flipped: false) { _ in
             // Çizgi kenarlarda kesilmesin diye 1 pt iç boşluk bırakılır.
             let inset: CGFloat = 1
             let area = NSSize(width: size.width - inset * 2, height: size.height - inset * 2)
-            let points = points(values: values, width: area.width, height: area.height)
+            let points = points(values: values, width: area.width, height: area.height, maximum: maximum)
                 .map { CGPoint(x: $0.x + inset, y: $0.y + inset) }
             guard let first = points.first, let last = points.last else { return true }
 

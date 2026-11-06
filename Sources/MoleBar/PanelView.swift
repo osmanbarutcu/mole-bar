@@ -35,6 +35,7 @@ struct PanelView: View {
     @AppStorage("showLabels") private var showLabels = true
     @AppStorage("diskAlertEnabled") private var diskAlertEnabled = true
     @AppStorage("memoryAlertEnabled") private var memoryAlertEnabled = true
+    @AppStorage("graphMetric") private var graphMetric = "cpu"
     @AppStorage("diskAlertThreshold") private var diskAlertThreshold = 90
     @AppStorage("cacheAlertGB") private var cacheAlertGB = 0
     @AppStorage("procSort") private var procSort = "cpu"
@@ -605,6 +606,13 @@ struct PanelView: View {
                         }
                         .pickerStyle(.segmented)
                         .labelsHidden()
+                        if displayMode == "graph" {
+                            Picker("Grafik ölçümü", selection: $graphMetric) {
+                                ForEach(GraphMetric.allCases, id: \.rawValue) { Text($0.title).tag($0.rawValue) }
+                            }
+                            .pickerStyle(.segmented)
+                            .labelsHidden()
+                        }
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
