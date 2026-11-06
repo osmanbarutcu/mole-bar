@@ -11,11 +11,25 @@ enum TrashGuard {
         ".ssh", ".gnupg", ".aws", ".kube", ".password-store"
     ]
 
+    /// Yolu standartlaştırır ve sembolik bağlantıları çözer. Dosya yoksa en derin mevcut üst klasör çözülür, kalan kısım eklenir.
+    static func resolved(_ url: URL) -> String {
+        var existing = url.standardizedFileURL
+        var rest: [String] = []
+        while existing.path != "/", !FileManager.default.fileExists(atPath: existing.path) {
+            rest.insert(existing.lastPathComponent, at: 0)
+            existing = existing.deletingLastPathComponent()
+        }
+        var result = existing.resolvingSymlinksInPath()
+        for part in rest { result.appendPathComponent(part) }
+        return result.path
+    }
+
     /// Çöp Kutusu'na taşıma yalnızca ev klasörünün ikinci düzeyinden itibaren ve harici disklerde açıktır.
     /// Ev klasörünün doğrudan alt öğeleri, yasak yollar ve medya kütüphaneleri (.photoslibrary vb.) korunur.
     static func canTrash(_ url: URL) -> Bool {
-        let path = url.standardizedFileURL.path
-        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL.path
+        // Sembolik bağlantılar çözülür. Aksi hâlde /Volumes/Macintosh HD/Users/... yolu ev klasörü korumasını atlatır.
+        let path = resolved(url)
+        let home = resolved(FileManager.default.homeDirectoryForCurrentUser)
         let mediaLibraries = [".photoslibrary", ".musiclibrary", ".tvlibrary", ".photolibrary"]
         if mediaLibraries.contains(where: { path.lowercased().contains($0) }) { return false }
         if path.hasPrefix(home + "/") {

@@ -50,3 +50,6 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 
 - Simgeyi yeniden üretin: `swift scripts/make-icon.swift /tmp/AppIcon.iconset`, ardından `iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns`.
 - Karar günlüğü ve ilerleme: `memory-bank/`.
+- Testleri çalıştırın: `swift test`. Testler Swift Testing kullanır (`Tests/MoleBarTests`). XCTest gerekmez.
+- Kaynak dosya değişince ilk `swift test` çalıştırması `TestingMacros` eklenti hatası verebilir. Komutu bir kez daha çalıştırın.
+- Panel görünümünü pencerede görmek için: `MOLEBAR_PANEL_PREVIEW=1 /Applications/MoleBar.app/Contents/MacOS/MoleBar`.
