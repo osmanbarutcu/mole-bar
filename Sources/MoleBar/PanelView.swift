@@ -190,11 +190,38 @@ struct PanelView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
+                if health.score < 80 {
+                    ForEach(healthHints, id: \.title) { hint in
+                        HStack(spacing: 8) {
+                            Image(systemName: hint.symbol).frame(width: 18).foregroundStyle(.secondary)
+                            Text(hint.title).font(.caption)
+                            Spacer(minLength: 8)
+                            Button(hint.action) { openMain(hint.section) }
+                                .glassButton()
+                                .controlSize(.small)
+                        }
+                    }
+                }
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCard()
         }
+    }
+
+    /// Skor 80 altındayken canlı ölçümlerden öneri çıkarır. Eşikler: disk 80, bellek 85, CPU 80 (yüzde).
+    private var healthHints: [(symbol: String, title: String, action: String, section: MainSection)] {
+        var hints: [(symbol: String, title: String, action: String, section: MainSection)] = []
+        if stats.disk.percent >= 80 {
+            hints.append(("internaldrive", String(format: "Disk %%%.0f dolu", stats.disk.percent), "Diskler", .disks))
+        }
+        if stats.memory.percent >= 85 {
+            hints.append(("memorychip", String(format: "Bellek %%%.0f dolu", stats.memory.percent), "Süreçler", .processes))
+        }
+        if stats.cpuTotal >= 80 {
+            hints.append(("cpu", String(format: "CPU %%%.0f yüklü", stats.cpuTotal), "Süreçler", .processes))
+        }
+        return hints
     }
 
     private func healthColor(_ score: Int) -> Color {
