@@ -168,6 +168,7 @@ final class DiskAnalyzer: ObservableObject {
 struct AnalyzePage: View {
     @ObservedObject var analyzer: DiskAnalyzer
     let volumes: [VolumeInfo]
+    @AppStorage("analyzeView") private var viewMode = "list"
 
     private var shortcuts: [(title: String, url: URL)] {
         let home = FileManager.default.homeDirectoryForCurrentUser
@@ -186,18 +187,24 @@ struct AnalyzePage: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Disk analizi").font(.title2.weight(.semibold))
+            HStack {
+                Text("Disk analizi").font(.title2.weight(.semibold))
+                Spacer()
+                Picker("Görünüm", selection: $viewMode) {
+                    Text("Liste").tag("list")
+                    Text("Harita").tag("map")
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 160)
+            }
             shortcutRow
             pathBar
-            ScrollView {
-                GlassGroup(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 0) { listContent }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .glassCard()
-                }
+            if viewMode == "map" {
+                mapContent
+            } else {
+                listScroll
             }
-            .shadowSafeScroll()
             if let notice = analyzer.notice {
                 Text(notice).font(.caption).foregroundStyle(.secondary)
             }
@@ -207,6 +214,40 @@ struct AnalyzePage: View {
         }
         .padding(24)
         .onAppear { analyzer.startIfNeeded() }
+    }
+
+    /// Harita: karo alanı boyutla orantılıdır. Küçük karolar etiketsiz kalır, üzerine gelince ad ve boyut görünür.
+    @ViewBuilder
+    private var mapContent: some View {
+        if let error = analyzer.listError {
+            Text(error).font(.caption).foregroundStyle(.secondary)
+        } else if analyzer.entries.isEmpty && !analyzer.isScanning {
+            Text("Klasör boş.").font(.caption).foregroundStyle(.secondary)
+        } else {
+            TreemapView(entries: analyzer.entries) { analyzer.open($0) }
+                .frame(maxWidth: .infinity, minHeight: 320, maxHeight: .infinity)
+                .padding(8)
+                .glassCard()
+            if analyzer.inaccessible > 0 {
+                Text(FullDiskAccess.inaccessibleNote(analyzer.inaccessible))
+                    .font(.caption2)
+                    .foregroundStyle(.orange)
+            }
+        }
+    }
+
+    private var listScroll: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ScrollView {
+                GlassGroup(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 0) { listContent }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .glassCard()
+                }
+            }
+            .shadowSafeScroll()
+        }
     }
 
     private var shortcutRow: some View {
