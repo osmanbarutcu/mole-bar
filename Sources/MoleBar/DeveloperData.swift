@@ -17,6 +17,10 @@ enum DeveloperData {
         ".local/share/pnpm/store"
     ]
 
+    /// Mail'de açılan eklerin geçici kopyaları. Mail gerekirse yeniden indirir.
+    /// İleti deposu (`Library/Mail`) değildir ve korumalı kalır.
+    static let mailDownloads = "Library/Containers/com.apple.mail/Data/Library/Mail Downloads"
+
     /// Geri üretilemez veya başka araç gerektirir. Yalnızca gösterilir, MoleBar silmez.
     static let displayOnly: [(label: String, relative: String)] = [
         ("Xcode arşivleri", "Library/Developer/Xcode/Archives"),

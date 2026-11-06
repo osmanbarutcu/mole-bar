@@ -248,6 +248,7 @@ final class CacheCleaner: ObservableObject {
         return DeveloperData.trashable.flatMap { single($0, .dev) }
             + children("Library/Caches", .app, skipApple: true)
             + children("Library/Logs", .logs)
+            + children(DeveloperData.mailDownloads, .app)
             + children(".cache", .dev)
             + children("Library/Developer/Xcode/DerivedData", .dev)
             + single(".npm/_cacache", .dev)
@@ -355,7 +356,7 @@ struct CachePage: View {
                 }
             }
             if cleaner.containers.contains(where: { $0.name == "Mail" }) {
-                Text("Mail: Mail'de iletileri seçip İleti > İlişikleri Sil ile yer açabilirsiniz. Ek iletiden kalıcı çıkar. MoleBar Mail verisine dokunmaz.")
+                Text("Mail: Açılan eklerin geçici kopyaları listede çıkar ve Çöp Kutusu'na taşınır. İleti deposuna MoleBar dokunmaz. İletilerden yer açmak için Mail'de İleti > İlişikleri Sil'i kullanın. Ek iletiden kalıcı çıkar.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

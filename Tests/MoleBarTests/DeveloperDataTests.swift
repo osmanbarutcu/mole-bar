@@ -38,3 +38,16 @@ struct DeveloperDataTests {
         #expect(relatives.contains("Library/Developer/CoreSimulator/Devices"))
     }
 }
+
+struct MailDownloadsTests {
+    private let home = FileManager.default.homeDirectoryForCurrentUser
+
+    @Test func openedAttachmentCopiesCanBeTrashed() {
+        let copy = home.appendingPathComponent(DeveloperData.mailDownloads).appendingPathComponent("ABC-123")
+        #expect(TrashGuard.canTrash(copy))
+    }
+
+    @Test func mailStoreStaysProtected() {
+        #expect(!TrashGuard.canTrash(home.appendingPathComponent("Library/Mail/V10")))
+    }
+}
