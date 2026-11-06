@@ -79,6 +79,7 @@ struct PanelView: View {
                 .padding(20)
                 .frame(maxWidth: 760)
             }
+            .scrollClipDisabled()
         }
     }
 

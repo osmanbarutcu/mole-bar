@@ -15,7 +15,12 @@ extension View {
     func glassCard(cornerRadius: CGFloat = 18, tint: Color? = nil) -> some View {
         if #available(macOS 26.0, *) {
             let glass: Glass = tint.map { Glass.regular.tint($0.opacity(0.22)) } ?? Glass.regular
-            self.glassEffect(glass, in: .rect(cornerRadius: cornerRadius))
+            self
+                .background(
+                    Color(nsColor: .controlBackgroundColor).opacity(0.6),
+                    in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                )
+                .glassEffect(glass, in: .rect(cornerRadius: cornerRadius))
         } else {
             self
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
@@ -62,10 +67,13 @@ struct RightSwitchStyle: ToggleStyle {
 struct GlassGroup<Content: View>: View {
     let spacing: CGFloat
     @ViewBuilder let content: () -> Content
+    private let shadowInset: CGFloat = 28
 
     var body: some View {
         if #available(macOS 26.0, *) {
-            GlassEffectContainer(spacing: spacing) { content() }
+            // Cam gölgesi kapsayıcı sınırında kesilmesin diye iç pay verilir; negatif dış pay yerleşimi korur.
+            GlassEffectContainer(spacing: spacing) { content().padding(shadowInset) }
+                .padding(-shadowInset)
         } else {
             content()
         }
