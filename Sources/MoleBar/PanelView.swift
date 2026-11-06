@@ -237,8 +237,12 @@ struct PanelView: View {
         Group {
             if stats.diskAlert { diskAlertBanner }
             volumesCard
+            ReclaimCard { section in
+                UserDefaults.standard.set(section.rawValue, forKey: "mainSection")
+                NotificationCenter.default.post(name: .molebarOpenMain, object: nil)
+            }
             Button { openPreview() } label: {
-                Label("Temizlik önizlemesi", systemImage: "sparkles")
+                Label("Mole temizlik önizlemesi", systemImage: "sparkles")
                     .frame(maxWidth: .infinity)
             }
             .glassProminentButton()

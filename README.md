@@ -30,6 +30,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Gerçek temizlik yalnızca onaydan sonra çalışır. Yalnızca kullanıcı seviyesi dosyaları siler. Geri alınamaz.
 - Disk analizi salt okunurdur. Çöp ikonu öğeyi Çöp Kutusu'na taşır. Ev klasörünün doğrudan alt öğeleri korunur.
 - Yinelenenler sayfası ev klasöründe (gizli klasörler ve ~/Library hariç) aynı içerikli dosyaları SHA-256 ile bulur. Taşıma Çöp Kutusu'nadır. Her gruptaki son kopya taşınamaz.
+- Diskler sayfasındaki "Kazanılabilir alan" kartı, son taramaların sonucunu gösterir. Kategoriler çakışabilir, toplam yoktur.
 - Önbellek sayfası; uygulama önbelleklerini, günlükleri ve geliştirici önbelleklerini listeler. Seçilenler Çöp Kutusu'na taşınır. "Çöp Kutusu'nu boşalt" kalıcıdır ve ayrı onay ister.
 - Yinelenenler sayfasında "Gizli klasörleri ve Library'yi de tara" anahtarı vardır. Varsayılan kapalıdır.
 - Uygulamalar sayfası, uygulamayı ve `~/Library` artıklarını Çöp Kutusu'na taşır. Çalışan uygulama engellenir. Kalıcı silme yoktur.

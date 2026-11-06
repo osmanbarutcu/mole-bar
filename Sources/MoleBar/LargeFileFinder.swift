@@ -65,6 +65,7 @@ final class LargeFileFinder: ObservableObject {
                 }
             }
             self?.isScanning = false
+            if let self, !Task.isCancelled { ReclaimStore.save(.large, bytes: self.totalBytes) }
         }
     }
 
@@ -82,6 +83,7 @@ final class LargeFileFinder: ObservableObject {
         do {
             try FileManager.default.trashItem(at: file.url, resultingItemURL: nil)
             files.removeAll { $0.url == file.url }
+            ReclaimStore.save(.large, bytes: totalBytes)
             notice = "\(file.name) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
         } catch {
             notice = "\(file.name) taşınamadı: \(error.localizedDescription)"

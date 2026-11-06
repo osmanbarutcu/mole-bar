@@ -57,7 +57,14 @@ final class CacheCleaner: ObservableObject {
                 self.items.sort { $0.bytes > $1.bytes }
             }
             self?.isScanning = false
+            if !Task.isCancelled { self?.persist() }
         }
+    }
+
+    /// Kazanılabilir alan kartı için son sonucu yazar.
+    private func persist() {
+        ReclaimStore.save(.cache, bytes: items.reduce(0) { $0 + $1.bytes })
+        ReclaimStore.save(.trash, bytes: trashBytes)
     }
 
     func toggle(_ item: CacheItem) {
@@ -87,6 +94,7 @@ final class CacheCleaner: ObservableObject {
         items.removeAll { chosen.contains($0.url) && !FileManager.default.fileExists(atPath: $0.url.path) }
         selection = []
         trashBytes += moved
+        persist()
         notice = failed == 0
             ? "\(formatBytes(moved)) Çöp Kutusu'na taşındı. Alan, Çöp Kutusu boşalınca açılır."
             : "\(formatBytes(moved)) taşındı. \(failed) öğe taşınamadı."
@@ -101,6 +109,7 @@ final class CacheCleaner: ObservableObject {
             notice = "Çöp Kutusu boşaltılamadı: \(error[NSAppleScript.errorMessage] as? String ?? "bilinmeyen hata")"
         } else {
             trashBytes = 0
+            persist()
             notice = "Çöp Kutusu boşaltıldı."
         }
     }

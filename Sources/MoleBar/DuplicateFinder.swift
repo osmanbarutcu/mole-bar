@@ -65,6 +65,7 @@ final class DuplicateFinder: ObservableObject {
             guard let self else { return }
             self.isScanning = false
             self.finished = !Task.isCancelled
+            if self.finished { ReclaimStore.save(.duplicates, bytes: self.totalWasted) }
         }
     }
 
@@ -85,6 +86,7 @@ final class DuplicateFinder: ObservableObject {
             try FileManager.default.trashItem(at: url, resultingItemURL: nil)
             groups[index].files.removeAll { $0 == url }
             if groups[index].files.count < 2 { groups.remove(at: index) }
+            ReclaimStore.save(.duplicates, bytes: totalWasted)
             notice = "\(url.lastPathComponent) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
         } catch {
             notice = "\(url.lastPathComponent) taşınamadı: \(error.localizedDescription)"
