@@ -31,6 +31,26 @@ enum MemoryPressure: Equatable {
     }
 }
 
+/// Kritik bellek baskısında bildirimi bir kez verir. Baskı normale dönünce yeniden kurulur.
+/// Uyarı düzeyi sıfırlamaz: kritik ile uyarı arasında gidip gelmek art arda bildirim üretmesin.
+struct MemoryAlert {
+    private var notified = false
+
+    mutating func shouldNotify(_ pressure: MemoryPressure) -> Bool {
+        switch pressure {
+        case .critical:
+            guard !notified else { return false }
+            notified = true
+            return true
+        case .normal:
+            notified = false
+            return false
+        case .warning:
+            return false
+        }
+    }
+}
+
 /// Takas (swap) kullanımı. Salt okunur.
 struct SwapUsage: Equatable {
     var usedBytes: UInt64

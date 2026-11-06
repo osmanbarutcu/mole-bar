@@ -35,6 +35,7 @@ final class StatsModel: ObservableObject {
     private var procSampler = ProcessSampler()
     private var healthLoading = false
     private var diskNotified = false
+    private var memoryAlert = MemoryAlert()
     private var tick = 0
     private var cpu = CPUSampler()
     private var network = NetworkSampler()
@@ -72,6 +73,13 @@ final class StatsModel: ObservableObject {
         cpuPerCore = cpuResult.perCore
         memory = sampleMemory()
         pressure = MemoryPressure.sample()
+        if memoryAlert.shouldNotify(pressure) {
+            DiskNotifier.post(
+                title: "Bellek baskısı kritik",
+                body: "Mac belleği yetersiz kalıyor. Süreçler sayfasından büyük uygulamaları kapatın.",
+                id: "molebar.memory"
+            )
+        }
         swap = SwapUsage.sample()
         disk = sampleDisk()
         let net = network.sample()

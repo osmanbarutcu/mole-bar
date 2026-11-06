@@ -31,3 +31,37 @@ struct MemoryPressureTests {
         #expect(SwapUsage(usedBytes: 500, totalBytes: 1000).percent == 50)
     }
 }
+
+struct MemoryAlertTests {
+    @Test func notifiesOnceWhenPressureTurnsCritical() {
+        var alert = MemoryAlert()
+        let r1 = alert.shouldNotify(.normal)
+        #expect(!r1)
+        let r2 = alert.shouldNotify(.warning)
+        #expect(!r2)
+        let r3 = alert.shouldNotify(.critical)
+        #expect(r3)
+        let r4 = alert.shouldNotify(.critical)
+        #expect(!r4)
+    }
+
+    @Test func warningDoesNotResetTheAlert() {
+        var alert = MemoryAlert()
+        let r5 = alert.shouldNotify(.critical)
+        #expect(r5)
+        let r6 = alert.shouldNotify(.warning)
+        #expect(!r6)
+        let r7 = alert.shouldNotify(.critical)
+        #expect(!r7)
+    }
+
+    @Test func normalPressureRearmsTheAlert() {
+        var alert = MemoryAlert()
+        let r8 = alert.shouldNotify(.critical)
+        #expect(r8)
+        let r9 = alert.shouldNotify(.normal)
+        #expect(!r9)
+        let r10 = alert.shouldNotify(.critical)
+        #expect(r10)
+    }
+}
