@@ -46,6 +46,12 @@ enum FolderGrowth {
     /// Bu eşiğin altındaki artışlar gürültüdür, listelenmez.
     static let minimumBytes: UInt64 = 20 << 20
 
+    /// Bildirim için tek satır. Artış yoksa nil döner.
+    static func summaryLine(_ entries: [FolderGrowthEntry]) -> String? {
+        guard let top = entries.max(by: { $0.bytes < $1.bytes }) else { return nil }
+        return "En çok büyüyen: \(top.name) +\(formatBytes(top.bytes)) (\(top.days) gün)."
+    }
+
     /// En eski ve en yeni ölçümü karşılaştırır. Yalnızca iki ölçümde de bulunan ve büyüyen adlar döner, büyükten küçüğe.
     static func compute(_ samples: [FolderSample]) -> [FolderGrowthEntry] {
         guard samples.count >= 2, let oldest = samples.first, let latest = samples.last,

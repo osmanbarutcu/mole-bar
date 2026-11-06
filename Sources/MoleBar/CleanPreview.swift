@@ -157,9 +157,13 @@ final class CleanPreview: ObservableObject {
                 Task {
                     let cache = await Task.detached { CacheCleaner.totalCacheBytes() }.value
                     ReclaimStore.save(.cache, bytes: cache)
+                    FolderLog.record(["Önbellek": cache])
+                    let growth = FolderGrowth.summaryLine(FolderGrowth.compute(Array(FolderLog.load().suffix(30))))
                     DiskNotifier.post(
                         title: "Haftalık tarama bitti",
-                        body: "Temizlenebilir alan: \(value). Önbellek: \(formatBytes(cache)). Araçlar sekmesinden inceleyin. Hiçbir şey silinmedi.",
+                        body: "Temizlenebilir alan: \(value). Önbellek: \(formatBytes(cache)). "
+                            + (growth.map { $0 + " " } ?? "")
+                            + "Araçlar sekmesinden inceleyin. Hiçbir şey silinmedi.",
                         id: "molebar.scan"
                     )
                     let limitGB = UserDefaults.standard.integer(forKey: "cacheAlertGB")

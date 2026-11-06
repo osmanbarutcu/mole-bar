@@ -40,6 +40,21 @@ struct FolderGrowthTests {
         #expect(FolderGrowth.compute(samples).isEmpty)
     }
 
+    @Test func summaryLineNamesLargestGrowerAndDays() throws {
+        let entries = [
+            FolderGrowthEntry(name: "Docker", bytes: 600 * mb, days: 16),
+            FolderGrowthEntry(name: "Önbellek", bytes: 300 * mb, days: 16)
+        ]
+        let line = try #require(FolderGrowth.summaryLine(entries))
+        #expect(line.contains("Docker"))
+        #expect(line.contains("16 gün"))
+        #expect(!line.contains("Önbellek"))
+    }
+
+    @Test func summaryLineIsNilWithoutGrowth() {
+        #expect(FolderGrowth.summaryLine([]) == nil)
+    }
+
     @Test func fewerThanTwoSamplesGivesNoGrowth() {
         #expect(FolderGrowth.compute([]).isEmpty)
         #expect(FolderGrowth.compute([FolderSample(day: "2026-11-05", sizes: ["A": 900 * mb])]).isEmpty)
