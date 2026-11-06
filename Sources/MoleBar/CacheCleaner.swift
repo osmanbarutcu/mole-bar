@@ -43,6 +43,7 @@ final class CacheCleaner: ObservableObject {
     @Published private(set) var hasScanned = false
     @Published private(set) var containers: [ContainerData] = []
     @Published private(set) var dockerRows: [DockerRow] = []
+    @Published private(set) var snapshots: [LocalSnapshot] = []
     @Published var selection = Set<URL>()
     @Published var confirmingMove = false
     @Published var confirmingEmpty = false
@@ -72,6 +73,7 @@ final class CacheCleaner: ObservableObject {
             self?.trashBytes = trash
             self?.containers = await Task.detached { Self.containerData() }.value
             self?.dockerRows = await Task.detached { Self.dockerUsage() }.value
+            self?.snapshots = await Task.detached { LocalSnapshots.list() }.value
             for await item in Self.stream() {
                 if Task.isCancelled { break }
                 guard let self else { return }
@@ -267,7 +269,7 @@ struct CachePage: View {
                     .help("Yeniden tara")
             }
             trashCard
-            if !cleaner.containers.isEmpty || !cleaner.dockerRows.isEmpty { containerCard }
+            if !cleaner.containers.isEmpty || !cleaner.dockerRows.isEmpty || !cleaner.snapshots.isEmpty { containerCard }
             if let notice = cleaner.notice {
                 Text(notice).font(.caption).foregroundStyle(.secondary)
             }
@@ -362,6 +364,30 @@ struct CachePage: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if let oldest = cleaner.snapshots.map(\.date).min() {
+                Divider().opacity(0.4)
+                Text("Yerel Time Machine anlık görüntüleri").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                HStack {
+                    Text("\(cleaner.snapshots.count) adet").font(.caption)
+                    Spacer(minLength: 8)
+                    Text("en eskisi \(oldest.formatted(date: .abbreviated, time: .shortened))")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
+                Text("Boyutu okunamaz. macOS alan gerekince bunları kendisi siler. Elle silmek için komutu kopyalayın ve Terminal'de çalıştırın. MoleBar çalıştırmaz.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button("En eskisini silme komutunu kopyala") {
+                    if let snapshot = cleaner.snapshots.min(by: { $0.date < $1.date }) {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(LocalSnapshots.deleteCommand(for: snapshot), forType: .string)
+                        cleaner.notice = "Komut panoya kopyalandı. Terminal'de çalıştırın."
+                    }
+                }
+                .glassButton()
+                .controlSize(.small)
             }
             Text("MoleBar bunu silmez. İmajlar ve birimler geri alınamaz. Boyut, diskte gerçekten ayrılan alandır. İçeriği görmek için komutu çalıştırın.")
                 .font(.caption2)
