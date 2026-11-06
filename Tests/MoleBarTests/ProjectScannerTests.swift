@@ -98,4 +98,69 @@ struct ProjectScannerTests {
         let found = ProjectScanner.scan(root: root, maxDepth: 4)
         #expect(found.first?.lastActive == old)
     }
+
+    @Test("her öğe bulunduğu diskin adını taşır")
+    func diskName() throws {
+        let root = try makeRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        try touch(root.appendingPathComponent("web/package.json"))
+        try touch(root.appendingPathComponent("web/node_modules/a.js"))
+        let expected = try root.resourceValues(forKeys: [.volumeNameKey]).volumeName
+        #expect(expected != nil)
+        #expect(ProjectScanner.scan(root: root, maxDepth: 4).first?.disk == expected)
+    }
+}
+
+@Suite("ProjectFilter.apply")
+struct ProjectFilterTests {
+    private let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    private func item(_ name: String, disk: String, daysAgo: Double?, bytes: UInt64) -> ProjectArtifact {
+        ProjectArtifact(
+            url: URL(fileURLWithPath: "/tmp/\(name)/node_modules"), kind: "node_modules", project: name,
+            lastActive: daysAgo.map { now.addingTimeInterval(-$0 * 86_400) }, disk: disk, bytes: bytes, sized: true)
+    }
+
+    @Test("disk seçilince yalnızca o diskin öğeleri kalır")
+    func byDisk() {
+        let items = [item("a", disk: "Macintosh HD", daysAgo: 200, bytes: 5), item("b", disk: "brtc-disk", daysAgo: 200, bytes: 9)]
+        let result = ProjectFilter.apply(items, disk: "brtc-disk", minDays: 0, now: now)
+        #expect(result.map(\.project) == ["b"])
+    }
+
+    @Test("Hepsi tüm diskleri boyuta göre sıralar")
+    func allDisks() {
+        let items = [item("a", disk: "Macintosh HD", daysAgo: 200, bytes: 5), item("b", disk: "brtc-disk", daysAgo: 200, bytes: 9)]
+        #expect(ProjectFilter.apply(items, disk: nil, minDays: 0, now: now).map(\.project) == ["b", "a"])
+    }
+
+    @Test("gün eşiği ve disk birlikte uygulanır, tarihsiz öğe listelenmez")
+    func ageAndDisk() {
+        let items = [
+            item("old", disk: "brtc-disk", daysAgo: 200, bytes: 1), item("new", disk: "brtc-disk", daysAgo: 5, bytes: 1),
+            item("undated", disk: "brtc-disk", daysAgo: nil, bytes: 1)
+        ]
+        #expect(ProjectFilter.apply(items, disk: "brtc-disk", minDays: 90, now: now).map(\.project) == ["old"])
+    }
+
+    @Test("disk adları tekrarsız ve sıralı listelenir")
+    func diskNames() {
+        let items = [item("a", disk: "brtc-disk", daysAgo: 1, bytes: 1), item("b", disk: "Macintosh HD", daysAgo: 1, bytes: 1), item("c", disk: "brtc-disk", daysAgo: 1, bytes: 1)]
+        #expect(ProjectFilter.diskNames(items) == ["brtc-disk", "Macintosh HD"])
+    }
+
+    @Test("taranan diskler, öğesi olmayan diskle birlikte listelenir")
+    func scannedDisksKeepEmpty() {
+        let items = [item("a", disk: "brtc-disk", daysAgo: 1, bytes: 1)]
+        #expect(ProjectFilter.diskNames(items, scanned: ["Macintosh HD", "brtc-disk"]) == ["brtc-disk", "Macintosh HD"])
+    }
+
+    @Test("disk toplamı, seçili olmayan diskleri de ayrı verir")
+    func totalsByDisk() {
+        let items = [
+            item("a", disk: "Macintosh HD", daysAgo: 200, bytes: 5), item("b", disk: "brtc-disk", daysAgo: 200, bytes: 9),
+            item("c", disk: "brtc-disk", daysAgo: 200, bytes: 1)
+        ]
+        #expect(ProjectFilter.totals(items, minDays: 90, now: now) == ["Macintosh HD": 5, "brtc-disk": 10])
+    }
 }

@@ -6,6 +6,8 @@ struct ProjectArtifact: Identifiable, Hashable {
     let kind: String
     let project: String
     let lastActive: Date?
+    /// Öğenin bulunduğu birimin adı (örn. "Macintosh HD", "brtc-disk").
+    let disk: String
     var bytes: UInt64 = 0
     var sized = false
     var id: URL { url }
@@ -62,7 +64,37 @@ enum ProjectScanner {
         }
         let dates = candidates.compactMap { modified(parent.appendingPathComponent($0)) }
         // Hiçbiri yoksa proje klasörünün kendi tarihi kullanılır. Tarihsiz proje eski sayılmaz.
-        return ProjectArtifact(url: url, kind: kind, project: parent.lastPathComponent, lastActive: dates.max() ?? modified(parent))
+        let disk = (try? url.resourceValues(forKeys: [.volumeNameKey]))?.volumeName ?? "Bilinmeyen disk"
+        return ProjectArtifact(url: url, kind: kind, project: parent.lastPathComponent, lastActive: dates.max() ?? modified(parent), disk: disk)
+    }
+}
+
+/// Disk ve gün eşiği süzgeci. Saf işlev, testlenir.
+enum ProjectFilter {
+    /// `disk` nil ise tüm diskler. `minDays` 0 ise yaş süzgeci yok. Tarihsiz öğe yaş süzgecinde listelenmez.
+    static func apply(_ items: [ProjectArtifact], disk: String?, minDays: Int, now: Date = Date()) -> [ProjectArtifact] {
+        let cutoff = now.addingTimeInterval(-Double(minDays) * 86_400)
+        return items
+            .filter { disk == nil || $0.disk == disk }
+            .filter { minDays == 0 || ($0.lastActive ?? .distantFuture) < cutoff }
+            .sorted { $0.bytes > $1.bytes }
+    }
+
+    /// Öğesi olmayan diskler de listelenir. Böylece taranan her disk seçicide görünür.
+    static func diskNames(_ items: [ProjectArtifact], scanned: [String] = []) -> [String] {
+        Set(items.map(\.disk)).union(scanned).sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
+    /// Yaş süzgecine uyan öğelerin disk bazında toplamı. Öğesi olmayan disk sözlükte yoktur.
+    static func totals(_ items: [ProjectArtifact], minDays: Int, now: Date = Date()) -> [String: UInt64] {
+        var result: [String: UInt64] = [:]
+        for item in apply(items, disk: nil, minDays: minDays, now: now) { result[item.disk, default: 0] += item.bytes }
+        return result
+    }
+
+    /// Başlangıç diskinin adı. "Disk neden dolu?" kartı yalnızca bu diski anlatır.
+    static func bootDiskName() -> String {
+        (try? URL(fileURLWithPath: "/").resourceValues(forKeys: [.volumeNameKey]))?.volumeName ?? "Macintosh HD"
     }
 }
 
@@ -72,17 +104,22 @@ final class ProjectCleaner: ObservableObject {
 
     @Published private(set) var items: [ProjectArtifact] = []
     @Published private(set) var isScanning = false
+    @Published private(set) var scannedDisks: [String] = []
     @Published var ageIndex = 2
+    /// nil ise tüm diskler.
+    @Published var diskFilter: String?
     @Published var selected = Set<URL>()
     @Published var confirming = false
     @Published var notice: String?
     private var started = false
 
     var visible: [ProjectArtifact] {
-        let days = Self.ageOptions[ageIndex].days
-        guard days > 0 else { return items.sorted { $0.bytes > $1.bytes } }
-        let cutoff = Date().addingTimeInterval(-Double(days) * 86_400)
-        return items.filter { ($0.lastActive ?? .distantFuture) < cutoff }.sorted { $0.bytes > $1.bytes }
+        ProjectFilter.apply(items, disk: diskFilter, minDays: Self.ageOptions[ageIndex].days)
+    }
+    var diskNames: [String] { ProjectFilter.diskNames(items, scanned: scannedDisks) }
+    /// Yaş süzgecine uyan öğelerin disk bazında toplamı. Disk seçici etiketinde görünür.
+    func bytes(onDisk disk: String?) -> UInt64 {
+        ProjectFilter.apply(items, disk: disk, minDays: Self.ageOptions[ageIndex].days).reduce(0) { $0 + $1.bytes }
     }
     var selectedItems: [ProjectArtifact] { visible.filter { selected.contains($0.url) } }
     var selectedBytes: UInt64 { selectedItems.reduce(0) { $0 + $1.bytes } }
@@ -97,9 +134,11 @@ final class ProjectCleaner: ObservableObject {
         selected = []
         confirming = false
         Task {
-            let found = await Task.detached { Self.scanRoots() }.value
+            let (found, disks) = await Task.detached { Self.scanRoots() }.value
+            scannedDisks = disks
             items = found
             isScanning = false
+            if let chosen = diskFilter, !diskNames.contains(chosen) { diskFilter = nil }
             for artifact in found {
                 let bytes = await Task.detached { FileSizer.size(of: artifact.url) }.value
                 if let index = items.firstIndex(where: { $0.id == artifact.id }) {
@@ -107,17 +146,25 @@ final class ProjectCleaner: ObservableObject {
                     items[index].sized = true
                 }
             }
-            ReclaimStore.save(.projects, bytes: visibleBytes)
+            saveReclaim()
         }
     }
 
+    /// Toplam ve disk bazlı toplamlar kaydedilir. "Disk neden dolu?" kartı her diski ayrı gösterir.
+    private func saveReclaim() {
+        ReclaimStore.save(.projects, bytes: bytes(onDisk: nil))
+        let totals = ProjectFilter.totals(items, minDays: Self.ageOptions[ageIndex].days)
+        UserDefaults.standard.set(ProjectDiskTotals.encode(totals), forKey: ProjectDiskTotals.key)
+    }
+
     /// Ev klasörü ve bağlı harici diskler. Başlangıç diskinin /Volumes bağlantısı atlanır.
-    private nonisolated static func scanRoots() -> [ProjectArtifact] {
+    private nonisolated static func scanRoots() -> ([ProjectArtifact], [String]) {
         let fm = FileManager.default
         var roots = [fm.homeDirectoryForCurrentUser]
         let volumes = (try? fm.contentsOfDirectory(at: URL(fileURLWithPath: "/Volumes"), includingPropertiesForKeys: nil)) ?? []
         roots += volumes.filter { $0.resolvingSymlinksInPath().path != "/" }
-        return roots.flatMap { ProjectScanner.scan(root: $0, maxDepth: 5) }
+        let names = roots.compactMap { (try? $0.resourceValues(forKeys: [.volumeNameKey]))?.volumeName }
+        return (roots.flatMap { ProjectScanner.scan(root: $0, maxDepth: 5) }, Array(Set(names)))
     }
 
     func toggle(_ item: ProjectArtifact) {
@@ -140,7 +187,7 @@ final class ProjectCleaner: ObservableObject {
             } catch { failed += 1 }
         }
         notice = "\(formatBytes(moved)) Çöp Kutusu'na taşındı." + (failed > 0 ? " \(failed) öğe taşınamadı." : " Finder'dan geri alınabilir.")
-        ReclaimStore.save(.projects, bytes: visibleBytes)
+        saveReclaim()
     }
 }
 
@@ -170,6 +217,7 @@ struct ProjectsPage: View {
                 .labelsHidden()
                 .frame(width: 300)
             }
+            if cleaner.diskNames.count > 1 { diskPicker }
             if let notice = cleaner.notice { Text(notice).font(.caption).foregroundStyle(.secondary) }
             ScrollView {
                 GlassGroup(spacing: 12) {
@@ -186,6 +234,22 @@ struct ProjectsPage: View {
         .onAppear { cleaner.scanIfNeeded() }
     }
 
+    /// Birden fazla disk varsa hangisini listeleyeceğinizi seçersiniz. Etiketlerde yaş süzgecine uyan toplam görünür.
+    private var diskPicker: some View {
+        HStack(spacing: 10) {
+            Text("Disk").font(.caption).foregroundStyle(.secondary)
+            Picker("Disk", selection: $cleaner.diskFilter) {
+                Text("Hepsi \(formatBytes(cleaner.bytes(onDisk: nil)))").tag(String?.none)
+                ForEach(cleaner.diskNames, id: \.self) { name in
+                    Text("\(name) \(formatBytes(cleaner.bytes(onDisk: name)))").tag(String?.some(name))
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(maxWidth: 560)
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         if cleaner.visible.isEmpty {
@@ -193,10 +257,32 @@ struct ProjectsPage: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
-            ForEach(cleaner.visible) { item in
-                row(item)
-                Divider().opacity(0.4)
+            ForEach(groups, id: \.disk) { group in
+                if showHeaders {
+                    HStack {
+                        Text(group.disk).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        Spacer()
+                        Text(formatBytes(group.items.reduce(0) { $0 + $1.bytes })).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 8)
+                    .padding(.bottom, 2)
+                }
+                ForEach(group.items) { item in
+                    row(item)
+                    Divider().opacity(0.4)
+                }
             }
+        }
+    }
+
+    /// "Hepsi" seçiliyken disk başlıklarıyla ayrı gruplar. Tek disk seçiliyse başlık gerekmez.
+    private var showHeaders: Bool { cleaner.diskFilter == nil && cleaner.diskNames.count > 1 }
+
+    private var groups: [(disk: String, items: [ProjectArtifact])] {
+        let visible = cleaner.visible
+        return cleaner.diskNames.compactMap { name in
+            let rows = visible.filter { $0.disk == name }
+            return rows.isEmpty ? nil : (name, rows)
         }
     }
 

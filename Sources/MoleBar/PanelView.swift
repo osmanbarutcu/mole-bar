@@ -271,6 +271,10 @@ struct PanelView: View {
         Group {
             if stats.diskAlert { diskAlertBanner }
             volumesCard
+            DiskExplainerCard(cleaner: stats.cacheCleaner) { section in
+                UserDefaults.standard.set(section.rawValue, forKey: "mainSection")
+                NotificationCenter.default.post(name: .molebarOpenMain, object: nil)
+            }
             DiskGrowthCard()
             ReclaimCard { section in
                 UserDefaults.standard.set(section.rawValue, forKey: "mainSection")

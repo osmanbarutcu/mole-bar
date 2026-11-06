@@ -37,7 +37,8 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Süreçler sayfası CPU, Bellek ve Ağ sıralaması sunar.
 - Önbellek sayfası OrbStack/Docker, Mail ve Spotlight dizini boyutunu yalnızca gösterir. MoleBar bunları silmez. Boyut hesabı sert bağlantıları bir kez sayar.
 - Araçlar sayfası hedefi eksik giriş öğelerini listeler. Silmez.
-- Projeler sayfası ev klasöründe ve bağlı disklerde yeniden üretilebilir proje çıktılarını bulur: `node_modules`, `.build`, `vendor`, `target`, `Pods`, `.venv`. Klasör yalnızca yanında proje dosyası varsa listelenir (örn. `package.json`). Son etkinlik; manifest, `.git` ve klasör tarihinin en yenisidir. Taşıma Çöp Kutusu'nadır. Sonra yeniden kurulum gerekir.
+- Projeler sayfası ev klasöründe ve bağlı disklerde yeniden üretilebilir proje çıktılarını bulur: `node_modules`, `.build`, `vendor`, `target`, `Pods`, `.venv`. Klasör yalnızca yanında proje dosyası varsa listelenir (örn. `package.json`). Son etkinlik; manifest, `.git` ve klasör tarihinin en yenisidir. Taşıma Çöp Kutusu'nadır. Sonra yeniden kurulum gerekir. Birden fazla disk varsa sayfa her diski ayrı seçenek olarak gösterir (disk başına toplamla). "Hepsi" seçiliyken liste disk başlıklarıyla gruplanır.
+- Diskler sayfasındaki "Disk neden dolu?" kartı her diski ayrı bölümde anlatır. Ana diskte kapsayıcılar, önbellek, Çöp Kutusu ve proje çıktıları, diğer disklerde proje çıktıları görünür. Büyük dosyalar listesi OrbStack ve Spotlight dosyalarını da içerdiği için karta eklenmez.
 - Ayarlar sayfasında tema, son işlemler ve son hatalar bulunur. Ana pencerede ⌘1–⌘9 sayfa değiştirir, Ayarlar için ⌘0. Projeler sayfasının kısayolu yoktur.
 - Uygulamalar sayfası, uygulamayı ve `~/Library` artıklarını Çöp Kutusu'na taşır. Çalışan uygulama engellenir. Kalıcı silme yoktur.
 - Süreç sonlandırma `SIGTERM` gönderir. Sistem süreçleri korunur.
