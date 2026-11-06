@@ -1,11 +1,29 @@
 import AppKit
 import SwiftUI
 
+enum FileKind: String, CaseIterable {
+    case all = "Hepsi"
+    case image = "İmaj"
+    case archive = "Arşiv"
+    case video = "Video"
+    case other = "Diğer"
+
+    static func of(_ url: URL) -> FileKind {
+        switch url.pathExtension.lowercased() {
+        case "dmg", "iso", "img", "raw", "qcow2", "vmdk", "vdi", "sparseimage", "sparsebundle", "vhd", "vhdx": return .image
+        case "zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar", "zst", "pkg": return .archive
+        case "mov", "mp4", "mkv", "avi", "m4v", "webm", "wmv", "mts": return .video
+        default: return .other
+        }
+    }
+}
+
 struct LargeFile: Identifiable {
     let url: URL
     let bytes: UInt64
     var id: URL { url }
     var name: String { url.lastPathComponent }
+    var kind: FileKind { FileKind.of(url) }
     var folder: String {
         url.deletingLastPathComponent().path.replacingOccurrences(of: NSHomeDirectory(), with: "~")
     }
@@ -24,6 +42,7 @@ final class LargeFileFinder: ObservableObject {
     @Published private(set) var scanned = 0
     @Published private(set) var inaccessible = 0
     @Published var thresholdIndex = 1
+    @Published var kind: FileKind = .all
     @Published var pendingTrash: URL?
     @Published var notice: String?
 
@@ -33,6 +52,8 @@ final class LargeFileFinder: ObservableObject {
 
     var thresholdBytes: UInt64 { Self.thresholds[thresholdIndex].bytes }
     var totalBytes: UInt64 { files.reduce(0) { $0 + $1.bytes } }
+    var visibleFiles: [LargeFile] { kind == .all ? files : files.filter { $0.kind == kind } }
+    var visibleBytes: UInt64 { visibleFiles.reduce(0) { $0 + $1.bytes } }
 
     func scanIfNeeded() {
         guard !started else { return }
@@ -149,8 +170,8 @@ struct LargeFilesPage: View {
                     ProgressView().controlSize(.small)
                     Text("\(finder.scanned) dosya").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                     Button("Durdur") { finder.cancel() }.glassButton().controlSize(.small)
-                } else if !finder.files.isEmpty {
-                    Text(formatBytes(finder.totalBytes)).font(.headline.monospacedDigit())
+                } else if !finder.visibleFiles.isEmpty {
+                    Text(formatBytes(finder.visibleBytes)).font(.headline.monospacedDigit())
                 }
             }
             HStack(spacing: 10) {
@@ -167,6 +188,15 @@ struct LargeFilesPage: View {
                     .glassProminentButton()
                     .disabled(finder.isScanning)
             }
+            Picker("Tür", selection: $finder.kind) {
+                ForEach(FileKind.allCases, id: \.self) { kind in
+                    let count = kind == .all ? finder.files.count : finder.files.filter { $0.kind == kind }.count
+                    Text("\(kind.rawValue) \(count)").tag(kind)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(maxWidth: 420)
             if !finder.isScanning, finder.scanned > 0 {
                 Text("\(finder.scanned) dosya tarandı." + (finder.inaccessible > 0 ? " \(finder.inaccessible) öğeye erişilemedi (izin yok). Sonuçlar eksik. Sistem Ayarları > Gizlilik > Tam Disk Erişimi altında MoleBar'a izin verin." : ""))
                     .font(.caption2)
@@ -194,12 +224,12 @@ struct LargeFilesPage: View {
 
     @ViewBuilder
     private var content: some View {
-        if finder.files.isEmpty {
-            Text(finder.isScanning ? "Taranıyor..." : "Henüz sonuç yok. Tara'ya basın.")
+        if finder.visibleFiles.isEmpty {
+            Text(finder.isScanning ? "Taranıyor..." : (finder.files.isEmpty ? "Henüz sonuç yok. Tara'ya basın." : "Bu türde dosya yok."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
-            ForEach(finder.files) { file in
+            ForEach(finder.visibleFiles) { file in
                 row(file)
                 Divider().opacity(0.4)
             }
