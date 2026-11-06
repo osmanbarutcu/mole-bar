@@ -40,7 +40,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 
 ## Bilinen sınırlar
 
-- Uygulama ad-hoc imzalıdır. Başka bir Mac'e kopyalarsanız Gatekeeper uyarı verebilir.
+- Uygulama yerel Apple Development sertifikasıyla imzalanır. Sertifika yoksa ad-hoc imza kullanılır. Başka bir Mac'e kopyalarsanız Gatekeeper uyarı verebilir.
 - ⌥⌘M kısayolu sistemin iç sınıf adlarına dayanır. macOS güncellemesinde bozulabilir.
 - Disk analizi ve Büyük dosyalar sayfası, bazı klasörler için Tam Disk Erişimi ister. Erişilemeyen öğe sayısı ekranda görünür. İzin yoksa sonuçlar eksik kalır. Örnek: 426 bin dosya görüldü, izinli betik 626 bin dosya gördü.
 - `mo purge` Mole'da hata verebilir (`discovered[@]: unbound variable`). Doğrulanmadı.
