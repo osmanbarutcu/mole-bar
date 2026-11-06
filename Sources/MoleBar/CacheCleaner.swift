@@ -7,6 +7,15 @@ enum CacheCategory: String, CaseIterable {
     case dev = "Geliştirici önbelleği"
 }
 
+/// Konteyner çalışma zamanı verisi (OrbStack, Docker). Yalnızca gösterilir, MoleBar silmez.
+struct ContainerData: Identifiable {
+    let name: String
+    let url: URL
+    /// nil ise boyut okunamadı (izin yok).
+    let bytes: UInt64?
+    var id: URL { url }
+}
+
 struct CacheItem: Identifiable {
     let url: URL
     let category: CacheCategory
@@ -24,6 +33,7 @@ final class CacheCleaner: ObservableObject {
     @Published private(set) var isScanning = false
     @Published private(set) var trashBytes: UInt64 = 0
     @Published private(set) var hasScanned = false
+    @Published private(set) var containers: [ContainerData] = []
     @Published var selection = Set<URL>()
     @Published var confirmingMove = false
     @Published var confirmingEmpty = false
@@ -51,6 +61,7 @@ final class CacheCleaner: ObservableObject {
         task = Task { [weak self] in
             let trash = await Task.detached { Self.trashSize() }.value
             self?.trashBytes = trash
+            self?.containers = await Task.detached { Self.containerData() }.value
             for await item in Self.stream() {
                 if Task.isCancelled { break }
                 guard let self else { return }
@@ -125,6 +136,29 @@ final class CacheCleaner: ObservableObject {
         candidates().reduce(0) { $0 + FileSizer.size(of: $1.0) }
     }
 
+    private nonisolated static func containerData() -> [ContainerData] {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        var found: [(String, URL)] = []
+        let groups = home.appendingPathComponent("Library/Group Containers")
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: groups.path)) ?? []
+        for name in names where name.lowercased().contains("orbstack") { found.append(("OrbStack", groups.appendingPathComponent(name))) }
+        for (label, relative) in [("OrbStack", ".orbstack"), ("Docker Desktop", "Library/Containers/com.docker.docker")] {
+            let url = home.appendingPathComponent(relative)
+            if FileManager.default.fileExists(atPath: url.path) { found.append((label, url)) }
+        }
+        return found.compactMap { label, url -> ContainerData? in
+            // OrbStack disk imajı data/data.img.raw dosyasıdır. Okunamıyorsa Tam Disk Erişimi eksiktir.
+            let image = url.appendingPathComponent("data/data.img.raw")
+            if url.path.contains("Group Containers") {
+                let size = (try? image.resourceValues(forKeys: [.totalFileAllocatedSizeKey]))?.totalFileAllocatedSize
+                return ContainerData(name: label, url: url, bytes: size.map { UInt64($0) })
+            }
+            let bytes = FileSizer.size(of: url)
+            return bytes >= 1 << 20 ? ContainerData(name: label, url: url, bytes: bytes) : nil
+        }
+        .sorted { ($0.bytes ?? 0) > ($1.bytes ?? 0) }
+    }
+
     private nonisolated static func trashSize() -> UInt64 {
         FileSizer.size(of: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".Trash"))
     }
@@ -162,6 +196,12 @@ final class CacheCleaner: ObservableObject {
             + children("Library/Developer/Xcode/DerivedData", .dev)
             + single(".npm/_cacache", .dev)
             + single(".gradle/caches", .dev)
+            + single(".cargo/registry", .dev)
+            + single(".cocoapods", .dev)
+            + single(".bun/install/cache", .dev)
+            + single(".pnpm-store", .dev)
+            + single("Library/Developer/Xcode/iOS DeviceSupport", .dev)
+            + single("Library/Developer/CoreSimulator/Caches", .dev)
     }
 }
 
@@ -180,6 +220,7 @@ struct CachePage: View {
                     .help("Yeniden tara")
             }
             trashCard
+            if !cleaner.containers.isEmpty { containerCard }
             if let notice = cleaner.notice {
                 Text(notice).font(.caption).foregroundStyle(.secondary)
             }
@@ -228,6 +269,36 @@ struct CachePage: View {
             }
         }
         .padding(16)
+        .glassCard()
+    }
+
+    private var containerTotal: UInt64 { cleaner.containers.reduce(0) { $0 + ($1.bytes ?? 0) } }
+
+    /// Salt okunur. MoleBar konteyner verisini silmez, çünkü imajlar ve birimler geri alınamaz.
+    private var containerCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            CardHeader(symbol: "shippingbox", title: "Konteyner verisi", trailing: containerTotal == 0 ? "" : formatBytes(containerTotal))
+            ForEach(cleaner.containers) { item in
+                HStack {
+                    Text(item.name).font(.subheadline)
+                    Spacer(minLength: 8)
+                    Text(item.bytes.map(formatBytes) ?? "Okunamadı (Tam Disk Erişimi)").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                }
+            }
+            Text("MoleBar bunu silmez. İmajlar ve birimler geri alınamaz. Boyut, diskte gerçekten ayrılan alandır. İçeriği görmek için komutu çalıştırın.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Button("docker system df") {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString("docker system df", forType: .string)
+                cleaner.notice = "Komut panoya kopyalandı. Terminal'de çalıştırın."
+            }
+            .glassButton()
+            .controlSize(.small)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }
 
