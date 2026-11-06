@@ -351,6 +351,7 @@ struct PanelView: View {
             .glassCard()
             LoginItemAuditCard()
             LaunchItemsCard()
+            SecurityCard()
         }
     }
 
