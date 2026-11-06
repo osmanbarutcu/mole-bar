@@ -332,6 +332,7 @@ struct PanelView: View {
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCard()
+            LoginItemAuditCard()
         }
     }
 
