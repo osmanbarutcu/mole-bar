@@ -21,7 +21,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 
 - Menü çubuğundaki metne tıklayın. Panel açılır: Genel, Diskler, Süreçler, Araçlar.
 - `⌥⌘M` paneli açar.
-- Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Büyük dosyalar, Yinelenenler, Önbellek, Uygulamalar, Süreçler, Araçlar, Ayarlar.
+- Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Büyük dosyalar, Yinelenenler, Önbellek, Uygulamalar, Süreçler, Araçlar, Projeler, Ayarlar.
 - Ayarlar'da menü çubuğu görünümü (metin veya ikon), disk uyarı eşiği, girişte başlatma ve haftalık tarama bulunur.
 
 ## Güvenlik
@@ -37,7 +37,8 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Süreçler sayfası CPU, Bellek ve Ağ sıralaması sunar.
 - Önbellek sayfası OrbStack/Docker, Mail ve Spotlight dizini boyutunu yalnızca gösterir. MoleBar bunları silmez. Boyut hesabı sert bağlantıları bir kez sayar.
 - Araçlar sayfası hedefi eksik giriş öğelerini listeler. Silmez.
-- Ayarlar sayfasında tema, son işlemler ve son hatalar bulunur. Ana pencerede ⌘1–⌘0 sayfa değiştirir.
+- Projeler sayfası ev klasöründe ve bağlı disklerde yeniden üretilebilir proje çıktılarını bulur: `node_modules`, `.build`, `vendor`, `target`, `Pods`, `.venv`. Klasör yalnızca yanında proje dosyası varsa listelenir (örn. `package.json`). Son etkinlik; manifest, `.git` ve klasör tarihinin en yenisidir. Taşıma Çöp Kutusu'nadır. Sonra yeniden kurulum gerekir.
+- Ayarlar sayfasında tema, son işlemler ve son hatalar bulunur. Ana pencerede ⌘1–⌘9 sayfa değiştirir, Ayarlar için ⌘0. Projeler sayfasının kısayolu yoktur.
 - Uygulamalar sayfası, uygulamayı ve `~/Library` artıklarını Çöp Kutusu'na taşır. Çalışan uygulama engellenir. Kalıcı silme yoktur.
 - Süreç sonlandırma `SIGTERM` gönderir. Sistem süreçleri korunur.
 - Gerçek `mo optimize` Terminal'de çalışır, çünkü yönetici izni ister.
@@ -56,6 +57,6 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Simgeyi yeniden üretin: `swift scripts/make-icon.swift /tmp/AppIcon.iconset`, ardından `iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns`.
 - Karar günlüğü ve ilerleme: `memory-bank/`.
 - Testleri çalıştırın: `swift test`. Testler Swift Testing kullanır (`Tests/MoleBarTests`). XCTest gerekmez.
-- Kaynak dosya değişince ilk `swift test` çalıştırması `TestingMacros` eklenti hatası verebilir. Komutu bir kez daha çalıştırın.
+- `swift test` bazen `TestingMacros` eklenti hatası verir ve tekrar çalıştırmak yetmeyebilir. Kalıcı çözüm: `swift test -Xswiftc -plugin-path -Xswiftc /Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing`.
 - Panel görünümünü pencerede görmek için: `MOLEBAR_PANEL_PREVIEW=1 /Applications/MoleBar.app/Contents/MacOS/MoleBar`.
 - Ekran görüntüleri: `scripts/ui-shots.sh [klasör] [system|light|dark]`. Terminal için Erişilebilirlik izni gerekir.

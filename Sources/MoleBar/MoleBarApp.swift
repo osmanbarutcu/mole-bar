@@ -25,12 +25,13 @@ struct MoleBarApp: App {
         .defaultLaunchBehavior(.presented)
         .commands {
             CommandMenu("Sayfa") {
-                ForEach(Array(MainSection.allCases.enumerated()), id: \.element) { index, section in
-                    Button(section.rawValue) {
-                        UserDefaults.standard.set(section.rawValue, forKey: "mainSection")
+                ForEach(MainSection.allCases) { section in
+                    let open = { UserDefaults.standard.set(section.rawValue, forKey: "mainSection") }
+                    if let key = section.shortcut {
+                        Button(section.rawValue, action: open).keyboardShortcut(key, modifiers: .command)
+                    } else {
+                        Button(section.rawValue, action: open)
                     }
-                    // ⌘1 ... ⌘9, onuncu sayfa ⌘0.
-                    .keyboardShortcut(KeyEquivalent(Character(String((index + 1) % 10))), modifiers: .command)
                 }
             }
         }

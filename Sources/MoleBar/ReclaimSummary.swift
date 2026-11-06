@@ -8,6 +8,7 @@ enum ReclaimStore {
         case trash = "reclaim.trash"
         case large = "reclaim.large"
         case duplicates = "reclaim.dups"
+        case projects = "reclaim.projects"
     }
 
     static func save(_ key: Key, bytes: UInt64) {
@@ -24,6 +25,7 @@ struct ReclaimCard: View {
     @AppStorage("reclaim.trash") private var trash = -1
     @AppStorage("reclaim.large") private var large = -1
     @AppStorage("reclaim.dups") private var dups = -1
+    @AppStorage("reclaim.projects") private var projects = -1
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -32,6 +34,7 @@ struct ReclaimCard: View {
             row("trash", "Çöp Kutusu", trash, .caches)
             row("doc.text.magnifyingglass", "Büyük dosyalar", large, .large)
             row("square.on.square", "Yinelenen kopyalar", dups, .duplicates)
+            row("hammer", "Proje çıktıları", projects, .projects)
             Text("Kategoriler çakışabilir, bu yüzden toplam gösterilmez. Değerler son taramadan gelir.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)

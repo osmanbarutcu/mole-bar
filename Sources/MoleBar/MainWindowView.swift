@@ -10,9 +10,27 @@ enum MainSection: String, CaseIterable, Identifiable {
     case apps = "Uygulamalar"
     case processes = "Süreçler"
     case tools = "Araçlar"
+    case projects = "Projeler"
     case settings = "Ayarlar"
 
     var id: String { rawValue }
+
+    /// ⌘1 ... ⌘9 ve Ayarlar için ⌘0. Projeler sayfasının kısayolu yoktur.
+    var shortcut: KeyEquivalent? {
+        switch self {
+        case .general: return "1"
+        case .disks: return "2"
+        case .analyze: return "3"
+        case .large: return "4"
+        case .duplicates: return "5"
+        case .caches: return "6"
+        case .apps: return "7"
+        case .processes: return "8"
+        case .tools: return "9"
+        case .settings: return "0"
+        case .projects: return nil
+        }
+    }
 
     var symbol: String {
         switch self {
@@ -25,6 +43,7 @@ enum MainSection: String, CaseIterable, Identifiable {
         case .apps: return "square.stack.3d.up"
         case .processes: return "list.number"
         case .tools: return "wrench.and.screwdriver"
+        case .projects: return "hammer"
         case .settings: return "gearshape"
         }
     }
@@ -39,6 +58,7 @@ struct MainWindowView: View {
     @StateObject private var uninstaller = AppUninstaller()
     @StateObject private var largeFinder = LargeFileFinder()
     @StateObject private var duplicateFinder = DuplicateFinder()
+    @StateObject private var projectCleaner = ProjectCleaner()
 
     var body: some View {
         // Geliştirme: MOLEBAR_PANEL_PREVIEW=1 ile pencere menü çubuğu panelini çizer. Ekran görüntüsü almak içindir.
@@ -72,6 +92,8 @@ struct MainWindowView: View {
                     DuplicatesPage(finder: duplicateFinder)
                 } else if current == .caches {
                     CachePage(cleaner: stats.cacheCleaner)
+                } else if current == .projects {
+                    ProjectsPage(cleaner: projectCleaner)
                 } else if current == .apps {
                     UninstallPage(model: uninstaller)
                 } else {
