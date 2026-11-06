@@ -37,6 +37,7 @@ struct PanelView: View {
     @AppStorage("diskAlertThreshold") private var diskAlertThreshold = 90
     @AppStorage("cacheAlertGB") private var cacheAlertGB = 0
     @AppStorage("procSort") private var procSort = "cpu"
+    @AppStorage("appearance") private var appearance = "system"
 
     private let panelHeight: CGFloat = 620
 
@@ -535,6 +536,21 @@ struct PanelView: View {
         ScrollView(showsIndicators: false) {
             GlassGroup(spacing: 12) {
                 VStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        CardHeader(symbol: "circle.lefthalf.filled", title: "Tema")
+                        Picker("Tema", selection: $appearance) {
+                            Text("Sistem").tag("system")
+                            Text("Açık").tag("light")
+                            Text("Koyu").tag("dark")
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .onChange(of: appearance) { _, value in AppDelegate.applyAppearance(value) }
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .glassCard()
+
                     VStack(alignment: .leading, spacing: 10) {
                         CardHeader(symbol: "menubar.rectangle", title: "Menü çubuğu")
                         Picker("Görünüm", selection: $displayMode) {

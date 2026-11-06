@@ -7,7 +7,17 @@ extension Notification.Name {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// "system" sistem temasını izler. "light" ve "dark" uygulamayı o temaya sabitler.
+    static func applyAppearance(_ value: String) {
+        switch value {
+        case "light": NSApp.appearance = NSAppearance(named: .aqua)
+        case "dark": NSApp.appearance = NSAppearance(named: .darkAqua)
+        default: NSApp.appearance = nil
+        }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Self.applyAppearance(UserDefaults.standard.string(forKey: "appearance") ?? "system")
         // Giriş öğesi olarak başlatıldıysa pencere açılmaz, yalnızca menü çubuğu kalır.
         let event = NSAppleEventManager.shared().currentAppleEvent
         let launchedAtLogin = event?.paramDescriptor(forKeyword: AEKeyword(keyAEPropData))?.enumCodeValue
