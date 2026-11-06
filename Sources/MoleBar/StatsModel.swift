@@ -19,6 +19,9 @@ final class StatsModel: ObservableObject {
     @Published var volumes: [VolumeInfo] = []
     @Published var processGroups: [ProcessGroup] = []
     @Published var health: MoleHealth?
+    /// Süreç başına ağ hızı (bayt/sn). Yalnızca Süreçler sayfası "Ağ" sıralamasındayken güncellenir.
+    @Published var netByPid: [Int32: Double] = [:]
+    private var netLoading = false
     @Published var diskAlert = false
     /// Son 1 saat, 30 saniyelik örnek (en çok 120 nokta). Yalnızca bellekte tutulur.
     @Published var history: [HistoryPoint] = []
@@ -59,6 +62,7 @@ final class StatsModel: ObservableObject {
         if tick % 3 == 1 { volumes = sampleVolumes() }
         if tick % 2 == 0 { processGroups = procSampler.sample() }
         if tick % 15 == 1 { refreshHealth() }
+        if tick % 3 == 0, UserDefaults.standard.string(forKey: "procSort") == "net" { refreshNet() }
         if tick == 30 || tick % 900 == 0 { cleanPreview.startIfDue() }
         let cpuResult = cpu.sample()
         cpuTotal = cpuResult.total
@@ -76,6 +80,16 @@ final class StatsModel: ObservableObject {
         if tick % 15 == 1 {
             history.append(HistoryPoint(cpu: cpuTotal, memory: memory.percent))
             if history.count > 120 { history.removeFirst(history.count - 120) }
+        }
+    }
+
+    private func refreshNet() {
+        guard !netLoading else { return }
+        netLoading = true
+        Task {
+            let result = await Task.detached(priority: .utility) { NetPerProcess.sample() }.value
+            netByPid = result
+            netLoading = false
         }
     }
 

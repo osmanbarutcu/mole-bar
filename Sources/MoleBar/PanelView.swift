@@ -452,12 +452,13 @@ struct PanelView: View {
 
     private var processesPage: some View {
         let rows = topProcesses
-        let peak = max(rows.map { procSort == "cpu" ? $0.cpu : Double($0.memoryBytes) }.max() ?? 1, 0.0001)
+        let peak = max(rows.map { metric($0) }.max() ?? 1, 0.0001)
         return VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "list.number", title: "En çok kullanan 10")
             Picker("Sıralama", selection: $procSort) {
                 Text("CPU").tag("cpu")
                 Text("Bellek").tag("mem")
+                Text("Ağ").tag("net")
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -469,7 +470,7 @@ struct PanelView: View {
             }
             ForEach(rows) { processRow($0, peak: peak) }
 
-            Text("Aynı uygulamanın süreçleri toplanır. Bellek, çalışan küme (RSS) değeridir.")
+            Text("Aynı uygulamanın süreçleri toplanır. Bellek, çalışan küme (RSS) değeridir. Ağ değeri 6 saniyede bir yenilenir.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
@@ -479,14 +480,28 @@ struct PanelView: View {
     }
 
     private var topProcesses: [ProcessGroup] {
-        let sorted = procSort == "cpu"
-            ? stats.processGroups.sorted { $0.cpu > $1.cpu }
-            : stats.processGroups.sorted { $0.memoryBytes > $1.memoryBytes }
-        return Array(sorted.prefix(10))
+        Array(stats.processGroups.sorted { metric($0) > metric($1) }.prefix(10))
+    }
+
+    /// Seçili sıralamaya göre satırın değeri.
+    private func metric(_ row: ProcessGroup) -> Double {
+        switch procSort {
+        case "mem": return Double(row.memoryBytes)
+        case "net": return row.pids.reduce(0) { $0 + (stats.netByPid[$1] ?? 0) }
+        default: return row.cpu
+        }
+    }
+
+    private func metricText(_ row: ProcessGroup) -> String {
+        switch procSort {
+        case "mem": return formatBytes(row.memoryBytes)
+        case "net": return formatRate(metric(row))
+        default: return String(format: "%.1f%%", row.cpu)
+        }
     }
 
     private func processRow(_ row: ProcessGroup, peak: Double) -> some View {
-        let value = procSort == "cpu" ? row.cpu : Double(row.memoryBytes)
+        let value = metric(row)
         return HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(row.name)
@@ -518,7 +533,7 @@ struct PanelView: View {
             } else {
                 UsageBar(percent: value / peak * 100, height: 4, color: .accentColor)
                     .frame(width: 56)
-                Text(procSort == "cpu" ? String(format: "%.1f%%", row.cpu) : formatBytes(row.memoryBytes))
+                Text(metricText(row))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
