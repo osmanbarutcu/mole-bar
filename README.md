@@ -35,7 +35,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 - Yinelenenler sayfasında "Gizli klasörleri ve Library'yi de tara" anahtarı vardır. Varsayılan kapalıdır.
 - Genel sayfasında pil, ısı durumu ve açık kalma süresi görünür. Mac 30 günden uzun açıksa uyarı çıkar.
 - Süreçler sayfası CPU, Bellek ve Ağ sıralaması sunar.
-- Önbellek sayfası OrbStack/Docker ve Mail boyutunu yalnızca gösterir. MoleBar bunları silmez.
+- Önbellek sayfası OrbStack/Docker, Mail ve Spotlight dizini boyutunu yalnızca gösterir. MoleBar bunları silmez. Boyut hesabı sert bağlantıları bir kez sayar.
 - Araçlar sayfası hedefi eksik giriş öğelerini listeler. Silmez.
 - Ayarlar sayfasında tema, son işlemler ve son hatalar bulunur. Ana pencerede ⌘1–⌘0 sayfa değiştirir.
 - Uygulamalar sayfası, uygulamayı ve `~/Library` artıklarını Çöp Kutusu'na taşır. Çalışan uygulama engellenir. Kalıcı silme yoktur.
