@@ -185,14 +185,14 @@ struct AnalyzePage: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Disk analizi").font(.title2.weight(.semibold))
             shortcutRow
             pathBar
             ScrollView {
                 GlassGroup(spacing: 12) {
                     VStack(alignment: .leading, spacing: 0) { listContent }
-                        .padding(12)
+                        .padding(16)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .glassCard()
                 }
@@ -205,7 +205,7 @@ struct AnalyzePage: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(20)
+        .padding(24)
         .onAppear { analyzer.startIfNeeded() }
     }
 

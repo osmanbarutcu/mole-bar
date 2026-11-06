@@ -138,7 +138,7 @@ struct UninstallPage: View {
     @ObservedObject var model: AppUninstaller
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Uygulamalar").font(.title2.weight(.semibold))
                 Spacer()
@@ -158,7 +158,7 @@ struct UninstallPage: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(20)
+        .padding(24)
         .onAppear { model.loadIfNeeded() }
     }
 
@@ -229,7 +229,7 @@ struct UninstallPage: View {
                 Spacer()
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(width: 300)
         .frame(maxHeight: .infinity, alignment: .top)
         .glassCard(cornerRadius: 16)

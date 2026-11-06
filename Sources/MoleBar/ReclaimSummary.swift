@@ -26,7 +26,7 @@ struct ReclaimCard: View {
     @AppStorage("reclaim.dups") private var dups = -1
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "arrow.down.circle", title: "Kazanılabilir alan")
             row("archivebox", "Önbellek", cache, .caches)
             row("trash", "Çöp Kutusu", trash, .caches)
@@ -36,7 +36,7 @@ struct ReclaimCard: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }

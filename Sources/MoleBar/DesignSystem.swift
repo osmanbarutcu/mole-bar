@@ -116,7 +116,7 @@ struct RingGauge: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
+        .padding(.vertical, 16)
         .glassCard(cornerRadius: 16)
     }
 }
@@ -237,8 +237,8 @@ struct RateChip: View {
             }
             Spacer(minLength: 0)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
         .glassCard(cornerRadius: 14)
     }

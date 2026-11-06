@@ -52,23 +52,23 @@ struct PanelView: View {
     @ViewBuilder
     private func embeddedBody(_ section: MainSection) -> some View {
         if layout.showPreview {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 14) {
                 Button { layout.showPreview = false } label: { Label("Geri", systemImage: "chevron.left") }
                     .glassButton()
                 Text(preview.job.title).font(.title2.weight(.semibold))
                 CleanPreviewPage(preview: preview)
             }
-            .padding(20)
+            .padding(24)
             .frame(maxWidth: 760, alignment: .leading)
         } else if section == .settings {
             settingsPage
-                .padding(20)
+                .padding(24)
                 .frame(maxWidth: 640, alignment: .leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             ScrollView {
                 GlassGroup(spacing: 12) {
-                    VStack(spacing: 12) {
+                    VStack(spacing: 14) {
                         switch section {
                         case .general: generalPage
                         case .disks: disksPage
@@ -78,7 +78,7 @@ struct PanelView: View {
                         }
                     }
                 }
-                .padding(20)
+                .padding(24)
                 .frame(maxWidth: 760)
             }
             .shadowSafeScroll()
@@ -86,7 +86,7 @@ struct PanelView: View {
     }
 
     private var panelBody: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             header
             if layout.showPreview {
                 CleanPreviewPage(preview: preview)
@@ -101,7 +101,7 @@ struct PanelView: View {
 
                 ScrollView(showsIndicators: false) {
                     GlassGroup(spacing: 12) {
-                        VStack(spacing: 10) {
+                        VStack(spacing: 14) {
                             switch layout.tab {
                             case .general: generalPage
                             case .disks: disksPage
@@ -116,7 +116,7 @@ struct PanelView: View {
             }
             footer
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 16)
         .padding(.vertical, 16)
         .frame(width: 344, height: panelHeight)
         .background(Color(nsColor: .controlBackgroundColor))
@@ -178,7 +178,7 @@ struct PanelView: View {
             coresCard
             historyCard
             memoryCard
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 RateChip(symbol: "arrow.down.circle", label: "İndirme", value: formatRate(stats.netDown))
                 RateChip(symbol: "arrow.up.circle", label: "Yükleme", value: formatRate(stats.netUp))
             }
@@ -188,7 +188,7 @@ struct PanelView: View {
     @ViewBuilder
     private var healthCard: some View {
         if let health = stats.health {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 CardHeader(symbol: "heart.text.square", title: "Sistem sağlığı (Mole)", trailing: "\(health.score)/100")
                 UsageBar(percent: Double(health.score), color: healthColor(health.score))
                 Text(health.message)
@@ -209,7 +209,7 @@ struct PanelView: View {
                     }
                 }
             }
-            .padding(12)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCard()
         }
@@ -247,19 +247,19 @@ struct PanelView: View {
                 }
             }
         }
-        .padding(12)
+        .padding(16)
         .glassCard()
     }
 
     private var memoryCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "memorychip", title: "Bellek", trailing: String(format: "%.0f%%", stats.memory.percent))
             UsageBar(percent: stats.memory.percent)
             Text("\(formatBytes(stats.memory.usedBytes)) / \(formatBytes(stats.memory.totalBytes))")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }
@@ -282,7 +282,7 @@ struct PanelView: View {
             }
             .glassProminentButton()
             .controlSize(.large)
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
                 RateChip(symbol: "arrow.down.doc", label: "Disk okuma", value: formatRate(stats.diskRead))
                 RateChip(symbol: "arrow.up.doc", label: "Disk yazma", value: formatRate(stats.diskWrite))
             }
@@ -314,7 +314,7 @@ struct PanelView: View {
                     openPreview(.optimizePreview)
                 }
             }
-            .padding(12)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCard()
 
@@ -329,7 +329,7 @@ struct PanelView: View {
                     TerminalBridge.run("mo clean --whitelist")
                 }
             }
-            .padding(12)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCard()
         }
@@ -367,7 +367,7 @@ struct PanelView: View {
         if stats.history.count > 1 {
             let cpu = stats.history.map(\.cpu)
             let ram = stats.history.map(\.memory)
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 10) {
                 CardHeader(
                     symbol: "chart.xyaxis.line",
                     title: "Geçmiş",
@@ -382,7 +382,7 @@ struct PanelView: View {
                     legend("RAM", color: .purple, average: ram.reduce(0, +) / Double(ram.count))
                 }
             }
-            .padding(12)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCard()
         }
@@ -411,12 +411,12 @@ struct PanelView: View {
                 .controlSize(.small)
                 .help("Uygulama içinde tarar. Hiçbir şey silmez.")
         }
-        .padding(12)
+        .padding(16)
         .glassCard(tint: .orange)
     }
 
     private var volumesCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             CardHeader(symbol: "internaldrive", title: "Diskler", trailing: "\(stats.volumes.count) birim")
             ForEach(stats.volumes) { volume in
                 VStack(alignment: .leading, spacing: 5) {
@@ -443,7 +443,7 @@ struct PanelView: View {
                 }
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }
@@ -473,7 +473,7 @@ struct PanelView: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }
@@ -541,7 +541,7 @@ struct PanelView: View {
     private var settingsPage: some View {
         ScrollView(showsIndicators: false) {
             GlassGroup(spacing: 12) {
-                VStack(spacing: 10) {
+                VStack(spacing: 14) {
                     VStack(alignment: .leading, spacing: 10) {
                         CardHeader(symbol: "circle.lefthalf.filled", title: "Tema")
                         Picker("Tema", selection: $appearance) {
@@ -553,7 +553,7 @@ struct PanelView: View {
                         .labelsHidden()
                         .onChange(of: appearance) { _, value in AppDelegate.applyAppearance(value) }
                     }
-                    .padding(12)
+                    .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .glassCard()
 
@@ -566,7 +566,7 @@ struct PanelView: View {
                         .pickerStyle(.segmented)
                         .labelsHidden()
                     }
-                    .padding(12)
+                    .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .glassCard()
 
@@ -579,7 +579,7 @@ struct PanelView: View {
                     }
                     .toggleStyle(RightSwitchStyle())
                     .controlSize(.small)
-                    .padding(12)
+                    .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .glassCard()
                     .disabled(displayMode == "icon")
@@ -609,7 +609,7 @@ struct PanelView: View {
                     }
                     .toggleStyle(RightSwitchStyle())
                     .controlSize(.small)
-                    .padding(12)
+                    .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .glassCard()
 
@@ -630,7 +630,7 @@ struct PanelView: View {
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    .padding(12)
+                    .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .glassCard()
 

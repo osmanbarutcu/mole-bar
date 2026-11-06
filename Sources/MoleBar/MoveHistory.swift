@@ -25,7 +25,7 @@ struct MoveHistoryCard: View {
     }()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "clock.arrow.circlepath", title: "Son işlemler", trailing: model.records.isEmpty ? "" : "\(model.records.count) kayıt")
             if model.records.isEmpty {
                 Text("Henüz Çöp Kutusu'na taşıma yok.").font(.caption).foregroundStyle(.secondary)
@@ -55,7 +55,7 @@ struct MoveHistoryCard: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
         .onAppear { model.reload() }

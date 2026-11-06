@@ -239,7 +239,7 @@ struct DuplicatesPage: View {
     @ObservedObject var finder: DuplicateFinder
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Yinelenen dosyalar").font(.title2.weight(.semibold))
                 Spacer()
@@ -285,7 +285,7 @@ struct DuplicatesPage: View {
             if !finder.groups.isEmpty, !finder.isScanning { bulkBar }
             ScrollView {
                 GlassGroup(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 12) { content }
+                    VStack(alignment: .leading, spacing: 14) { content }
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -294,7 +294,7 @@ struct DuplicatesPage: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(20)
+        .padding(24)
     }
 
     @ViewBuilder
@@ -337,7 +337,7 @@ struct DuplicatesPage: View {
             Text(finder.isScanning ? "Taranıyor..." : (finder.finished ? "Yinelenen dosya bulunamadı." : "Henüz sonuç yok. Tara'ya basın."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .padding(12)
+                .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .glassCard()
         } else {
@@ -348,7 +348,7 @@ struct DuplicatesPage: View {
     }
 
     private func card(_ group: DuplicateGroup) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             CardHeader(
                 symbol: "square.on.square",
                 title: "\(group.files.count) kopya · \(formatBytes(group.size))",
@@ -358,7 +358,7 @@ struct DuplicatesPage: View {
                 row(url, group: group)
             }
         }
-        .padding(12)
+        .padding(16)
         .glassCard()
     }
 

@@ -162,7 +162,7 @@ struct LargeFilesPage: View {
     @ObservedObject var finder: LargeFileFinder
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Büyük dosyalar").font(.title2.weight(.semibold))
                 Spacer()
@@ -208,7 +208,7 @@ struct LargeFilesPage: View {
             ScrollView {
                 GlassGroup(spacing: 12) {
                     VStack(alignment: .leading, spacing: 0) { content }
-                        .padding(12)
+                        .padding(16)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .glassCard()
                 }
@@ -218,7 +218,7 @@ struct LargeFilesPage: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
-        .padding(20)
+        .padding(24)
         .onAppear { finder.scanIfNeeded() }
     }
 

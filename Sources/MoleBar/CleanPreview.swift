@@ -223,7 +223,7 @@ struct CleanPreviewPage: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             GlassGroup(spacing: 12) {
-                VStack(spacing: 10) {
+                VStack(spacing: 14) {
                     statusCard
                     if preview.job == .cleanRun && preview.phase == .done && !preview.rawTail.isEmpty { tailCard }
                     if !preview.lines.isEmpty && preview.job != .cleanRun { listCard }
@@ -245,7 +245,7 @@ struct CleanPreviewPage: View {
     }
 
     private var runningCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
                 Text(preview.job == .cleanRun ? "Temizleniyor" : "Taranıyor")
@@ -269,7 +269,7 @@ struct CleanPreviewPage: View {
                 .glassButton()
                 .controlSize(.small)
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(tint: preview.job == .cleanRun ? .orange : nil)
     }
@@ -284,7 +284,7 @@ struct CleanPreviewPage: View {
     }
 
     private var cleanPreviewDoneCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             if preview.summary != nil {
                 Text(summaryParts.first?.value ?? "")
                     .font(.system(size: 30, weight: .semibold, design: .rounded))
@@ -326,13 +326,13 @@ struct CleanPreviewPage: View {
                 }
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(tint: .green)
     }
 
     private var confirmBox: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Label("Silme işlemi geri alınamaz", systemImage: "exclamationmark.triangle.fill")
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.orange)
@@ -356,7 +356,7 @@ struct CleanPreviewPage: View {
     }
 
     private var cleanRunDoneCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Temizlik bitti").font(.subheadline.weight(.semibold))
             if let freed = preview.freedBytes {
                 Text(freed > 0 ? "Boşalan alan: \(formatBytes(UInt64(freed)))" : "Ölçülen fark: yok")
@@ -370,14 +370,14 @@ struct CleanPreviewPage: View {
                 .glassButton()
                 .controlSize(.small)
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(tint: .green)
     }
 
     private var optimizeDoneCard: some View {
         let steps = preview.lines.filter { $0.kind == .item }.count
-        return VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: 10) {
             Text("\(steps) bakım adımı").font(.system(size: 26, weight: .semibold, design: .rounded))
             Text("Önizleme. Hiçbir şey değişmedi.")
                 .font(.caption)
@@ -395,13 +395,13 @@ struct CleanPreviewPage: View {
                     .controlSize(.small)
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(tint: .blue)
     }
 
     private var failedCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("İşlem alınamadı").font(.subheadline.weight(.semibold))
             Text(MoleCLI.isInstalled
                  ? "Mole çıktısı tanınmadı veya işlem başarısız oldu."
@@ -412,13 +412,13 @@ struct CleanPreviewPage: View {
                 .glassButton()
                 .controlSize(.small)
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard(tint: .red)
     }
 
     private var idleCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(preview.job.title).font(.subheadline.weight(.semibold))
             Text("Mole tarar. Önizlemede hiçbir şey silinmez.")
                 .font(.caption)
@@ -427,7 +427,7 @@ struct CleanPreviewPage: View {
                 .glassButton()
                 .controlSize(.small)
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }
@@ -465,7 +465,7 @@ struct CleanPreviewPage: View {
     }
 
     private var listCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             CardHeader(symbol: "list.bullet", title: "Ayrıntı (Mole çıktısı)")
             ForEach(Array(sections.enumerated()), id: \.offset) { _, section in
                 VStack(alignment: .leading, spacing: 4) {
@@ -493,14 +493,14 @@ struct CleanPreviewPage: View {
                 }
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }
 
     /// Gerçek temizlik çıktısı biçimi doğrulanmadı. Son satırlar ham gösterilir.
     private var tailCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             CardHeader(symbol: "text.alignleft", title: "Mole çıktısının sonu")
             ForEach(Array(preview.rawTail.enumerated()), id: \.offset) { _, line in
                 Text(line)
@@ -509,7 +509,7 @@ struct CleanPreviewPage: View {
                     .lineLimit(2)
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }

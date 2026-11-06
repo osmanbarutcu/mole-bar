@@ -60,7 +60,7 @@ struct DiskGrowthCard: View {
     @StateObject private var model = DiskGrowthModel()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "chart.line.uptrend.xyaxis", title: "Disk büyümesi", trailing: "son 30 gün")
             if let delta = model.weekDelta {
                 let sign = delta.bytes >= 0 ? "+" : "-"
@@ -75,7 +75,7 @@ struct DiskGrowthCard: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
         .onAppear { model.reload() }

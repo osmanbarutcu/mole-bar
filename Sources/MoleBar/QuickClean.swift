@@ -6,7 +6,7 @@ struct QuickCleanCard: View {
     let openCaches: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "bolt", title: "Hızlı eylem")
             HStack {
                 Text("Çöp Kutusu").font(.subheadline)
@@ -47,7 +47,7 @@ struct QuickCleanCard: View {
                 Text(notice).font(.caption2).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(12)
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
     }

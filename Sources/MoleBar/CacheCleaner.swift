@@ -169,7 +169,7 @@ struct CachePage: View {
     @ObservedObject var cleaner: CacheCleaner
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Önbellek ve Çöp Kutusu").font(.title2.weight(.semibold))
                 Spacer()
@@ -185,7 +185,7 @@ struct CachePage: View {
             }
             ScrollView {
                 GlassGroup(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 14) {
                         ForEach(CacheCategory.allCases, id: \.self) { category in
                             let rows = cleaner.items(in: category)
                             if !rows.isEmpty { section(category, rows) }
@@ -194,7 +194,7 @@ struct CachePage: View {
                             Text(cleaner.isScanning ? "Taranıyor..." : "Listelenecek önbellek bulunamadı.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                                .padding(12)
+                                .padding(16)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .glassCard()
                         }
@@ -205,7 +205,7 @@ struct CachePage: View {
             .shadowSafeScroll()
             footer
         }
-        .padding(20)
+        .padding(24)
         .onAppear { cleaner.scanIfNeeded() }
     }
 
@@ -227,12 +227,12 @@ struct CachePage: View {
                     .disabled(cleaner.trashBytes == 0)
             }
         }
-        .padding(12)
+        .padding(16)
         .glassCard()
     }
 
     private func section(_ category: CacheCategory, _ rows: [CacheItem]) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
                 CardHeader(symbol: "internaldrive", title: category.rawValue, trailing: formatBytes(rows.reduce(0) { $0 + $1.bytes }))
                 Button(rows.allSatisfy({ cleaner.selection.contains($0.url) }) ? "Seçimi kaldır" : "Hepsini seç") {
@@ -254,7 +254,7 @@ struct CachePage: View {
                 .onTapGesture { cleaner.toggle(item) }
             }
         }
-        .padding(12)
+        .padding(16)
         .glassCard()
     }
 
