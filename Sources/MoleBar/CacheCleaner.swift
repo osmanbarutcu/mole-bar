@@ -351,7 +351,7 @@ struct CachePage: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             if cleaner.containers.contains(where: { $0.name == "Spotlight dizini" }) {
-                Text("Spotlight dizini: Boyut anormal büyükse Terminal'de `sudo mdutil -E /` dizini yeniden kurar. Kurulum saatler sürebilir. MoleBar dokunmaz.")
+                Text("Spotlight dizini: Boyut anormalse `sudo mdutil -E /` dizini yeniden kurar. MoleBar dokunmaz.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)

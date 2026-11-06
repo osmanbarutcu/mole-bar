@@ -28,6 +28,19 @@ struct FileSizerTests {
         #expect(size < 600_000)
     }
 
+    @Test("sert bağlantılı dosya bir kez sayılır")
+    func hardLinksCountOnce() throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let original = dir.appendingPathComponent("a.bin")
+        try Data(repeating: 4, count: 400_000).write(to: original)
+        let single = FileSizer.size(of: dir)
+        for index in 1...3 {
+            try FileManager.default.linkItem(at: original, to: dir.appendingPathComponent("link\(index).bin"))
+        }
+        #expect(FileSizer.size(of: dir) == single)
+    }
+
     @Test("tek dosya kendi boyutunu döner")
     func singleFile() throws {
         let dir = try makeTempDir()

@@ -48,17 +48,20 @@ enum TrashGuard {
 /// Dosya ve klasör boyutu (ayrılan bayt). Salt okunur.
 enum FileSizer {
     static func size(of url: URL) -> UInt64 {
-        let keys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .isDirectoryKey]
+        let keys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .isDirectoryKey, .linkCountKey, .fileResourceIdentifierKey]
         var isDir: ObjCBool = false
         guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir) else { return 0 }
         if !isDir.boolValue {
             return UInt64((try? url.resourceValues(forKeys: [.totalFileAllocatedSizeKey]))?.totalFileAllocatedSize ?? 0)
         }
         var total: UInt64 = 0
+        // Sert bağlantılı dosya (örn. Spotlight dizini) bir kez sayılır. `du` aynı şekilde davranır.
+        var seenLinks = Set<AnyHashable>()
         guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: keys, options: [], errorHandler: { _, _ in true }) else { return 0 }
         for case let file as URL in enumerator {
             let values = try? file.resourceValues(forKeys: Set(keys))
             if values?.isDirectory == true { continue }
+            if (values?.linkCount ?? 1) > 1, let id = values?.fileResourceIdentifier as? AnyHashable, !seenLinks.insert(id).inserted { continue }
             total += UInt64(values?.totalFileAllocatedSize ?? 0)
         }
         return total
