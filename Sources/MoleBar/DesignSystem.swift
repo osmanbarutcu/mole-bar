@@ -11,9 +11,12 @@ func levelColor(_ percent: Double) -> Color {
 
 extension View {
     /// Cam gölgesi yatayda kırpılmasın, dikeyde liste alttaki öğelerin üstüne taşmasın.
-    func shadowSafeScroll() -> some View {
+    /// `vertical`: içeriğin üstünde ve altında bırakılan boşluk. İlk kart üst kenara, son kart alt kenara yapışmaz.
+    /// İçerik zaten kendi dikey iç boşluğunu taşıyorsa 0 verin, yoksa boşluk ikiye katlanır.
+    func shadowSafeScroll(vertical: CGFloat = 12) -> some View {
         self
             .scrollClipDisabled()
+            .contentMargins(.vertical, vertical, for: .scrollContent)
             .mask(Rectangle().padding(.horizontal, -24))
     }
 

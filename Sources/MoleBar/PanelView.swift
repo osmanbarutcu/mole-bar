@@ -81,7 +81,7 @@ struct PanelView: View {
                 .padding(24)
                 .frame(maxWidth: 760)
             }
-            .shadowSafeScroll()
+            .shadowSafeScroll(vertical: 0) // İçerik zaten padding(24) taşıyor.
         }
     }
 
@@ -112,7 +112,7 @@ struct PanelView: View {
                         .padding(.vertical, 8)
                     }
                 }
-                .shadowSafeScroll()
+                .shadowSafeScroll(vertical: 0) // İçerik zaten dikey padding(8) taşıyor.
             }
             footer
         }
@@ -677,6 +677,6 @@ struct PanelView: View {
                 .padding(.vertical, 8)
             }
         }
-        .shadowSafeScroll()
+        .shadowSafeScroll(vertical: 0) // İçerik zaten dikey padding(8) taşıyor.
     }
 }

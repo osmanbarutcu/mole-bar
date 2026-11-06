@@ -234,6 +234,7 @@ struct CleanPreviewPage: View {
                 }
             }
         }
+        .shadowSafeScroll()
     }
 
     // MARK: Durum kartı
