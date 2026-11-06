@@ -24,7 +24,7 @@ Betik uygulamayı derler, `/Applications/MoleBar.app` altına kopyalar ve açar.
 ## Kullanım
 
 - Menü çubuğundaki metne tıklayın. Panel açılır: Genel, Diskler, Süreçler, Araçlar.
-- `⌥⌘M` paneli açar.
+- `⌥⌘M` ana pencereyi açar veya kapatır. macOS 27 menü çubuğu panelini koddan açmaya izin vermez.
 - Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Büyük dosyalar, Yinelenenler, Önbellek, Uygulamalar, Süreçler, Araçlar, Projeler, Ayarlar.
 - Ayarlar'da menü çubuğu görünümü (metin veya ikon), disk uyarı eşiği, girişte başlatma ve haftalık tarama bulunur.
 

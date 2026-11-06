@@ -630,13 +630,16 @@ struct PanelView: View {
                         if let error = loginItem.errorText {
                             Text(error).font(.caption2).foregroundStyle(.red)
                         }
-                        Toggle("Kısayol ⌥⌘M ile paneli aç", isOn: Binding(
+                        Toggle("Kısayol ⌥⌘M ile ana pencereyi aç veya kapat", isOn: Binding(
                             get: { hotkeyEnabled },
                             set: { value in
                                 hotkeyEnabled = value
                                 if value { GlobalHotKey.register() } else { GlobalHotKey.unregister() }
                             }
                         ))
+                        if hotkeyEnabled, let failure = GlobalHotKey.failureText(GlobalHotKey.lastStatus) {
+                            Text(failure).font(.caption2).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
+                        }
                         Toggle("Haftalık otomatik tarama", isOn: $weeklyScan)
                         Text("Tarama yalnızca önizlemedir ve sonucu bildirir. Hiçbir şey silmez. Uygulama açıkken çalışır.")
                             .font(.caption2)

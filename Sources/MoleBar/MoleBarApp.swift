@@ -1,3 +1,4 @@
+import ServiceManagement
 import SwiftUI
 
 @main
@@ -8,6 +9,7 @@ struct MoleBarApp: App {
     init() {
         let enabled = UserDefaults.standard.object(forKey: "hotkeyEnabled") as? Bool ?? true
         if enabled { GlobalHotKey.register() }
+        integrationLog.info("Giriş öğesi durumu: \(SMAppService.mainApp.status.rawValue) (0 kayıtsız, 1 açık, 2 onay bekliyor, 3 bulunamadı)")
     }
 
     var body: some Scene {
