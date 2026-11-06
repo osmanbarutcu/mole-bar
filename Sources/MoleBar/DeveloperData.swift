@@ -7,7 +7,14 @@ enum DeveloperData {
         "Library/Developer/Xcode/watchOS DeviceSupport",
         "Library/Developer/Xcode/tvOS DeviceSupport",
         "Library/Developer/Xcode/UserData/Previews",
-        "Library/Developer/XCPGDevices"
+        "Library/Developer/XCPGDevices",
+        // Paket yöneticisi önbellekleri. Bir sonraki derlemede yeniden indirilir.
+        "go/pkg/mod",
+        ".cargo/git",
+        ".nuget/packages",
+        ".composer/cache",
+        ".yarn/berry/cache",
+        ".local/share/pnpm/store"
     ]
 
     /// Geri üretilemez veya başka araç gerektirir. Yalnızca gösterilir, MoleBar silmez.

@@ -18,6 +18,19 @@ struct DeveloperDataTests {
         }
     }
 
+    @Test func packageManagerCachesAreListed() {
+        for path in ["go/pkg/mod", ".cargo/git", ".nuget/packages", ".composer/cache", ".yarn/berry/cache", ".local/share/pnpm/store"] {
+            #expect(DeveloperData.trashable.contains(path), "\(path) listede yok")
+        }
+    }
+
+    @Test func pathsWithPossiblyIrreplaceableDataAreNotListed() {
+        // .m2/repository ve .pub-cache yerel kurulum içerir, yeniden üretilemeyebilir.
+        let all = Set(DeveloperData.trashable)
+        #expect(!all.contains(".m2/repository"))
+        #expect(!all.contains(".pub-cache"))
+    }
+
     @Test func archivesAndBackupsAreDisplayOnly() {
         let relatives = DeveloperData.displayOnly.map(\.relative)
         #expect(relatives.contains("Library/Developer/Xcode/Archives"))
