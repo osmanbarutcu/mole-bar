@@ -181,6 +181,7 @@ struct DockerProjectsCard: View {
                     .controlSize(.small)
                     .disabled(model.loading)
                     .help("Docker verisini yenile")
+                    .accessibilityLabel("Docker verisini yenile")
             }
             if groups.isEmpty {
                 Text(message).font(.caption).foregroundStyle(.secondary)

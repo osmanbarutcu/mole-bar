@@ -275,6 +275,7 @@ struct CachePage: View {
                     .glassButton()
                     .disabled(cleaner.isScanning)
                     .help("Yeniden tara")
+                    .accessibilityLabel("Yeniden tara")
             }
             trashCard
             if !cleaner.containers.isEmpty || !cleaner.dockerRows.isEmpty || !cleaner.snapshots.isEmpty { containerCard }

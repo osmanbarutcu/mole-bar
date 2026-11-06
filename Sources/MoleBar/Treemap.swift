@@ -100,5 +100,8 @@ struct TreemapView: View {
         .contentShape(Rectangle())
         .onTapGesture { onOpen(entry) }
         .help("\(entry.name): \(formatBytes(entry.bytes))")
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(A11y.tile(name: entry.name, bytes: entry.bytes, isDirectory: entry.isDirectory))
+        .accessibilityAddTraits(entry.isDirectory ? .isButton : [])
     }
 }

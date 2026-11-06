@@ -264,6 +264,7 @@ struct ProjectsPage: View {
                     .glassButton()
                     .disabled(cleaner.isScanning)
                     .help("Yeniden tara")
+                    .accessibilityLabel("Yeniden tara")
             }
             HStack(spacing: 10) {
                 Text("Son etkinlik").font(.caption).foregroundStyle(.secondary)
@@ -312,6 +313,7 @@ struct ProjectsPage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Aramayı temizle")
+                    .accessibilityLabel("Aramayı temizle")
             }
         }
         .padding(.horizontal, 12)

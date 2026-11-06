@@ -67,6 +67,9 @@ struct MenuBarLabel: View {
                     .monospacedDigit()
             }
         }
+        .accessibilityLabel(displayMode == "graph"
+            ? "MoleBar, \(GraphMetric(stored: graphMetric).title) \(GraphMetric(stored: graphMetric).label(value: stats.recent(GraphMetric(stored: graphMetric)).last ?? 0))"
+            : "MoleBar")
         .onReceive(NotificationCenter.default.publisher(for: .molebarOpenMain)) { _ in
             openWindow(id: "main")
             NSApp.activate(ignoringOtherApps: true)

@@ -156,6 +156,7 @@ struct UninstallPage: View {
                     Button { model.reload() } label: { Image(systemName: "arrow.clockwise") }
                         .glassButton()
                         .help("Yeniden tara")
+                        .accessibilityLabel("Yeniden tara")
                 }
             }
             if mode == "orphans" {

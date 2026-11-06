@@ -90,6 +90,17 @@ struct GlassGroup<Content: View>: View {
     }
 }
 
+/// VoiceOver için okunur metinler. Görsel olarak çizilen değerler ekran okuyucuya bu metinlerle iletilir.
+enum A11y {
+    static func percent(_ value: Double) -> String {
+        "yüzde \(Int(min(max(value, 0), 100).rounded()))"
+    }
+
+    static func tile(name: String, bytes: UInt64, isDirectory: Bool) -> String {
+        "\(name), \(isDirectory ? "klasör" : "dosya"), \(formatBytes(bytes))"
+    }
+}
+
 struct RingGauge: View {
     let title: String
     let percent: Double
@@ -121,6 +132,9 @@ struct RingGauge: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .glassCard(cornerRadius: 16)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(A11y.percent(percent))
     }
 }
 
@@ -140,6 +154,9 @@ struct UsageBar: View {
             }
         }
         .frame(height: height)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Kullanım")
+        .accessibilityValue(A11y.percent(percent))
     }
 }
 
@@ -168,6 +185,9 @@ struct CoreBar: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Çekirdek \(index + 1)")
+        .accessibilityValue(A11y.percent(percent))
     }
 }
 
@@ -189,6 +209,8 @@ struct Sparkline: View {
             }
             .stroke(color, style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
         }
+        // Süs çizgisi. Değerler yanındaki metinle okunur.
+        .accessibilityHidden(true)
     }
 }
 
@@ -215,6 +237,8 @@ struct CardHeader: View {
                     .fixedSize()
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
     }
 }
 

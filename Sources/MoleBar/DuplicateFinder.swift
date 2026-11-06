@@ -401,6 +401,7 @@ struct DuplicatesPage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Finder'da göster")
+                    .accessibilityLabel("Finder'da göster")
                 let allowed = TrashGuard.canTrash(url) && group.files.count > 1
                 Button { finder.pendingTrash = url } label: { Image(systemName: "trash") }
                     .buttonStyle(.plain)

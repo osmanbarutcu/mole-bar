@@ -126,6 +126,7 @@ struct PortScanCard: View {
                     .controlSize(.small)
                     .disabled(model.loading)
                     .help("Yeniden tara")
+                    .accessibilityLabel("Yeniden tara")
             }
             if model.ports.isEmpty {
                 Text(model.loaded ? "Dinleyen port bulunamadı." : "Taranıyor...").font(.caption).foregroundStyle(.secondary)

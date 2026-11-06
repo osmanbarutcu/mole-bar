@@ -278,6 +278,7 @@ struct AnalyzePage: View {
                 .glassButton()
                 .disabled(!analyzer.canGoBack)
                 .help("Geri")
+                .accessibilityLabel("Geri")
             VStack(alignment: .leading, spacing: 0) {
                 Text(analyzer.current.lastPathComponent.isEmpty ? "/" : analyzer.current.lastPathComponent)
                     .font(.headline)
@@ -304,13 +305,16 @@ struct AnalyzePage: View {
             Button { analyzer.rescan() } label: { Image(systemName: "arrow.clockwise") }
                 .glassButton()
                 .help("Yeniden tara")
+                .accessibilityLabel("Yeniden tara")
             Button { analyzer.exportCSV() } label: { Image(systemName: "square.and.arrow.up") }
                 .glassButton()
                 .disabled(analyzer.entries.isEmpty || analyzer.isScanning)
                 .help("Bu klasörün listesini CSV olarak kaydet")
+                .accessibilityLabel("Bu klasörün listesini CSV olarak kaydet")
             Button { NSWorkspace.shared.open(analyzer.current) } label: { Image(systemName: "folder") }
                 .glassButton()
                 .help("Finder'da aç")
+                .accessibilityLabel("Finder'da aç")
         }
     }
 
@@ -383,6 +387,7 @@ struct AnalyzePage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Finder'da göster")
+                    .accessibilityLabel("Finder'da göster")
                 let allowed = TrashGuard.canTrash(entry.url)
                 Button { analyzer.pendingTrash = entry.url } label: { Image(systemName: "trash") }
                     .buttonStyle(.plain)

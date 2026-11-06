@@ -275,6 +275,7 @@ struct LargeFilesPage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Finder'da göster")
+                    .accessibilityLabel("Finder'da göster")
                 let allowed = TrashGuard.canTrash(file.url)
                 Button { finder.pendingTrash = file.url } label: { Image(systemName: "trash") }
                     .buttonStyle(.plain)

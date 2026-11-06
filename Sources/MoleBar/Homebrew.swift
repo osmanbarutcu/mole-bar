@@ -113,6 +113,7 @@ struct HomebrewCard: View {
                     .controlSize(.small)
                     .disabled(model.loading)
                     .help("Yeniden denetle")
+                    .accessibilityLabel("Yeniden denetle")
             }
             if model.updates.isEmpty {
                 Text(model.loaded ? "Tüm paketler güncel." : "Denetleniyor...").font(.caption).foregroundStyle(.secondary)

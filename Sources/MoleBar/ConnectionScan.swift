@@ -124,6 +124,7 @@ struct ConnectionCard: View {
                     .controlSize(.small)
                     .disabled(model.loading)
                     .help("Yeniden tara")
+                    .accessibilityLabel("Yeniden tara")
             }
             if model.items.isEmpty {
                 Text(model.loaded ? "Dış bağlantı bulunamadı." : "Taranıyor...").font(.caption).foregroundStyle(.secondary)

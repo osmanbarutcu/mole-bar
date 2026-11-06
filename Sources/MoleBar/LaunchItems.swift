@@ -119,6 +119,7 @@ struct LaunchItemsCard: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
                 .help("Finder'da göster")
+                .accessibilityLabel("Finder'da göster")
         }
         .padding(.vertical, 2)
     }

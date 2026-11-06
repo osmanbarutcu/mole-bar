@@ -136,6 +136,7 @@ struct PanelView: View {
                 } label: { Image(systemName: "chevron.left") }
                     .glassButton()
                     .help("Geri")
+                    .accessibilityLabel("Geri")
                 Text(layout.showPreview ? preview.job.title : "Ayarlar").font(.headline)
             } else {
                 Image(systemName: "gauge.with.dots.needle.50percent")
@@ -148,6 +149,7 @@ struct PanelView: View {
                 Button { layout.showSettings = true } label: { Image(systemName: "gearshape") }
                     .glassButton()
                     .help("Ayarlar")
+                    .accessibilityLabel("Ayarlar")
             }
         }
         .padding(.horizontal, 4)
@@ -570,6 +572,7 @@ struct PanelView: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Sonlandır")
+                    .accessibilityLabel("Sonlandır")
             } else if layout.pendingKill != row.id {
                 Color.clear.frame(width: 16, height: 1)
             }

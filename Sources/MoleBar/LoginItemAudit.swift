@@ -69,6 +69,7 @@ struct LoginItemAuditCard: View {
                             .buttonStyle(.plain)
                             .foregroundStyle(.secondary)
                             .help("Finder'da göster")
+                            .accessibilityLabel("Finder'da göster")
                     }
                 }
                 Text("Hedef program yoksa öğe çalışmaz. MoleBar silmez. Tanıdığınız öğeyi Finder'dan siz kaldırın.")
