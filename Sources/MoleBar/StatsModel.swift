@@ -11,6 +11,8 @@ final class StatsModel: ObservableObject {
     @Published var cpuTotal: Double = 0
     @Published var cpuPerCore: [Double] = []
     @Published var memory = MemorySnapshot(usedBytes: 0, totalBytes: ProcessInfo.processInfo.physicalMemory)
+    @Published var pressure = MemoryPressure.normal
+    @Published var swap = SwapUsage(usedBytes: 0, totalBytes: 0)
     @Published var disk = DiskSnapshot(usedBytes: 0, totalBytes: 0)
     @Published var netDown: Double = 0
     @Published var netUp: Double = 0
@@ -69,6 +71,8 @@ final class StatsModel: ObservableObject {
         cpuTotal = cpuResult.total
         cpuPerCore = cpuResult.perCore
         memory = sampleMemory()
+        pressure = MemoryPressure.sample()
+        swap = SwapUsage.sample()
         disk = sampleDisk()
         let net = network.sample()
         netDown = net.down

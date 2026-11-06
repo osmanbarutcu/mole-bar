@@ -224,6 +224,8 @@ struct PanelView: View {
         }
         if stats.memory.percent >= 85 {
             hints.append(("memorychip", String(format: "Bellek %%%.0f dolu", stats.memory.percent), "Süreçler", .processes))
+        } else if stats.pressure.needsAttention {
+            hints.append(("memorychip", "Bellek baskısı: \(stats.pressure.label)", "Süreçler", .processes))
         }
         if stats.cpuTotal >= 80 {
             hints.append(("cpu", String(format: "CPU %%%.0f yüklü", stats.cpuTotal), "Süreçler", .processes))
@@ -259,6 +261,16 @@ struct PanelView: View {
             Text("\(formatBytes(stats.memory.usedBytes)) / \(formatBytes(stats.memory.totalBytes))")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
+            HStack {
+                Text("Baskı").font(.caption).foregroundStyle(.secondary)
+                Text(stats.pressure.label)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(stats.pressure == .critical ? Color.red : (stats.pressure == .warning ? Color.orange : Color.green))
+                Spacer(minLength: 8)
+                Text("Swap \(formatBytes(stats.swap.usedBytes)) / \(formatBytes(stats.swap.totalBytes))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
