@@ -166,7 +166,7 @@ final class CacheCleaner: ObservableObject {
             let bytes = FileSizer.size(of: url)
             return bytes >= 1 << 20 ? ContainerData(name: label, url: url, bytes: bytes) : nil
         }
-        return (sized + mailData(home: home)).sorted { ($0.bytes ?? 0) > ($1.bytes ?? 0) }
+        return (sized + mailData(home: home) + DeveloperData.displayOnlyEntries(home: home)).sorted { ($0.bytes ?? 0) > ($1.bytes ?? 0) }
     }
 
     /// Mail verisi korumalıdır. Klasör listelenemiyorsa Tam Disk Erişimi eksiktir ve boyut nil olur.
@@ -236,7 +236,8 @@ final class CacheCleaner: ObservableObject {
             let url = home.appendingPathComponent(relative)
             return FileManager.default.fileExists(atPath: url.path) ? [(url, category)] : []
         }
-        return children("Library/Caches", .app, skipApple: true)
+        return DeveloperData.trashable.flatMap { single($0, .dev) }
+            + children("Library/Caches", .app, skipApple: true)
             + children("Library/Logs", .logs)
             + children(".cache", .dev)
             + children("Library/Developer/Xcode/DerivedData", .dev)
@@ -352,6 +353,12 @@ struct CachePage: View {
             }
             if cleaner.containers.contains(where: { $0.name == "Spotlight dizini" }) {
                 Text("Spotlight dizini: Boyut anormalse `sudo mdutil -E /` dizini yeniden kurar. MoleBar dokunmaz.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            if cleaner.containers.contains(where: { DeveloperData.displayOnly.map(\.label).contains($0.name) }) {
+                Text("Xcode arşivleri, simülatör cihazları ve iOS yedekleri: Xcode > Window > Organizer, Devices and Simulators veya Finder ile yönetin. MoleBar dokunmaz.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
