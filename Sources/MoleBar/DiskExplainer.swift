@@ -151,6 +151,8 @@ struct DiskExplainerCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .glassCard()
+        // Kapsayıcı ve önbellek ölçümü Önbellek sayfasında başlardı. Doğrudan Diskler'e gelinse de liste dolsun.
+        .onAppear { cleaner.scanIfNeeded() }
     }
 
     private func row(_ entry: DiskExplainer.Entry) -> some View {
