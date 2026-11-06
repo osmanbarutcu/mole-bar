@@ -162,6 +162,14 @@ final class CleanPreview: ObservableObject {
                         body: "Temizlenebilir alan: \(value). Önbellek: \(formatBytes(cache)). Araçlar sekmesinden inceleyin. Hiçbir şey silinmedi.",
                         id: "molebar.scan"
                     )
+                    let limitGB = UserDefaults.standard.integer(forKey: "cacheAlertGB")
+                    if limitGB > 0, cache >= UInt64(limitGB) * 1_000_000_000 {
+                        DiskNotifier.post(
+                            title: "Önbellek eşiği aşıldı",
+                            body: "Önbellek \(formatBytes(cache)). Eşik \(limitGB) GB. Önbellek sekmesinden inceleyin.",
+                            id: "molebar.cache"
+                        )
+                    }
                 }
             }
         }

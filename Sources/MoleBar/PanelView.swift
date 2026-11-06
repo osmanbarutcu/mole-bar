@@ -35,6 +35,7 @@ struct PanelView: View {
     @AppStorage("showLabels") private var showLabels = true
     @AppStorage("diskAlertEnabled") private var diskAlertEnabled = true
     @AppStorage("diskAlertThreshold") private var diskAlertThreshold = 90
+    @AppStorage("cacheAlertGB") private var cacheAlertGB = 0
     @AppStorage("procSort") private var procSort = "cpu"
 
     private let panelHeight: CGFloat = 620
@@ -597,6 +598,11 @@ struct PanelView: View {
                             .controlSize(.small)
                         Stepper("Eşik: %\(diskAlertThreshold)", value: $diskAlertThreshold, in: 70...98)
                             .disabled(!diskAlertEnabled)
+                        Stepper(cacheAlertGB == 0 ? "Önbellek uyarısı: kapalı" : "Önbellek uyarısı: \(cacheAlertGB) GB", value: $cacheAlertGB, in: 0...50)
+                        Text("Haftalık tarama önbellek toplamı eşiği aşarsa ayrı bildirim gönderir. 0 kapatır.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
