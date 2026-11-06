@@ -36,6 +36,7 @@ struct PanelView: View {
     @AppStorage("diskAlertEnabled") private var diskAlertEnabled = true
     @AppStorage("memoryAlertEnabled") private var memoryAlertEnabled = true
     @AppStorage("graphMetric") private var graphMetric = "cpu"
+    @AppStorage("updateCheckEnabled") private var updateCheckEnabled = false
     @AppStorage("diskAlertThreshold") private var diskAlertThreshold = 90
     @AppStorage("cacheAlertGB") private var cacheAlertGB = 0
     @AppStorage("procSort") private var procSort = "cpu"
@@ -595,6 +596,29 @@ struct PanelView: View {
                         .pickerStyle(.segmented)
                         .labelsHidden()
                         .onChange(of: appearance) { _, value in AppDelegate.applyAppearance(value) }
+                    }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .glassCard()
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        CardHeader(symbol: "arrow.down.circle", title: "Güncellemeler", trailing: "Sürüm \(UpdateCheck.currentVersion)")
+                        Toggle("Yeni sürümü GitHub'dan denetle", isOn: $updateCheckEnabled)
+                            .toggleStyle(RightSwitchStyle())
+                            .controlSize(.small)
+                            .onChange(of: updateCheckEnabled) { _, enabled in
+                                if enabled { stats.checkForUpdateIfDue() }
+                            }
+                        if let update = stats.availableUpdate, updateCheckEnabled {
+                            Text("Yeni sürüm var: \(update.version)").font(.caption.weight(.semibold))
+                            Button("Sürüm sayfasını aç") { NSWorkspace.shared.open(update.url) }
+                                .glassButton()
+                                .controlSize(.small)
+                        }
+                        Text("Kapalıdır. Açarsanız MoleBar günde en çok 1 kez api.github.com adresine istek gönderir. GitHub IP adresinizi görür. Veri gönderilmez, indirme yapılmaz.")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)

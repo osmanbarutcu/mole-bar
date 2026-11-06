@@ -19,6 +19,10 @@ struct NotificationRouteTests {
         #expect(NotificationRoute.section(for: "molebar.scan") == .tools)
     }
 
+    @Test func updateNoticeOpensSettingsPage() {
+        #expect(NotificationRoute.section(for: "molebar.update") == .settings)
+    }
+
     @Test func unknownIdentifierHasNoRoute() {
         #expect(NotificationRoute.section(for: "baska.uygulama") == nil)
         #expect(NotificationRoute.section(for: "") == nil)

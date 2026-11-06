@@ -15,6 +15,7 @@ enum NotificationRoute {
         case "molebar.disk": return .disks
         case "molebar.memory": return .processes
         case "molebar.scan": return .tools
+        case "molebar.update": return .settings
         default: return nil
         }
     }

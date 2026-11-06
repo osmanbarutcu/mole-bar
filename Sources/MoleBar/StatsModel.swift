@@ -27,6 +27,9 @@ final class StatsModel: ObservableObject {
     /// CPU/GPU sıcaklığı ve fan hızı (SMC, salt okunur). SMC açılamazsa nil kalır.
     @Published var sensors: SensorReading?
     private let smc = SMCReader()
+    /// Kurulu sürümden yeni bir sürüm varsa dolar. Denetim kapalıysa nil kalır.
+    @Published var availableUpdate: ReleaseInfo?
+    private var updateChecking = false
     private var sensorsLoading = false
     /// Süreç başına ağ hızı (bayt/sn). Yalnızca Süreçler sayfası "Ağ" sıralamasındayken güncellenir.
     @Published var netByPid: [Int32: Double] = [:]
@@ -86,6 +89,7 @@ final class StatsModel: ObservableObject {
         if tick % 2 == 0 { processGroups = procSampler.sample() }
         if tick % 15 == 1 { refreshHealth(); systemInfo = SystemInfo.sample() }
         if tick % 5 == 1 { refreshSensors() }
+        if tick == 45 || tick % 1800 == 0 { checkForUpdateIfDue() }
         if tick == 1, systemInfo.battery != nil {
             Task { batteryHealth = await Task.detached(priority: .utility) { BatteryHealth.fetch() }.value }
         }
@@ -130,6 +134,32 @@ final class StatsModel: ObservableObject {
             let result = await Task.detached(priority: .utility) { NetPerProcess.sample() }.value
             netByPid = result
             netLoading = false
+        }
+    }
+
+    /// Ayarlarda açıksa ve son denetimden 24 saat geçtiyse GitHub'a bir istek gönderir.
+    func checkForUpdateIfDue() {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: UpdateCheck.enabledKey), !updateChecking,
+              UpdateCheck.isDue(lastCheck: defaults.object(forKey: UpdateCheck.lastCheckKey) as? Date) else { return }
+        updateChecking = true
+        Task {
+            let latest = await UpdateCheck.fetchLatest()
+            updateChecking = false
+            guard let latest else { return }
+            defaults.set(Date(), forKey: UpdateCheck.lastCheckKey)
+            guard UpdateCheck.isNewer(latest.version, than: UpdateCheck.currentVersion) else {
+                availableUpdate = nil
+                return
+            }
+            if availableUpdate?.version != latest.version {
+                DiskNotifier.post(
+                    title: "MoleBar \(latest.version) çıktı",
+                    body: "Kurulu sürüm \(UpdateCheck.currentVersion). Sürüm sayfası Ayarlar'da.",
+                    id: "molebar.update"
+                )
+            }
+            availableUpdate = latest
         }
     }
 
