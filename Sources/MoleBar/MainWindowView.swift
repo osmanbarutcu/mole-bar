@@ -42,6 +42,16 @@ struct MainWindowView: View {
     @StateObject private var cacheCleaner = CacheCleaner()
 
     var body: some View {
+        // Geliştirme: MOLEBAR_PANEL_PREVIEW=1 ile pencere menü çubuğu panelini çizer. Ekran görüntüsü almak içindir.
+        if ProcessInfo.processInfo.environment["MOLEBAR_PANEL_PREVIEW"] != nil {
+            PanelView(stats: stats, preview: preview).frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else {
+            mainBody
+        }
+    }
+
+    @ViewBuilder
+    private var mainBody: some View {
         let current = MainSection(rawValue: storedSection) ?? .general
         let selection = Binding<MainSection?>(
             get: { current },

@@ -24,7 +24,7 @@ extension View {
             let glass: Glass = tint.map { Glass.regular.tint($0.opacity(0.22)) } ?? Glass.regular
             self
                 .background(
-                    Color(nsColor: .controlBackgroundColor).opacity(0.6),
+                    Color(nsColor: .textBackgroundColor).opacity(0.9),
                     in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                 )
                 .glassEffect(glass, in: .rect(cornerRadius: cornerRadius))
