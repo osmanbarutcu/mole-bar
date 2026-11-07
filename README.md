@@ -7,10 +7,11 @@ MoleBar, macOS menü çubuğunda CPU, bellek ve disk kullanımını gösterir. [
 MoleBar, Mole'un resmi uygulaması değildir. Kişisel kullanım için yazıldı. Mole GPL-3.0 lisanslıdır.
 
 ![MoleBar Genel sayfası: CPU, bellek ve disk halkaları, sistem sağlığı, çekirdekler](docs/genel.png)
-(docs/Screenshot 2026-11-06 at 13-52-40.jpg)
-(docs/Screenshot 2026-11-07 at 18-21-52.jpg)
-(docs/Screenshot 2026-11-07 at 18-21-57.jpg)
-(docs/Screenshot 2026-11-07 at 18-22-01.jpg)
+
+![MoleBar ekran görüntüsü 1](docs/Screenshot%202026-11-06%20at%2013-52-40.jpg)
+![MoleBar ekran görüntüsü 2](docs/Screenshot%202026-11-07%20at%2018-21-52.jpg)
+![MoleBar ekran görüntüsü 3](docs/Screenshot%202026-11-07%20at%2018-21-57.jpg)
+![MoleBar ekran görüntüsü 4](docs/Screenshot%202026-11-07%20at%2018-22-01.jpg)
 
 ## Lisans
 
