@@ -361,6 +361,7 @@ struct PanelView: View {
             LoginItemAuditCard()
             LaunchItemsCard()
             SecurityCard()
+            NetworkInterfacesCard()
             PortScanCard()
             ConnectionCard()
             HomebrewCard()
