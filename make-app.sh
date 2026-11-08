@@ -27,6 +27,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleVersion</key><string>1</string>
     <key>LSMinimumSystemVersion</key><string>15.0</string>
     <key>NSAppleEventsUsageDescription</key><string>MoleBar, Çöp Kutusu'nu boşaltmak için Finder'a komut gönderir.</string>
+    <key>NSLocationUsageDescription</key><string>MoleBar, bağlı Wi-Fi ağının adını (SSID) göstermek için konum iznini kullanır. Konum verisi okunmaz.</string>
+    <key>NSLocationWhenInUseUsageDescription</key><string>MoleBar, bağlı Wi-Fi ağının adını (SSID) göstermek için konum iznini kullanır. Konum verisi okunmaz.</string>
     <key>NSHighResolutionCapable</key><true/>
 </dict>
 </plist>

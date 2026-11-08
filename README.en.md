@@ -61,6 +61,8 @@ A prebuilt zip is on the Releases page. It is ad-hoc signed and not notarized. O
 - Homebrew updates are not run by MoleBar. It only copies the command.
 - Connection addresses stay on your Mac. No country lookup is made.
 - The update check, when you turn it on, sends one request a day to `api.github.com`. GitHub sees your IP address. No data is sent and nothing is downloaded.
+- The network features on the Tools page contact an outside service only when you ask. External IP: api.ipify.org and api6.ipify.org. Country and provider: ipwho.is (your IP address goes to this service too). Speed test: Apple servers (`networkQuality`, uses hundreds of MB of data). If "Notify when external IP changes" is on, api.ipify.org is queried every 5 minutes. All of these are off by default.
+- Flushing the DNS and ARP caches and purging the memory cache open the macOS administrator password dialog (`osascript`). MoleBar never sees the password. The password dialog and the location-permission flow for the Wi-Fi name (SSID) were not verified in the real app.
 
 ## Known limits
 

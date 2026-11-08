@@ -34,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     func applicationDidFinishLaunching(_ notification: Notification) {
         Self.applyAppearance(UserDefaults.standard.string(forKey: "appearance") ?? "system")
         if Bundle.main.bundleIdentifier != nil { UNUserNotificationCenter.current().delegate = self }
+        ExternalIPWatcher.shared.apply(enabled: UserDefaults.standard.bool(forKey: ExternalIPChange.defaultsKey))
         // Kapatma veya oturum kapatma başlayınca çıkış engellenmez. Engellemek sistemi bekletirdi.
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main) { _ in
             QuitPolicy.shared.systemIsEnding()
