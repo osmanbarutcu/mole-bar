@@ -139,9 +139,9 @@ final class CleanPreview: ObservableObject {
                 let value = MoleOutput.summaryValue(summary)
                 Task {
                     let cache = await Task.detached { CacheCleaner.totalCacheBytes() }.value
-                    let stale = await Task.detached { ProjectCleaner.staleBytes(minDays: WeeklyScan.staleProjectDays) }.value
                     ReclaimStore.save(.cache, bytes: cache)
                     FolderLog.record(["Önbellek": cache])
+                    let stale = await Task.detached { ProjectCleaner.staleBytes(minDays: WeeklyScan.staleProjectDays) }.value
                     let growth = FolderGrowth.summaryLine(FolderGrowth.compute(Array(FolderLog.load().suffix(30))))
                     DiskNotifier.post(
                         title: "Haftalık tarama bitti",

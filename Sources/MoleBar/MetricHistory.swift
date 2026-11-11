@@ -134,7 +134,7 @@ struct MetricStore {
             var prefix = ""
             if end > 0 {
                 try handle.seek(toOffset: end - 1)
-                if handle.readData(ofLength: 1) != Data("\n".utf8) { prefix = "\n" }
+                if try handle.read(upToCount: 1) != Data("\n".utf8) { prefix = "\n" }
             }
             try handle.write(contentsOf: Data((prefix + line + "\n").utf8))
         } catch {

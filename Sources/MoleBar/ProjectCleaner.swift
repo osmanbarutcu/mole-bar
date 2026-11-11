@@ -217,21 +217,23 @@ final class ProjectCleaner: ObservableObject {
     }
 
     /// Haftalık tarama için `minDays` günden eski proje çıktılarının toplamı. Listeyi ve seçimi değiştirmez.
+    /// Gözetimsiz çalışır: ağ diskleri taranmaz ve yalnızca yaş süzgecini geçen öğeler ölçülür.
     nonisolated static func staleBytes(minDays: Int) -> UInt64 {
-        let found = scanRoots().0.map { artifact -> ProjectArtifact in
-            var sized = artifact
-            sized.bytes = FileSizer.size(of: artifact.url)
-            return sized
-        }
-        return ProjectFilter.apply(found, disk: nil, minDays: minDays).reduce(0) { $0 + $1.bytes }
+        ProjectFilter.apply(scanRoots(localOnly: true).0, disk: nil, minDays: minDays)
+            .reduce(0) { $0 + FileSizer.size(of: $1.url) }
     }
 
     /// Ev klasörü ve bağlı harici diskler. Başlangıç diskinin /Volumes bağlantısı atlanır.
-    private nonisolated static func scanRoots() -> ([ProjectArtifact], [String]) {
+    /// `localOnly` açıkken ağ diskleri (SMB, NFS) atlanır. Ölü bağlantıda tarama takılmasın.
+    private nonisolated static func scanRoots(localOnly: Bool = false) -> ([ProjectArtifact], [String]) {
         let fm = FileManager.default
         var roots = [fm.homeDirectoryForCurrentUser]
         let volumes = (try? fm.contentsOfDirectory(at: URL(fileURLWithPath: "/Volumes"), includingPropertiesForKeys: nil)) ?? []
-        roots += volumes.filter { $0.resolvingSymlinksInPath().path != "/" }
+        roots += volumes.filter { volume in
+            guard volume.resolvingSymlinksInPath().path != "/" else { return false }
+            guard localOnly else { return true }
+            return (try? volume.resourceValues(forKeys: [.volumeIsLocalKey]))?.volumeIsLocal == true
+        }
         let names = roots.compactMap { (try? $0.resourceValues(forKeys: [.volumeNameKey]))?.volumeName }
         return (roots.flatMap { ProjectScanner.scan(root: $0, maxDepth: 5) }, Array(Set(names)))
     }

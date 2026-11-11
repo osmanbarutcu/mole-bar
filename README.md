@@ -43,7 +43,7 @@ Uygulama ad-hoc imzalıdır ve notarize edilmemiştir. İlk açılışta sağ t�
 - Menü çubuğundaki metne tıklayın. Panel açılır: Genel, Diskler, Süreçler, Araçlar.
 - `⌥⌘M` ana pencereyi açar veya kapatır. macOS 27 menü çubuğu panelini koddan açmaya izin vermez.
 - Uygulamayı çift tıklayın. Ana pencere açılır: Genel, Diskler, Analiz, Büyük dosyalar, Yinelenenler, Önbellek, Uygulamalar, Süreçler, Araçlar, Projeler, Ayarlar.
-- Ayarlar'da menü çubuğu görünümü (metin, ikon veya CPU grafiği), disk uyarı eşiği, girişte başlatma ve haftalık tarama bulunur. Haftalık tarama Mole önizlemesini, önbellek toplamını ve 90 günden eski proje çıktılarını (ev klasörü ve bağlı diskler) ölçer. Sonucu bildirir, hiçbir şey taşımaz.
+- Ayarlar'da menü çubuğu görünümü (metin, ikon veya CPU grafiği), disk uyarı eşiği, girişte başlatma ve haftalık tarama bulunur. Haftalık tarama Mole önizlemesini, önbellek toplamını ve 90 günden eski proje çıktılarını (ev klasörü ve yerel diskler, ağ diskleri hariç) ölçer. Sonucu bildirir, hiçbir şey taşımaz.
 
 ## Özellikler
 
@@ -53,7 +53,7 @@ Uygulama ad-hoc imzalıdır ve notarize edilmemiştir. İlk açılışta sağ t�
 - Uygulamalar: kaldırma ve yetim artıklar (kurulu uygulaması olmayan `~/Library` kalıntıları, Çöp Kutusu'na taşınır).
 - Araçlar: açık portlar, dış bağlantılar (süreç başına), Homebrew güncellemeleri (yalnızca denetim, komut panoya kopyalanır).
 - Kritik bellek baskısında bir kez bildirim gelir. Bildirime tıklayınca ilgili sayfa açılır.
-- Bir süreç 5 dakika kesintisiz %90 üstü CPU kullanırsa bir kez bildirim gelir. Süreç eşiğin altına inince kural yeniden kurulur. Değer tek çekirdek yüzdesidir. Ayarlar > Uyarılar kartından kapatılır.
+- Bir uygulama 5 dakika kesintisiz toplam %90 üstü CPU kullanırsa bir kez bildirim gelir. Toplam, aynı adlı tüm süreçlerin toplamıdır ve tek çekirdek yüzdesiyle ölçülür. Uygulama eşiğin altına inince kural yeniden kurulur. Mac uyursa sayaç sıfırlanır. Ayarlar > Uyarılar kartından kapatılır.
 
 ## Doğrulama
 

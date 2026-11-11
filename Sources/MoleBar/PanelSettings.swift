@@ -145,7 +145,7 @@ struct PanelSettingsPage: View {
                         Toggle("Bellek baskısı kritikken bildir", isOn: $memoryAlertEnabled)
                             .toggleStyle(RightSwitchStyle())
                             .controlSize(.small)
-                        Toggle("Bir süreç 5 dakika %90 üstü CPU kullanırsa bildir", isOn: $cpuAlertEnabled)
+                        Toggle("Bir uygulama 5 dakika toplam %90 üstü CPU kullanırsa bildir", isOn: $cpuAlertEnabled)
                             .toggleStyle(RightSwitchStyle())
                             .controlSize(.small)
                         Stepper("Eşik: %\(diskAlertThreshold)", value: $diskAlertThreshold, in: 70...98)

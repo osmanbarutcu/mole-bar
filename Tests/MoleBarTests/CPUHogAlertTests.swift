@@ -10,7 +10,7 @@ struct CPUHogAlertTests {
 
     @Test("süreç 5 dakika eşiğin üstünde kalınca bir kez bildirilir")
     func notifiesOnceAfterDuration() {
-        var alert = CPUHogAlert()
+        var alert = CPUHogAlert(maxGap: .infinity)
         #expect(alert.evaluate([("ffmpeg", 150)], now: at(0)).isEmpty)
         #expect(alert.evaluate([("ffmpeg", 120)], now: at(299)).isEmpty)
         #expect(alert.evaluate([("ffmpeg", 95)], now: at(300)) == ["ffmpeg"])
@@ -19,7 +19,7 @@ struct CPUHogAlertTests {
 
     @Test("eşiğin altına inen süreç sayacı sıfırlar")
     func dropResets() {
-        var alert = CPUHogAlert()
+        var alert = CPUHogAlert(maxGap: .infinity)
         _ = alert.evaluate([("node", 100)], now: at(0))
         _ = alert.evaluate([("node", 10)], now: at(200))
         #expect(alert.evaluate([("node", 100)], now: at(310)).isEmpty)
@@ -29,7 +29,7 @@ struct CPUHogAlertTests {
 
     @Test("bildirilen süreç düşüp yeniden yükselirse yeniden bildirilir")
     func rearmsAfterDrop() {
-        var alert = CPUHogAlert()
+        var alert = CPUHogAlert(maxGap: .infinity)
         _ = alert.evaluate([("x", 100)], now: at(0))
         #expect(alert.evaluate([("x", 100)], now: at(300)) == ["x"])
         _ = alert.evaluate([], now: at(400))
@@ -39,22 +39,34 @@ struct CPUHogAlertTests {
 
     @Test("birden fazla süreç ayrı izlenir, sonuç adla sıralıdır")
     func multiple() {
-        var alert = CPUHogAlert()
+        var alert = CPUHogAlert(maxGap: .infinity)
         _ = alert.evaluate([("b", 100), ("a", 100), ("c", 5)], now: at(0))
         #expect(alert.evaluate([("b", 100), ("a", 100), ("c", 5)], now: at(300)) == ["a", "b"])
     }
 
     @Test("eşik ve süre değiştirilebilir, eşik değeri dahildir")
     func customThreshold() {
-        var alert = CPUHogAlert(threshold: 50, duration: 60)
+        var alert = CPUHogAlert(threshold: 50, duration: 60, maxGap: .infinity)
         _ = alert.evaluate([("y", 50)], now: at(0))
         #expect(alert.evaluate([("y", 50)], now: at(60)) == ["y"])
     }
 
-    @Test("bildirim metni süreç adını ve süreyi içerir")
+    @Test("ölçümler arasında uzun boşluk varsa sayaç sıfırlanır (uyku veya kapalı ayar)")
+    func gapResets() {
+        var alert = CPUHogAlert()
+        _ = alert.evaluate([("x", 100)], now: at(0))
+        // 10 dakika ölçüm yok: Mac uyudu veya ayar kapalıydı.
+        #expect(alert.evaluate([("x", 100)], now: at(600)).isEmpty)
+        // Ölçüm 4 saniyede bir sürer. Sayaç 600. saniyeden başlar.
+        let early = stride(from: 604.0, to: 900, by: 4).flatMap { alert.evaluate([("x", 100)], now: at($0)) }
+        #expect(early.isEmpty)
+        #expect(alert.evaluate([("x", 100)], now: at(900)) == ["x"])
+    }
+
+    @Test("bildirim metni uygulama adını ve süreyi içerir")
     func message() {
-        #expect(CPUHogAlert.body(for: ["ffmpeg"]) == "ffmpeg 5 dakikadır %90 üstü CPU kullanıyor. Süreçler sayfasından inceleyin.")
-        #expect(CPUHogAlert.body(for: ["a", "b"]) == "a, b 5 dakikadır %90 üstü CPU kullanıyor. Süreçler sayfasından inceleyin.")
+        #expect(CPUHogAlert.body(for: ["ffmpeg"]) == "ffmpeg 5 dakikadır toplam %90 üstü CPU kullanıyor. Süreçler sayfasından inceleyin.")
+        #expect(CPUHogAlert.body(for: ["a", "b"]) == "a, b 5 dakikadır toplam %90 üstü CPU kullanıyor. Süreçler sayfasından inceleyin.")
     }
 
     @Test("CPU bildirimi Süreçler sayfasını açar")

@@ -40,7 +40,7 @@ A prebuilt zip is on the Releases page. It is ad-hoc signed and not notarized. O
 - Click the text in the menu bar. A panel opens with General, Disks, Processes and Tools.
 - Double-click the app to open the main window. Pages: General, Disks, Analyze, Large files, Duplicates, Cache, Apps, Processes, Tools, Projects, Settings.
 - `⌥⌘M` opens or closes the main window. macOS 27 does not let an app open the menu bar panel from code.
-- Settings has the menu bar style (text, icon or graph), the disk alert threshold, launch at login and the weekly scan. The weekly scan measures the Mole preview, the cache total and project build output older than 90 days (home folder and mounted disks). It sends a notification and moves nothing.
+- Settings has the menu bar style (text, icon or graph), the disk alert threshold, launch at login and the weekly scan. The weekly scan measures the Mole preview, the cache total and project build output older than 90 days (home folder and local disks, network disks excluded). It sends a notification and moves nothing.
 
 ## Features
 
