@@ -1,0 +1,148 @@
+
+[1;35mClean Your Mac[0m
+
+[0;33mDry Run Mode[0m, Preview only, no deletions
+
+[0;90m◎ System caches need sudo, run [0msudo -v && mo clean --dry-run[0;90m for full preview[0m
+
+[1;34m⚙[0m Apple Silicon | Free space: 51Gi
+[1;34m✓[0m Whitelist: 21 core patterns active
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/ms-playwright*[0m
+  [0;90m↳[0m [0;90m/Users/user/.cache/huggingface*[0m
+  [0;90m↳[0m [0;90m/Users/user/.m2/repository/*[0m
+  [0;90m↳[0m [0;90m/Users/user/.gradle/caches/*[0m
+  [0;90m↳[0m [0;90m/Users/user/.gradle/daemon/*[0m
+  [0;90m↳[0m [0;90m/Users/user/.ollama/models/*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/com.nssurge.surge-mac/*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Application Support/com.nssurge.surge-mac/*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/org.R-project.R/R/renv/*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/pypoetry/virtualenvs*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/JetBrains*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/com.jetbrains.toolbox*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/tealdeer/tldr-pages[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Application Support/JetBrains*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/com.apple.finder[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Mobile Documents*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/com.apple.FontRegistry*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/com.apple.spotlight*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/com.apple.Spotlight*[0m
+  [0;90m↳[0m [0;90m/Users/user/Library/Caches/CloudKit*[0m
+
+[1;35m➤ User essentials[0m
+  [0;33m→[0m User app cache 113 items[0m, [0;33m6.92GB dry[0m
+  [0;33m→[0m User app logs 19 items[0m, [0;33m2.8MB dry[0m
+  [0;32m✓[0m Trash · already empty
+
+[1;35m➤ App caches[0m
+  [0;33m→[0m Siri suggestions cache 20 items[0m, [0;33m3.6MB dry[0m
+  [0;33m→[0m Sandboxed app caches[0m, [0;33m319KB dry[0m
+  [0;33m→[0m Group Containers logs/caches[0m, [0;33m42.3MB dry[0m
+
+[1;35m➤ Browsers[0m
+  [0;33m→[0m Safari cache[0m, [0;33m4KB dry[0m
+  [0;33m→[0m Chrome cache 2 items[0m, [0;33m456.4MB dry[0m
+  [0;33m→[0m Chrome GPU cache 6 items[0m, [0;33m1.6MB dry[0m
+  [0;33m→[0m Chrome component CRX cache 5 items[0m, [0;33m10.3MB dry[0m
+  [0;33m→[0m GoogleUpdater CRX cache 2 items[0m, [0;33m773.3MB dry[0m
+  [0;33m→[0m GoogleUpdater old files[0m, [0;33m1.1MB dry[0m
+  [0;33m→[0m Puppeteer browser cache 2 items[0m, [0;33m602.5MB dry[0m
+  [0;33m→[0m Brave cache[0m, [0;33m1.86GB dry[0m
+  [0;33m→[0m Brave GPU cache 6 items[0m, [0;33m5.8MB dry[0m
+  [0;33m→[0m Brave component CRX cache 15 items[0m, [0;33m13.3MB dry[0m
+  [0;33m→[0m Brave Dawn cache 52 items[0m, [0;33m12.5MB dry[0m
+  [0;33m→[0m Chrome old versions[0m, [0;33m1 dirs, 759.9MB dry[0m
+  [0;90m◎[0m Brave Browser running · old versions cleanup skipped
+
+[1;35m➤ Cloud & Office[0m
+  [0;32m✓[0m Nothing to clean
+
+[1;35m➤ Developer tools[0m
+  [0;33m→[0m npm cache · would clean
+  [0;33m→[0m npm cache directory 3 items[0m, [0;33m2.21GB dry[0m
+  [0;33m→[0m npm npx cache 10 items[0m, [0;33m448.3MB dry[0m
+  [0;33m→[0m npm logs 12 items[0m, [0;33m12KB dry[0m
+  [0;33m→[0m npm prebuilds 2 items[0m, [0;33m39.2MB dry[0m
+  [0;33m→[0m pip cache · would clean
+  [0;33m→[0m Go cache · would clean
+  [0;33m→[0m Rust cargo cache[0m, [0;33m99.6MB dry[0m
+  [0;33m→[0m Docker unused data · would clean
+  [0;33m→[0m Oh My Zsh cache 4 items[0m, [0;33m3KB dry[0m
+  [0;33m→[0m Flutter build cache (.dart_tool)[0m, [0;33m8KB dry[0m
+  [0;33m→[0m Python bytecode cache · blutter[0m, [0;33m1 dirs, 20KB dry[0m
+  [0;33m→[0m Python bytecode cache · OrbStack[0m, [0;33m80 dirs, 25.2MB dry[0m
+  [0;33m→[0m Python bytecode cache · app[0m, [0;33m5 dirs, 819KB dry[0m
+  [0;33m→[0m Xcode runtime volumes · 3 unused, 0 in use
+  [0;90m•[0m Runtime volumes total: 0B (unused 0B, in-use 0B)
+    [0;90mUNUSED[0m 0B · /Library/Developer/CoreSimulator/Volumes/iOS_23D8133
+    [0;90mUNUSED[0m 0B · /Library/Developer/CoreSimulator/Cryptex/Images
+    [0;90mUNUSED[0m 0B · /Library/Developer/CoreSimulator/Cryptex/Caches
+  [0;90m◎[0m Xcode unavailable simulators · simctl not available
+  [0;33m→[0m Android SDK cache 42 items[0m, [0;33m3.6MB dry[0m
+  [0;33m→[0m Ruby Bundler cache[0m, [0;33m29.4MB dry[0m
+  [0;33m→[0m Sentry crash reports 2 items[0m, [0;33m8KB dry[0m
+  [0;33m→[0m Claude cache 2 items[0m, [0;33m62.6MB dry[0m
+  [0;33m→[0m Claude code cache 3 items[0m, [0;33m44.7MB dry[0m
+  [0;33m→[0m Claude GPU cache 5 items[0m, [0;33m558KB dry[0m
+  [0;33m→[0m Claude Dawn cache 5 items[0m, [0;33m558KB dry[0m
+  [0;33m→[0m Claude WebGPU cache 5 items[0m, [0;33m558KB dry[0m
+  [0;33m→[0m CoreSimulator logs[0m, [0;33m2KB dry[0m
+  [0;33m→[0m VS Code logs 3 items[0m, [0;33m4.2MB dry[0m
+  [0;33m→[0m VS Code cache 2 items[0m, [0;33m999KB dry[0m
+  [0;33m→[0m VS Code data cache[0m, [0;33m15.1MB dry[0m
+  [0;33m→[0m Homebrew cache 39 items[0m, [0;33m705.8MB dry[0m
+  [0;33m→[0m Homebrew lock files 50 items[0m, [0;33m0B dry[0m
+  [0;33m→[0m Homebrew · would cleanup and autoremove
+
+[1;35m➤ Applications[0m
+  [0;33m→[0m Claude desktop cache 4 items[0m, [0;33m82KB dry[0m
+  [0;33m→[0m Claude logs 8 items[0m, [0;33m211KB dry[0m
+  [0;33m→[0m Adobe cache[0m, [0;33m25KB dry[0m
+  [0;33m→[0m Zsh completion cache 2 items[0m, [0;33m171KB dry[0m
+
+[1;35m➤ Virtualization[0m
+  [0;32m✓[0m Nothing to clean
+
+[1;35m➤ Application Support[0m
+  [0;33m→[0m Application Support logs/caches[0m, [0;33m5.0MB dry[0m
+
+[1;35m➤ Orphaned data[0m
+  [0;32m✓[0m Found 186 active/installed apps
+  [0;33m→[0m Orphaned WebKit: com.foxit-software.Foxit.PDF.Reader[0m, [0;33m336KB dry[0m
+  [0;33m→[0m Orphaned HTTP: com.foxit-software.Foxit.PDF.Reader[0m, [0;33m61KB dry[0m
+  [0;33m→[0m Orphaned HTTP: com.foxit-software.Foxit.PDF.Reader[0m, [0;33m11KB dry[0m
+  [0;32m✓[0m Cleaned 3 items, about 0.4MB
+  [0;32m•[0m Potential stale login item: com.lwouis.alt-tab-macos.plist
+  [0;90m↳[0m Missing app/helper target: [0;90m/Applications/AltTab.app/Contents/MacOS/AltTab[0m
+  [0;32m•[0m Potential stale login item: ION PASS.plist
+  [0;90m↳[0m Associated app not found: [0;90m0[0m
+  [0;32m•[0m Potential stale login item: com.canva.availability-check-agent.plist
+  [0;90m↳[0m Missing app/helper target: [0;90m/Applications/Canva.app/Contents/MacOS/Canva[0m
+  [0;90m☞[0m Review: open ~/Library/LaunchAgents and remove only items you recognize
+
+[1;35m➤ Apple Silicon updates[0m
+  [0;32m✓[0m Nothing to clean
+
+[1;35m➤ Device backups[0m
+  [0;32m✓[0m Nothing to clean
+
+[1;35m➤ Time Machine[0m
+  [0;32m✓[0m No incomplete backups found
+  [0;32m✓[0m Nothing to clean
+
+[1;35m➤ Large files[0m
+  [0;33m◎[0m Mail data: [0;32m5.44GB[0m[0;90m, Path: /Users/user/Library/Mail[0m
+
+[1;35m➤ System Data clues[0m
+  [0;32m✓[0m No common System Data clues detected
+
+[1;35m➤ Project artifacts[0m
+  [0;32m✓[0m Nothing to clean
+
+
+======================================================================
+[1;34mDry run complete - no changes made[0m
+Potential space: [0;32m15.17GB[0m | Items: 474 | Categories: 49
+Detailed file list: [0;90m/Users/user/.config/mole/clean-list.txt[0m
+Use [0;90mmo clean --whitelist[0m to add protection rules
+======================================================================
+

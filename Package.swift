@@ -12,7 +12,9 @@ let package = Package(
         .testTarget(
             name: "MoleBarTests",
             dependencies: ["MoleBar"],
-            path: "Tests/MoleBarTests"
+            path: "Tests/MoleBarTests",
+            // Fixture dosyaları #filePath ile okunur. Paket kaynağı değildir.
+            exclude: ["Fixtures"]
         )
     ]
 )

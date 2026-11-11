@@ -1,0 +1,66 @@
+
+[1;35mOptimize and Check[0m
+[0;33m→ DRY RUN MODE[0m, No files will be modified
+
+⚙ System  3/16 GB RAM | 149/228 GB Disk | Uptime 1d
+⚙ Active Whitelist: check_brew_health,check_touchid,check_git_config
+
+[1;34m➤ DNS & Spotlight Check[0m
+  [0;33m→[0m DNS cache flushed
+  [0;33m→[0m Spotlight index verified
+
+[1;34m➤ Finder Cache Refresh[0m
+  [0;33m→[0m QuickLook thumbnails refreshed
+  [0;33m→[0m Icon services cache rebuilt
+
+[1;34m➤ App State Cleanup[0m
+  [0;33m→[0m App saved states optimized
+
+[1;34m➤ Broken Config Repair[0m
+  [0;33m→[0m Repaired 2 corrupted preference files
+
+[1;34m➤ Network Cache Refresh[0m
+  [0;33m→[0m DNS cache already refreshed
+  [0;33m→[0m mDNSResponder already restarted
+
+[1;34m➤ Database Optimization[0m
+  [0;33m→[0m All databases already optimized
+  [0;33m→[0m Already optimal for 3 databases
+
+[1;34m➤ LaunchServices Repair[0m
+  [0;33m→[0m LaunchServices repaired
+  [0;33m→[0m File associations refreshed
+
+[1;34m➤ Font Cache Rebuild[0m
+  [0;33m→[0m Font cache cleared
+  [0;33m→[0m System will rebuild font database automatically
+
+[1;34m➤ Dock Refresh[0m
+  [0;33m→[0m Dock refreshed
+
+[1;34m➤ Memory Optimization[0m
+  [0;33m→[0m Inactive memory released
+  [0;33m→[0m System responsiveness improved
+
+[1;34m➤ Network Stack Refresh[0m
+  [0;33m→[0m Network routing table refreshed
+  [0;33m→[0m ARP cache cleared
+
+[1;34m➤ Permission Repair[0m
+  [0;33m→[0m User directory permissions repaired
+  [0;33m→[0m File access issues resolved
+
+[1;34m➤ Bluetooth Refresh[0m
+  [0;33m→[0m Bluetooth devices may disconnect briefly during refresh
+  [0;33m→[0m Bluetooth module restarted
+  [0;33m→[0m Connectivity issues resolved
+
+[1;34m➤ Spotlight Optimization[0m
+  [0;33m→[0m Spotlight index already optimal
+
+======================================================================
+[1;34mDry Run Complete, No Changes Made[0m
+Would apply [0;33m14[0m optimizations
+Run without [0;33m--dry-run[0m to apply these changes
+======================================================================
+

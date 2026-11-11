@@ -1,13 +1,5 @@
 import SwiftUI
 
-struct PreviewLine: Identifiable {
-    enum Kind { case section, item, ok, note }
-    let id: Int
-    let kind: Kind
-    let text: String
-    var size: String?
-}
-
 /// Uygulama içinde çalışan Mole işleri.
 /// `cleanRun` gerçekten siler (yalnızca kullanıcı seviyesi). `optimize` gerçek çalıştırması sudo gerektirir, Terminal'de kalır.
 enum MoleJob: Equatable {
@@ -32,32 +24,29 @@ enum MoleJob: Equatable {
     var timeoutSeconds: Double { self == .optimizePreview ? 120 : 300 }
 }
 
-/// Mole çıktısını canlı okur. Çıktı biçimi: "➤ Bölüm", "→ Öğe, 2.92GB dry",
-/// "Potential space: 9.40GB | Items: 317 | Categories: 32". Biçim değişirse satırlar atlanır.
+/// Mole sürecini çalıştırır ve çıktısını `MoleOutput` ile canlı ayrıştırır.
 @MainActor
 final class CleanPreview: ObservableObject {
     enum Phase { case idle, running, done, failed }
 
     @Published private(set) var phase: Phase = .idle
     @Published private(set) var job: MoleJob = .cleanPreview
-    @Published private(set) var lines: [PreviewLine] = []
-    @Published private(set) var rawTail: [String] = []
-    @Published private(set) var summary: String?
-    @Published private(set) var currentSection = ""
+    @Published private(set) var output = MoleOutput()
     @Published private(set) var startedAt = Date()
     @Published private(set) var freedBytes: Int64?
+    /// Kurulu Mole sürümü. nil ise okunamadı.
+    @Published private(set) var moleVersion: String?
     @Published var confirming = false
 
+    var lines: [PreviewLine] { output.lines }
+    var rawTail: [String] { output.rawTail }
+    var summary: String? { output.summary }
+    var currentSection: String { output.currentSection }
+
     private var process: Process?
-    private var buffer = ""
     private var cancelled = false
-    private var nextID = 0
     private var freeBefore: UInt64 = 0
     private var backgroundRun = false
-
-    private static let sizePattern = try? NSRegularExpression(
-        pattern: #"^(.*?),?\s+(\d+(?:\.\d+)?\s?(?:B|KB|MB|GB|TB))(?:\s+dry)?$"#
-    )
 
     /// Haftalık otomatik tarama (yalnızca önizleme). Ayar açıksa, 7 günden eskiyse ve düşük güç modunda değilse çalışır.
     func startIfDue() {
@@ -76,14 +65,12 @@ final class CleanPreview: ObservableObject {
         backgroundRun = background
         confirming = false
         guard MoleCLI.isInstalled else { phase = .failed; return }
-        lines = []
-        rawTail = []
-        summary = nil
-        currentSection = ""
-        buffer = ""
+        output = MoleOutput()
         cancelled = false
-        nextID = 0
         freedBytes = nil
+        if moleVersion == nil {
+            Task { moleVersion = await MoleCLI.fetchVersion() }
+        }
         freeBefore = sampleDisk().freeBytes
         startedAt = Date()
 
@@ -129,31 +116,25 @@ final class CleanPreview: ObservableObject {
     }
 
     private func consume(_ chunk: String) {
-        buffer += chunk
-        var parts = buffer.replacingOccurrences(of: "\r", with: "\n").components(separatedBy: "\n")
-        buffer = parts.removeLast()
-        for raw in parts { handle(Self.clean(raw)) }
+        output.consume(chunk)
     }
 
     private func finish() {
         guard phase == .running else { return }
-        if !buffer.isEmpty { handle(Self.clean(buffer)); buffer = "" }
+        output.flush()
         process = nil
         if cancelled {
             phase = .idle
-            lines = []
-            summary = nil
+            output = MoleOutput()
         } else if job == .cleanRun {
             // Silme işleminde çıktı tanınmasa da sonuç gösterilir; kazanım diskten ölçülür.
             let freeAfter = sampleDisk().freeBytes
             freedBytes = Int64(freeAfter) - Int64(freeBefore)
             phase = .done
         } else {
-            phase = (summary != nil || !lines.isEmpty) ? .done : .failed
+            phase = output.isRecognized ? .done : .failed
             if backgroundRun, phase == .done, let summary {
-                let value = summary.components(separatedBy: "|").first?
-                    .split(separator: ":", maxSplits: 1).last?
-                    .trimmingCharacters(in: .whitespaces) ?? ""
+                let value = MoleOutput.summaryValue(summary)
                 Task {
                     let cache = await Task.detached { CacheCleaner.totalCacheBytes() }.value
                     ReclaimStore.save(.cache, bytes: cache)
@@ -178,46 +159,6 @@ final class CleanPreview: ObservableObject {
             }
         }
         backgroundRun = false
-    }
-
-    private func handle(_ line: String) {
-        let text = line.trimmingCharacters(in: .whitespaces)
-        guard let first = text.first else { return }
-        rawTail.append(text)
-        if rawTail.count > 14 { rawTail.removeFirst() }
-        if text.contains("Potential space:") { summary = text; return }
-        let body = String(text.dropFirst()).trimmingCharacters(in: .whitespaces)
-        switch first {
-        case "➤":
-            currentSection = body
-            append(.section, body)
-        case "→":
-            let (name, size) = Self.splitSize(body)
-            append(.item, name, size: size)
-        case "✓":
-            append(.ok, body)
-        case "◎", "☞":
-            append(.note, body)
-        default:
-            break
-        }
-    }
-
-    private func append(_ kind: PreviewLine.Kind, _ text: String, size: String? = nil) {
-        lines.append(PreviewLine(id: nextID, kind: kind, text: text, size: size))
-        nextID += 1
-    }
-
-    private static func splitSize(_ text: String) -> (String, String?) {
-        let range = NSRange(text.startIndex..., in: text)
-        guard let match = sizePattern?.firstMatch(in: text, range: range),
-              let nameRange = Range(match.range(at: 1), in: text),
-              let sizeRange = Range(match.range(at: 2), in: text) else { return (text, nil) }
-        return (String(text[nameRange]), String(text[sizeRange]))
-    }
-
-    private static func clean(_ raw: String) -> String {
-        raw.replacingOccurrences(of: "\u{1B}\\[[0-9;?]*[a-zA-Z]", with: "", options: .regularExpression)
     }
 }
 
@@ -310,6 +251,7 @@ struct CleanPreviewPage: View {
                 Text("Özet satırı alınamadı. Liste kısmi olabilir.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                versionNoteView
             }
             Text("Önizleme. Hiçbir şey silinmedi. Sistem önbellekleri (sudo gerektirir) dahil değildir.")
                 .font(.caption2)
@@ -410,9 +352,10 @@ struct CleanPreviewPage: View {
             Text("İşlem alınamadı").font(.subheadline.weight(.semibold))
             Text(MoleCLI.isInstalled
                  ? "Mole çıktısı tanınmadı veya işlem başarısız oldu."
-                 : "Mole kurulu değil: \(MoleCLI.path)")
+                 : "Mole kurulu değil. Denenen yollar: \(MoleCLI.candidates.joined(separator: ", "))")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+            versionNoteView
             Button("Yeniden dene") { preview.start(preview.job) }
                 .glassButton()
                 .controlSize(.small)
@@ -438,35 +381,29 @@ struct CleanPreviewPage: View {
     }
 
     private var summaryParts: [(label: String, value: String)] {
-        guard let summary = preview.summary else { return [] }
-        return summary.components(separatedBy: "|").compactMap { part in
-            let pieces = part.split(separator: ":", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
-            guard pieces.count == 2 else { return nil }
-            return (label: Self.translate(pieces[0]), value: pieces[1])
-        }
+        preview.summary.map(MoleOutput.summaryParts) ?? []
     }
 
-    private static func translate(_ label: String) -> String {
-        switch label {
-        case "Potential space": return "Temizlenebilir alan (tahmini)"
-        case "Items": return "Öğe"
-        case "Categories": return "Kategori"
-        default: return label
+    /// Kurulu Mole sürümü denenen sürümden farklıysa uyarı metni. Aynıysa veya okunamadıysa nil.
+    private var versionNote: String? {
+        guard let version = preview.moleVersion, !MoleCLI.isTested(version) else { return nil }
+        return "Mole \(version) kurulu. MoleBar çıktıyı Mole \(MoleCLI.testedVersion) ile denedi. Biçim değişmiş olabilir."
+    }
+
+    @ViewBuilder
+    private var versionNoteView: some View {
+        if let versionNote {
+            Text(versionNote)
+                .font(.caption2)
+                .foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
     // MARK: Liste
 
     private var sections: [(title: String, rows: [PreviewLine])] {
-        var result: [(title: String, rows: [PreviewLine])] = []
-        for line in preview.lines {
-            if line.kind == .section {
-                result.append((title: line.text, rows: []))
-            } else if !result.isEmpty {
-                result[result.count - 1].rows.append(line)
-            }
-        }
-        return result
+        MoleOutput.sections(preview.lines)
     }
 
     private var listCard: some View {

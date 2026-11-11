@@ -12,10 +12,47 @@ private struct HealthPayload: Decodable {
     let health_score_msg: String
 }
 
-/// Kurulu Mole CLI ile köprü. Yol Homebrew varsayılanıdır.
+/// Kurulu Mole CLI ile köprü. Apple Silicon ve Intel Homebrew yolları denenir.
 enum MoleCLI {
-    static let path = "/opt/homebrew/bin/mo"
-    static var isInstalled: Bool { FileManager.default.isExecutableFile(atPath: path) }
+    static let candidates = ["/opt/homebrew/bin/mo", "/usr/local/bin/mo"]
+    /// Çıktı ayrıştırıcısı bu sürümün gerçek çıktısıyla denendi (Tests/MoleBarTests/Fixtures).
+    static let testedVersion = "1.32.0"
+
+    static var path: String { resolvePath(candidates: candidates) ?? candidates[0] }
+    static var isInstalled: Bool { resolvePath(candidates: candidates) != nil }
+
+    static func resolvePath(candidates: [String]) -> String? {
+        candidates.first { FileManager.default.isExecutableFile(atPath: $0) }
+    }
+
+    /// "Mole version 1.32.0" gibi satırdan sürümü alır.
+    static func parseVersion(_ output: String) -> String? {
+        let range = output.range(of: #"\d+\.\d+\.\d+[0-9A-Za-z.\-]*"#, options: .regularExpression)
+        return range.map { String(output[$0]) }
+    }
+
+    static func isTested(_ version: String?) -> Bool { version == testedVersion }
+
+    /// `mo --version` çalıştırır. 5 saniyede bitmezse süreci sonlandırır.
+    static func fetchVersion() async -> String? {
+        await Task.detached(priority: .utility) { () -> String? in
+            guard isInstalled else { return nil }
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: path)
+            process.arguments = ["--version"]
+            let output = Pipe()
+            process.standardOutput = output
+            process.standardError = FileHandle.nullDevice
+            process.standardInput = FileHandle.nullDevice
+            do { try process.run() } catch { return nil }
+            DispatchQueue.global().asyncAfter(deadline: .now() + 5) {
+                if process.isRunning { process.terminate() }
+            }
+            let data = output.fileHandleForReading.readDataToEndOfFile()
+            process.waitUntilExit()
+            return parseVersion(String(decoding: data, as: UTF8.self))
+        }.value
+    }
 
     /// `mo status -json` çalıştırır. 15 saniyede bitmezse süreci sonlandırır.
     static func fetchHealth() async -> MoleHealth? {
