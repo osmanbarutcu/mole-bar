@@ -1,6 +1,6 @@
 cask "molebar" do
   version "0.3.0"
-  sha256 "868980c8060c2e3e30647606b410c849bd288000f137979eb9a3bfda12e198f4"
+  sha256 "7a1662686a3a906b8c6faf298b78ec8972de9e104eed91cff1b7db0dc35832a8"
 
   url "https://github.com/osmanbarutcu/mole-bar/releases/download/v#{version}/MoleBar-#{version}-macos.zip"
   name "MoleBar"
