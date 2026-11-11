@@ -111,9 +111,9 @@ struct MoleOutput {
 
     private static func translate(_ label: String) -> String {
         switch label {
-        case "Potential space": return "Temizlenebilir alan (tahmini)"
-        case "Items": return "Öğe"
-        case "Categories": return "Kategori"
+        case "Potential space": return L("Temizlenebilir alan (tahmini)")
+        case "Items": return L("Öğe")
+        case "Categories": return L("Kategori")
         default: return label
         }
     }

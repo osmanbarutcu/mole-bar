@@ -48,9 +48,9 @@ struct LoginItemAuditCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CardHeader(symbol: "power", title: "Eski giriş öğeleri", trailing: model.checked ? "\(model.items.count) öğe" : "")
+            CardHeader(symbol: "power", title: "Eski giriş öğeleri", trailing: model.checked ? L("%ld öğe", model.items.count) : "")
             if model.items.isEmpty {
-                Text(model.checked ? "Hedefi eksik öğe yok." : "Taranıyor...")
+                Text(model.checked ? L("Hedefi eksik öğe yok.") : L("Taranıyor..."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -58,7 +58,7 @@ struct LoginItemAuditCard: View {
                     HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 0) {
                             Text(item.name).font(.subheadline).lineLimit(1).truncationMode(.middle)
-                            Text("Eksik: \(item.target.replacingOccurrences(of: NSHomeDirectory(), with: "~"))")
+                            Text(L("Eksik: %@", item.target.replacingOccurrences(of: NSHomeDirectory(), with: "~")))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                                 .lineLimit(1)

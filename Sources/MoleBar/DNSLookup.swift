@@ -150,7 +150,7 @@ struct DNSLookupCard: View {
             Text("Sorgu çalışmadı.").font(.caption).foregroundStyle(.secondary)
         case .result(let result):
             if result.isEmpty {
-                Text("\(result.name) çözümlenemedi.").font(.caption).foregroundStyle(.secondary)
+                Text(L("%@ çözümlenemedi.", result.name)).font(.caption).foregroundStyle(.secondary)
             } else {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: result.name).font(.caption)

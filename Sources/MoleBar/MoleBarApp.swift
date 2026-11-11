@@ -32,9 +32,9 @@ struct MoleBarApp: App {
                 ForEach(MainSection.allCases) { section in
                     let open = { UserDefaults.standard.set(section.rawValue, forKey: "mainSection") }
                     if let key = section.shortcut {
-                        Button(section.rawValue, action: open).keyboardShortcut(key, modifiers: .command)
+                        Button(section.title, action: open).keyboardShortcut(key, modifiers: .command)
                     } else {
-                        Button(section.rawValue, action: open)
+                        Button(section.title, action: open)
                     }
                 }
             }

@@ -109,7 +109,7 @@ enum DiskNotifier {
     static func notify(percent: Double) {
         let defaults = UserDefaults.standard
         let parts: [(label: String, key: ReclaimStore.Key)] = [
-            ("Önbellek", .cache), ("büyük dosyalar", .large), ("kopyalar", .duplicates)
+            (L("Önbellek"), .cache), (L("büyük dosyalar"), .large), (L("kopyalar"), .duplicates)
         ]
         // Değer -1 taranmadı demektir. Taranmamış ve sıfır değerler metne girmez.
         let known = parts.compactMap { part -> String? in
@@ -117,11 +117,11 @@ enum DiskNotifier {
             return bytes > 0 ? "\(part.label) \(formatBytes(UInt64(bytes)))" : nil
         }
         let hint = known.isEmpty
-            ? "MoleBar panelinden temizlik önizlemesi açabilirsiniz."
-            : "Kazanılabilir: " + known.joined(separator: ", ") + "."
+            ? L("MoleBar panelinden temizlik önizlemesi açabilirsiniz.")
+            : L("Kazanılabilir: %@.", known.joined(separator: ", "))
         post(
-            title: "Disk neredeyse dolu",
-            body: String(format: "Ana disk %%%.0f dolu. ", percent) + hint,
+            title: L("Disk neredeyse dolu"),
+            body: L("Ana disk %%%.0f dolu.", percent) + " " + hint,
             id: "molebar.disk"
         )
     }

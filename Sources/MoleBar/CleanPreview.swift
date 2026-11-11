@@ -15,9 +15,9 @@ enum MoleJob: Equatable {
 
     var title: String {
         switch self {
-        case .cleanPreview: return "Temizlik önizlemesi"
-        case .cleanRun: return "Temizlik"
-        case .optimizePreview: return "Bakım önizlemesi"
+        case .cleanPreview: return L("Temizlik önizlemesi")
+        case .cleanRun: return L("Temizlik")
+        case .optimizePreview: return L("Bakım önizlemesi")
         }
     }
 
@@ -144,15 +144,15 @@ final class CleanPreview: ObservableObject {
                     let stale = await Task.detached { ProjectCleaner.staleBytes(minDays: WeeklyScan.staleProjectDays) }.value
                     let growth = FolderGrowth.summaryLine(FolderGrowth.compute(Array(FolderLog.load().suffix(30))))
                     DiskNotifier.post(
-                        title: "Haftalık tarama bitti",
+                        title: L("Haftalık tarama bitti"),
                         body: WeeklyScan.body(cleanable: value, cacheBytes: cache, staleProjectBytes: stale, growth: growth),
                         id: "molebar.scan"
                     )
                     let limitGB = UserDefaults.standard.integer(forKey: "cacheAlertGB")
                     if WeeklyScan.exceedsCacheLimit(cacheBytes: cache, limitGB: limitGB) {
                         DiskNotifier.post(
-                            title: "Önbellek eşiği aşıldı",
-                            body: "Önbellek \(formatBytes(cache)). Eşik \(limitGB) GB. Önbellek sekmesinden inceleyin.",
+                            title: L("Önbellek eşiği aşıldı"),
+                            body: L("Önbellek %@. Eşik %ld GB. Önbellek sekmesinden inceleyin.", formatBytes(cache), limitGB),
                             id: "molebar.cache"
                         )
                     }
@@ -195,20 +195,20 @@ struct CleanPreviewPage: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text(preview.job == .cleanRun ? "Temizleniyor" : "Taranıyor")
+                Text(preview.job == .cleanRun ? L("Temizleniyor") : L("Taranıyor"))
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 Text(preview.startedAt, style: .timer)
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
-            Text(preview.currentSection.isEmpty ? "Başlıyor…" : preview.currentSection)
+            Text(preview.currentSection.isEmpty ? L("Başlıyor…") : preview.currentSection)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             Text(preview.job == .cleanRun
-                 ? "Dosyalar siliniyor. İptal edilen işlem yarım kalabilir."
-                 : "Hiçbir şey silinmez. Tarama 10 saniye ile 2 dakika sürer.")
+                 ? L("Dosyalar siliniyor. İptal edilen işlem yarım kalabilir.")
+                 : L("Hiçbir şey silinmez. Tarama 10 saniye ile 2 dakika sürer."))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -235,7 +235,7 @@ struct CleanPreviewPage: View {
             if preview.summary != nil {
                 Text(summaryParts.first?.value ?? "")
                     .font(.system(size: 30, weight: .semibold, design: .rounded))
-                Text(summaryParts.first?.label ?? "Temizlenebilir alan")
+                Text(summaryParts.first?.label ?? L("Temizlenebilir alan"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 HStack(spacing: 8) {
@@ -307,7 +307,7 @@ struct CleanPreviewPage: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Temizlik bitti").font(.subheadline.weight(.semibold))
             if let freed = preview.freedBytes {
-                Text(freed > 0 ? "Boşalan alan: \(formatBytes(UInt64(freed)))" : "Ölçülen fark: yok")
+                Text(freed > 0 ? L("Boşalan alan: %@", formatBytes(UInt64(freed))) : L("Ölçülen fark: yok"))
                     .font(.system(size: 22, weight: .semibold, design: .rounded))
                 Text("Disk boş alanından ölçüldü. Sistem, arka planda silinenleri geç yansıtabilir.")
                     .font(.caption2)
@@ -326,7 +326,7 @@ struct CleanPreviewPage: View {
     private var optimizeDoneCard: some View {
         let steps = preview.lines.filter { $0.kind == .item }.count
         return VStack(alignment: .leading, spacing: 10) {
-            Text("\(steps) bakım adımı").font(.system(size: 26, weight: .semibold, design: .rounded))
+            Text(L("%ld bakım adımı", steps)).font(.system(size: 26, weight: .semibold, design: .rounded))
             Text("Önizleme. Hiçbir şey değişmedi.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -352,8 +352,8 @@ struct CleanPreviewPage: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("İşlem alınamadı").font(.subheadline.weight(.semibold))
             Text(MoleCLI.isInstalled
-                 ? "Mole çıktısı tanınmadı veya işlem başarısız oldu."
-                 : "Mole kurulu değil. Denenen yollar: \(MoleCLI.candidates.joined(separator: ", "))")
+                 ? L("Mole çıktısı tanınmadı veya işlem başarısız oldu.")
+                 : L("Mole kurulu değil. Denenen yollar: %@", MoleCLI.candidates.joined(separator: ", ")))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             versionNoteView
@@ -388,7 +388,7 @@ struct CleanPreviewPage: View {
     /// Kurulu Mole sürümü denenen sürümden farklıysa uyarı metni. Aynıysa veya okunamadıysa nil.
     private var versionNote: String? {
         guard let version = preview.moleVersion, !MoleCLI.isTested(version) else { return nil }
-        return "Mole \(version) kurulu. MoleBar çıktıyı Mole \(MoleCLI.testedVersion) ile denedi. Biçim değişmiş olabilir."
+        return L("Mole %@ kurulu. MoleBar çıktıyı Mole %@ ile denedi. Biçim değişmiş olabilir.", version, MoleCLI.testedVersion)
     }
 
     @ViewBuilder

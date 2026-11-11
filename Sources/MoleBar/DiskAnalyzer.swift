@@ -66,11 +66,11 @@ final class DiskAnalyzer: ObservableObject {
 
     /// Geçerli klasörün listesini CSV dosyasına yazar. Yol kullanıcının seçtiği kaydetme penceresinden gelir.
     func exportCSV() {
-        let rows = entries.map { [$0.name, $0.isDirectory ? "Klasör" : "Dosya", String($0.bytes), String($0.items)] }
-        let text = CSVExport.make(header: ["Ad", "Tür", "Boyut (bayt)", "Öğe sayısı"], rows: rows)
+        let rows = entries.map { [$0.name, $0.isDirectory ? L("Klasör") : L("Dosya"), String($0.bytes), String($0.items)] }
+        let text = CSVExport.make(header: [L("Ad"), L("Tür"), L("Boyut (bayt)"), L("Öğe sayısı")], rows: rows)
         let folder = current.lastPathComponent.isEmpty ? "disk" : current.lastPathComponent
         if let name = CSVExport.save(text, suggestedName: "analiz-\(folder).csv") {
-            notice = "\(entries.count) satır \(name) dosyasına kaydedildi."
+            notice = L("%ld satır %@ dosyasına kaydedildi.", entries.count, name)
         }
     }
 
@@ -98,7 +98,7 @@ final class DiskAnalyzer: ObservableObject {
         do {
             children = try Self.children(of: url)
         } catch {
-            listError = "Klasör okunamadı. Tam Disk Erişimi gerekebilir."
+            listError = L("Klasör okunamadı. Tam Disk Erişimi gerekebilir.")
             isScanning = false
             pending = 0
             return
@@ -195,11 +195,11 @@ struct AnalyzePage: View {
     private var shortcuts: [(title: String, url: URL)] {
         let home = FileManager.default.homeDirectoryForCurrentUser
         var result: [(title: String, url: URL)] = [
-            (title: "Ev", url: home),
-            (title: "İndirilenler", url: home.appendingPathComponent("Downloads")),
-            (title: "Masaüstü", url: home.appendingPathComponent("Desktop")),
-            (title: "Kütüphane", url: home.appendingPathComponent("Library")),
-            (title: "Uygulamalar", url: URL(fileURLWithPath: "/Applications"))
+            (title: L("Ev"), url: home),
+            (title: L("İndirilenler"), url: home.appendingPathComponent("Downloads")),
+            (title: L("Masaüstü"), url: home.appendingPathComponent("Desktop")),
+            (title: L("Kütüphane"), url: home.appendingPathComponent("Library")),
+            (title: L("Uygulamalar"), url: URL(fileURLWithPath: "/Applications"))
         ]
         for volume in volumes where !volume.isInternal {
             result.append((title: volume.name, url: URL(fileURLWithPath: volume.path)))
@@ -304,7 +304,7 @@ struct AnalyzePage: View {
             Spacer(minLength: 8)
             if analyzer.isScanning {
                 ProgressView().controlSize(.small)
-                Text("\(analyzer.pending) kaldı")
+                Text(L("%ld kaldı", analyzer.pending))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                 Button("Durdur") { analyzer.cancel() }
@@ -354,9 +354,9 @@ struct AnalyzePage: View {
         analyzer.pendingTrash = nil
         do {
             try analyzer.moveToTrash(entry)
-            analyzer.notice = "\(entry.name) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
+            analyzer.notice = L("%@ Çöp Kutusu'na taşındı. Finder'dan geri alınabilir.", entry.name)
         } catch {
-            analyzer.notice = "\(entry.name) taşınamadı: \(error.localizedDescription)"
+            analyzer.notice = L("%@ taşınamadı: %@", entry.name, error.localizedDescription)
         }
     }
 
@@ -370,7 +370,7 @@ struct AnalyzePage: View {
                 HStack {
                     Text(entry.name).font(.subheadline).lineLimit(1).truncationMode(.middle)
                     if entry.isDirectory && entry.sized {
-                        Text("\(entry.items) öğe").font(.caption2).foregroundStyle(.secondary)
+                        Text(L("%ld öğe", entry.items)).font(.caption2).foregroundStyle(.secondary)
                     }
                 }
                 UsageBar(percent: entry.sized ? share : 0, height: 4, color: .accentColor)
@@ -405,7 +405,7 @@ struct AnalyzePage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(allowed ? Color.secondary : Color.secondary.opacity(0.3))
                     .disabled(!allowed)
-                    .help(allowed ? "Çöp Kutusu'na taşı" : "Bu öğe korumalı")
+                    .help(L(allowed ? "Çöp Kutusu'na taşı" : "Bu öğe korumalı"))
             }
             if entry.isDirectory {
                 Image(systemName: "chevron.right")

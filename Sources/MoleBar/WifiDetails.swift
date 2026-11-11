@@ -16,9 +16,9 @@ struct WifiInfo: Equatable {
     var summary: String {
         var parts: [String] = []
         if let ssid, !ssid.isEmpty { parts.append(ssid) }
-        if let channel { parts.append("Kanal \(channel)" + (band.map { " (\($0))" } ?? "")) }
+        if let channel { parts.append(L("Kanal %ld", channel) + (band.map { " (\($0))" } ?? "")) }
         parts.append("\(rssi) dBm (\(quality))")
-        if rate > 0 { parts.append("\(Int(rate.rounded())) Mb/sn") }
+        if rate > 0 { parts.append(L("%ld Mb/sn", Int(rate.rounded()))) }
         return parts.joined(separator: " · ")
     }
 }
@@ -28,16 +28,16 @@ enum WifiDetails {
     /// Sinyal gücünü (dBm) dört kademeye çevirir.
     static func quality(rssi: Int) -> String {
         switch rssi {
-        case (-50)...: "Mükemmel"
-        case (-60)...: "İyi"
-        case (-70)...: "Orta"
-        default: "Zayıf"
+        case (-50)...: L("Mükemmel")
+        case (-60)...: L("İyi")
+        case (-70)...: L("Orta")
+        default: L("Zayıf")
         }
     }
 
     static func bandLabel(_ band: CWChannelBand) -> String? {
         switch band {
-        case .band2GHz: "2,4 GHz"
+        case .band2GHz: L("2,4 GHz")
         case .band5GHz: "5 GHz"
         case .band6GHz: "6 GHz"
         default: nil

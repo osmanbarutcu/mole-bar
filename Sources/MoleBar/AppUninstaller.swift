@@ -84,9 +84,9 @@ final class AppUninstaller: ObservableObject {
             catch { failed.append(url.lastPathComponent) }
         }
         if failed.isEmpty {
-            notice = "\(app.name) ve artıkları Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
+            notice = L("%@ ve artıkları Çöp Kutusu'na taşındı. Finder'dan geri alınabilir.", app.name)
         } else {
-            notice = "Taşınamayan öğeler: \(failed.joined(separator: ", ")). Yönetici izni gerekebilir."
+            notice = L("Taşınamayan öğeler: %@. Yönetici izni gerekebilir.", failed.joined(separator: ", "))
         }
         apps.removeAll { $0.id == app.id }
         selected = nil
@@ -232,7 +232,7 @@ struct UninstallPage: View {
                         .frame(width: 40, height: 40)
                     VStack(alignment: .leading, spacing: 0) {
                         Text(app.name).font(.headline).lineLimit(1)
-                        Text(app.bundleID ?? "Paket kimliği yok")
+                        Text(app.bundleID ?? L("Paket kimliği yok"))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
@@ -277,7 +277,7 @@ struct UninstallPage: View {
                 .font(.caption)
                 .foregroundStyle(.orange)
         } else if model.confirming {
-            Text("\(formatBytes(model.totalBytes)) Çöp Kutusu'na taşınacak.")
+            Text(L("%@ Çöp Kutusu'na taşınacak.", formatBytes(model.totalBytes)))
                 .font(.caption)
             HStack {
                 Button("Taşı") { model.moveSelectedToTrash() }

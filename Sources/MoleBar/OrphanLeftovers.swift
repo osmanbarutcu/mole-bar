@@ -139,8 +139,8 @@ final class OrphanModel: ObservableObject {
         items.removeAll { moved.contains($0.url) }
         selected = []
         notice = failed == 0
-            ? "\(moved.count) öğe Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
-            : "\(moved.count) öğe taşındı, \(failed) öğe taşınamadı."
+            ? L("%ld öğe Çöp Kutusu'na taşındı. Finder'dan geri alınabilir.", moved.count)
+            : L("%ld öğe taşındı, %ld öğe taşınamadı.", moved.count, failed)
     }
 }
 
@@ -153,7 +153,7 @@ struct OrphanPage: View {
                 Text("Kurulu uygulaması olmayan kalıntılar").font(.subheadline.weight(.semibold))
                 Spacer()
                 if model.isScanning { ProgressView().controlSize(.small) }
-                Button { model.scan() } label: { Label(model.scanned ? "Yeniden tara" : "Tara", systemImage: "magnifyingglass") }
+                Button { model.scan() } label: { Label(model.scanned ? L("Yeniden tara") : L("Tara"), systemImage: "magnifyingglass") }
                     .glassButton()
                     .disabled(model.isScanning)
             }
@@ -196,13 +196,13 @@ struct OrphanPage: View {
     private var actions: some View {
         if model.confirming {
             HStack {
-                Text("\(formatBytes(model.selectedBytes)) Çöp Kutusu'na taşınacak.").font(.caption)
+                Text(L("%@ Çöp Kutusu'na taşınacak.", formatBytes(model.selectedBytes))).font(.caption)
                 Button("Taşı") { model.moveSelectedToTrash() }.glassProminentButton()
                 Button("Vazgeç") { model.confirming = false }.glassButton()
             }
         } else if !model.selected.isEmpty {
             Button { model.confirming = true } label: {
-                Label("Seçilenleri Çöp Kutusu'na taşı (\(formatBytes(model.selectedBytes)))", systemImage: "trash")
+                Label(L("Seçilenleri Çöp Kutusu'na taşı (%@)", formatBytes(model.selectedBytes)), systemImage: "trash")
             }
             .glassButton()
         }

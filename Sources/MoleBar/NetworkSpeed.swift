@@ -12,9 +12,9 @@ struct SpeedResult: Equatable {
     var responsivenessLabel: String? {
         guard let responsiveness else { return nil }
         switch responsiveness {
-        case 1000...: return "Yüksek"
-        case 200...: return "Orta"
-        default: return "Düşük"
+        case 1000...: return L("Yüksek")
+        case 200...: return L("Orta")
+        default: return L("Düşük")
         }
     }
 }
@@ -130,7 +130,7 @@ struct NetworkSpeedCard: View {
             case .running:
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text("Ölçülüyor (en çok \(NetworkSpeed.maxSeconds) sn)...").font(.caption).foregroundStyle(.secondary)
+                    Text(L("Ölçülüyor (en çok %ld sn)...", NetworkSpeed.maxSeconds)).font(.caption).foregroundStyle(.secondary)
                 }
             case .failed:
                 Text("Ölçüm tamamlanmadı. Bağlantıyı kontrol edin.").font(.caption).foregroundStyle(.secondary)
@@ -150,8 +150,8 @@ struct NetworkSpeedCard: View {
 
     private func resultRows(_ result: SpeedResult) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            metric("arrow.down.circle", "İndirme", String(format: "%.1f Mb/sn", result.downloadMbps))
-            metric("arrow.up.circle", "Yükleme", String(format: "%.1f Mb/sn", result.uploadMbps))
+            metric("arrow.down.circle", "İndirme", L("%.1f Mb/sn", result.downloadMbps))
+            metric("arrow.up.circle", "Yükleme", L("%.1f Mb/sn", result.uploadMbps))
             if let latency = result.latencyMs { metric("timer", "Boşta gecikme", String(format: "%.0f ms", latency)) }
             if let rpm = result.responsiveness {
                 metric("waveform.path.ecg", "Yanıt verme", "\(rpm) RPM" + (result.responsivenessLabel.map { " (\($0))" } ?? ""))
@@ -162,7 +162,7 @@ struct NetworkSpeedCard: View {
     private func metric(_ symbol: String, _ title: String, _ value: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: symbol).frame(width: 22).foregroundStyle(.secondary)
-            Text(title).font(.caption)
+            Text(L(title)).font(.caption)
             Spacer(minLength: 6)
             Text(verbatim: value).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
         }

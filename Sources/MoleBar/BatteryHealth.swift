@@ -13,12 +13,12 @@ struct BatteryHealth: Equatable {
 
     static func conditionText(_ raw: String) -> String {
         switch raw {
-        case "Good": return "İyi"
-        case "Normal": return "Normal"
-        case "Fair": return "Orta"
-        case "Poor": return "Zayıf"
-        case "Service Recommended": return "Servis önerilir"
-        case "Check Battery": return "Pili kontrol edin"
+        case "Good": return L("İyi")
+        case "Normal": return L("Normal")
+        case "Fair": return L("Orta")
+        case "Poor": return L("Zayıf")
+        case "Service Recommended": return L("Servis önerilir")
+        case "Check Battery": return L("Pili kontrol edin")
         default: return raw
         }
     }

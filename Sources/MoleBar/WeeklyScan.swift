@@ -13,11 +13,11 @@ enum WeeklyScan {
 
     static func body(cleanable: String, cacheBytes: UInt64, staleProjectBytes: UInt64, growth: String?) -> String {
         let parts = [
-            cleanable.isEmpty ? nil : "Temizlenebilir alan: \(cleanable).",
-            "Önbellek: \(formatBytes(cacheBytes)).",
-            staleProjectBytes > 0 ? "\(staleProjectDays) günden eski proje çıktıları: \(formatBytes(staleProjectBytes))." : nil,
+            cleanable.isEmpty ? nil : L("Temizlenebilir alan: %@.", cleanable),
+            L("Önbellek: %@.", formatBytes(cacheBytes)),
+            staleProjectBytes > 0 ? L("%ld günden eski proje çıktıları: %@.", staleProjectDays, formatBytes(staleProjectBytes)) : nil,
             growth,
-            "Araçlar sekmesinden inceleyin. Hiçbir şey silinmedi."
+            L("Araçlar sekmesinden inceleyin. Hiçbir şey silinmedi.")
         ]
         return parts.compactMap { $0 }.joined(separator: " ")
     }

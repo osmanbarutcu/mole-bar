@@ -8,9 +8,9 @@ enum GraphMetric: String, CaseIterable {
 
     var title: String {
         switch self {
-        case .cpu: return "CPU"
-        case .ram: return "RAM"
-        case .net: return "Ağ"
+        case .cpu: return L("CPU")
+        case .ram: return L("RAM")
+        case .net: return L("Ağ")
         }
     }
 

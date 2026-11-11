@@ -56,6 +56,8 @@ private enum LocalizationSource {
 
     static func specifiers(_ text: String) -> [String] {
         let regex = try! NSRegularExpression(pattern: #"%(?:\d+\$)?[-+ #0]*\d*(?:\.\d+)?(?:ll|l|h)?[@dDiuUxXfeEgGcsp]"#)
+        // "%%" yüzde işaretidir, belirteç değildir. "%.0f%% full" içinde "% f" sanılmasın.
+        let text = text.replacingOccurrences(of: "%%", with: "")
         return regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
             .compactMap { Range($0.range, in: text).map { String(text[$0]) } }
             .map { $0.replacingOccurrences(of: #"\d+\$"#, with: "", options: .regularExpression) }
@@ -91,7 +93,9 @@ struct LocalizationTests {
 
     @Test("tabloda kaynakta olmayan anahtar yok")
     func noStaleKeys() throws {
-        let stale = Set(try LocalizationSource.table("en").keys).subtracting(LocalizationSource.allLiterals).sorted()
+        // İç içe metindeki `L("…")` anahtarlarını genel tırnak taraması kaçırır, ayrıca eklenir.
+        let used = LocalizationSource.allLiterals.union(LocalizationSource.lKeys)
+        let stale = Set(try LocalizationSource.table("en").keys).subtracting(used).sorted()
         #expect(stale.isEmpty, "Kullanılmayan: \(stale)")
     }
 

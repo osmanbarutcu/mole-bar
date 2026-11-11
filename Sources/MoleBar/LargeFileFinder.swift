@@ -57,10 +57,10 @@ final class LargeFileFinder: ObservableObject {
 
     /// Görünen listeyi CSV dosyasına yazar. Yol kullanıcının seçtiği kaydetme penceresinden gelir.
     func exportCSV() {
-        let rows = visibleFiles.map { [$0.name, $0.folder, $0.kind.rawValue, String($0.bytes)] }
-        let text = CSVExport.make(header: ["Ad", "Klasör", "Tür", "Boyut (bayt)"], rows: rows)
+        let rows = visibleFiles.map { [$0.name, $0.folder, L($0.kind.rawValue), String($0.bytes)] }
+        let text = CSVExport.make(header: [L("Ad"), L("Klasör"), L("Tür"), L("Boyut (bayt)")], rows: rows)
         if let name = CSVExport.save(text, suggestedName: "buyuk-dosyalar.csv") {
-            notice = "\(visibleFiles.count) satır \(name) dosyasına kaydedildi."
+            notice = L("%ld satır %@ dosyasına kaydedildi.", visibleFiles.count, name)
         }
     }
 
@@ -105,16 +105,16 @@ final class LargeFileFinder: ObservableObject {
     func moveToTrash(_ file: LargeFile) {
         pendingTrash = nil
         guard TrashGuard.canTrash(file.url) else {
-            notice = "\(file.name) korumalı bir yolda. Finder'da gösterin."
+            notice = L("%@ korumalı bir yolda. Finder'da gösterin.", file.name)
             return
         }
         do {
             try TrashGuard.trash(file.url, bytes: file.bytes, source: "Büyük dosyalar")
             files.removeAll { $0.url == file.url }
             ReclaimStore.save(.large, bytes: totalBytes)
-            notice = "\(file.name) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
+            notice = L("%@ Çöp Kutusu'na taşındı. Finder'dan geri alınabilir.", file.name)
         } catch {
-            notice = "\(file.name) taşınamadı: \(error.localizedDescription)"
+            notice = L("%@ taşınamadı: %@", file.name, error.localizedDescription)
         }
     }
 
@@ -179,7 +179,7 @@ struct LargeFilesPage: View {
                 Spacer()
                 if finder.isScanning {
                     ProgressView().controlSize(.small)
-                    Text("\(finder.scanned) dosya").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                    Text(L("%ld dosya", finder.scanned)).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                     Button("Durdur") { finder.cancel() }.glassButton().controlSize(.small)
                 } else if !finder.visibleFiles.isEmpty {
                     Text(formatBytes(finder.visibleBytes)).font(.headline.monospacedDigit())
@@ -206,14 +206,14 @@ struct LargeFilesPage: View {
             Picker("Tür", selection: $finder.kind) {
                 ForEach(FileKind.allCases, id: \.self) { kind in
                     let count = kind == .all ? finder.files.count : finder.files.filter { $0.kind == kind }.count
-                    Text("\(kind.rawValue) \(count)").tag(kind)
+                    Text(L(kind.rawValue) + " \(count)").tag(kind)
                 }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
             .frame(maxWidth: 420)
             if !finder.isScanning, finder.scanned > 0 {
-                Text("\(finder.scanned) dosya tarandı." + (finder.inaccessible > 0 ? " " + FullDiskAccess.inaccessibleNote(finder.inaccessible) : ""))
+                Text(L("%ld dosya tarandı.", finder.scanned) + (finder.inaccessible > 0 ? " " + FullDiskAccess.inaccessibleNote(finder.inaccessible) : ""))
                     .font(.caption2)
                     .foregroundStyle(finder.inaccessible > 0 ? Color.orange : Color.secondary)
             }
@@ -240,7 +240,7 @@ struct LargeFilesPage: View {
     @ViewBuilder
     private var content: some View {
         if finder.visibleFiles.isEmpty {
-            Text(finder.isScanning ? "Taranıyor..." : (finder.files.isEmpty ? "Henüz sonuç yok. Tara'ya basın." : "Bu türde dosya yok."))
+            Text(L(finder.isScanning ? "Taranıyor..." : (finder.files.isEmpty ? "Henüz sonuç yok. Tara'ya basın." : "Bu türde dosya yok.")))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
@@ -283,7 +283,7 @@ struct LargeFilesPage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(allowed ? Color.secondary : Color.secondary.opacity(0.3))
                     .disabled(!allowed)
-                    .help(allowed ? "Çöp Kutusu'na taşı" : "Bu öğe korumalı")
+                    .help(L(allowed ? "Çöp Kutusu'na taşı" : "Bu öğe korumalı"))
             }
         }
         .padding(.vertical, 7)

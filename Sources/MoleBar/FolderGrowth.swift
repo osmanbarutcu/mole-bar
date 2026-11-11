@@ -49,7 +49,7 @@ enum FolderGrowth {
     /// Bildirim için tek satır. Artış yoksa nil döner.
     static func summaryLine(_ entries: [FolderGrowthEntry]) -> String? {
         guard let top = entries.max(by: { $0.bytes < $1.bytes }) else { return nil }
-        return "En çok büyüyen: \(top.name) +\(formatBytes(top.bytes)) (\(top.days) gün)."
+        return L("En çok büyüyen: %@ +%@ (%ld gün).", L(top.name), formatBytes(top.bytes), top.days)
     }
 
     /// En eski ve en yeni ölçümü karşılaştırır. Yalnızca iki ölçümde de bulunan ve büyüyen adlar döner, büyükten küçüğe.

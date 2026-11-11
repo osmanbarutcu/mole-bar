@@ -8,17 +8,17 @@ enum MaintenanceAction: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .flushDNS: "DNS önbelleğini temizle"
-        case .flushARP: "ARP tablosunu temizle"
-        case .purgeMemory: "Bellek önbelleğini boşalt"
+        case .flushDNS: L("DNS önbelleğini temizle")
+        case .flushARP: L("ARP tablosunu temizle")
+        case .purgeMemory: L("Bellek önbelleğini boşalt")
         }
     }
 
     var detail: String {
         switch self {
-        case .flushDNS: "Eski alan adı kayıtlarını siler. DNS değiştirdiyseniz kullanın."
-        case .flushARP: "Yerel ağ cihaz eşlemelerini siler. Ağ cihazı görünmüyorsa kullanın. Bağlantı bir an kesilebilir."
-        case .purgeMemory: "Disk önbelleğini boşaltır. Mac kısa süre yavaşlayabilir."
+        case .flushDNS: L("Eski alan adı kayıtlarını siler. DNS değiştirdiyseniz kullanın.")
+        case .flushARP: L("Yerel ağ cihaz eşlemelerini siler. Ağ cihazı görünmüyorsa kullanın. Bağlantı bir an kesilebilir.")
+        case .purgeMemory: L("Disk önbelleğini boşaltır. Mac kısa süre yavaşlayabilir.")
         }
     }
 
@@ -41,9 +41,9 @@ enum MaintenanceAction: String, CaseIterable, Identifiable {
 
     var doneText: String {
         switch self {
-        case .flushDNS: "DNS önbelleği temizlendi."
-        case .flushARP: "ARP tablosu temizlendi."
-        case .purgeMemory: "Bellek önbelleği boşaltıldı."
+        case .flushDNS: L("DNS önbelleği temizlendi.")
+        case .flushARP: L("ARP tablosu temizlendi.")
+        case .purgeMemory: L("Bellek önbelleği boşaltıldı.")
         }
     }
 }
@@ -65,7 +65,7 @@ enum AdminCommand {
     static func classify(status: Int32, stderr: String) -> Outcome {
         if status == 0 { return .success }
         if stderr.contains("(-128)") { return .cancelled }
-        let line = stderr.split(whereSeparator: \.isNewline).last.map(String.init) ?? "Bilinmeyen hata"
+        let line = stderr.split(whereSeparator: \.isNewline).last.map(String.init) ?? L("Bilinmeyen hata")
         return .failed(line)
     }
 
@@ -78,7 +78,7 @@ enum AdminCommand {
         process.standardOutput = FileHandle.nullDevice
         process.standardError = pipe
         process.standardInput = FileHandle.nullDevice
-        do { try process.run() } catch { return .failed("osascript başlatılamadı.") }
+        do { try process.run() } catch { return .failed(L("osascript başlatılamadı.")) }
         let watchdog = DispatchWorkItem { if process.isRunning { process.terminate() } }
         DispatchQueue.global().asyncAfter(deadline: .now() + 120, execute: watchdog)
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
@@ -102,8 +102,8 @@ final class MaintenanceModel: ObservableObject {
         running = nil
         switch outcome {
         case .success: messages[action] = action.doneText
-        case .cancelled: messages[action] = "İptal edildi."
-        case .failed(let reason): messages[action] = "Başarısız: \(reason)"
+        case .cancelled: messages[action] = L("İptal edildi.")
+        case .failed(let reason): messages[action] = L("Başarısız: %@", reason)
         }
         return outcome
     }

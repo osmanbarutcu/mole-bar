@@ -15,9 +15,9 @@ enum MemoryPressure: Equatable {
 
     var label: String {
         switch self {
-        case .normal: return "Normal"
-        case .warning: return "Uyarı"
-        case .critical: return "Kritik"
+        case .normal: return L("Normal")
+        case .warning: return L("Uyarı")
+        case .critical: return L("Kritik")
         }
     }
 

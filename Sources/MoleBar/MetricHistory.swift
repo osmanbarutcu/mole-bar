@@ -80,12 +80,12 @@ enum MetricHistory {
 
     /// Örnek: "En yüksek bellek: %92, Sal 14:30, Chrome". Süreç adı yoksa son parça yazılmaz.
     static func peakText(_ title: String, value: Double, sample: MetricSample, process: String?,
-                         timeZone: TimeZone = .current) -> String {
+                         timeZone: TimeZone = .current, locale: Locale = .current) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = locale
         formatter.timeZone = timeZone
         formatter.dateFormat = "EEE HH:mm"
-        let parts = [String(format: "%@: %%%.0f", title, value), formatter.string(from: sample.time)] + (process.map { [$0] } ?? [])
+        let parts = [L("%@: %%%.0f", L(title), value), formatter.string(from: sample.time)] + (process.map { [$0] } ?? [])
         return parts.joined(separator: ", ")
     }
 }
@@ -104,9 +104,9 @@ enum HistoryWindow: String, CaseIterable {
 
     var label: String {
         switch self {
-        case .hour: return "1 sa"
-        case .day: return "24 sa"
-        case .week: return "7 gün"
+        case .hour: return L("1 sa")
+        case .day: return L("24 sa")
+        case .week: return L("7 gün")
         }
     }
 }
@@ -138,7 +138,7 @@ struct MetricStore {
             }
             try handle.write(contentsOf: Data((prefix + line + "\n").utf8))
         } catch {
-            ErrorLog.add(source: "Geçmiş", message: "Yazılamadı: \(error.localizedDescription)")
+            ErrorLog.add(source: "Geçmiş", message: L("Yazılamadı: %@", error.localizedDescription))
         }
     }
 
@@ -149,7 +149,7 @@ struct MetricStore {
         if kept.count != all.count {
             let body = kept.compactMap(MetricHistory.encode).map { $0 + "\n" }.joined()
             do { try Data(body.utf8).write(to: file, options: .atomic) } catch {
-                ErrorLog.add(source: "Geçmiş", message: "Sıkıştırılamadı: \(error.localizedDescription)")
+                ErrorLog.add(source: "Geçmiş", message: L("Sıkıştırılamadı: %@", error.localizedDescription))
             }
         }
         return kept

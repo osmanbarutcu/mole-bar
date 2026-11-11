@@ -82,7 +82,7 @@ struct PanelView: View {
                 PanelSettingsPage(stats: stats)
             } else {
                 Picker("Sekme", selection: $layout.tab) {
-                    ForEach(PanelTab.allCases) { Text($0.rawValue).tag($0) }
+                    ForEach(PanelTab.allCases) { Text(L($0.rawValue)).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -123,7 +123,7 @@ struct PanelView: View {
                     .glassButton()
                     .help("Geri")
                     .accessibilityLabel("Geri")
-                Text(layout.showPreview ? preview.job.title : "Ayarlar").font(.headline)
+                Text(layout.showPreview ? preview.job.title : L("Ayarlar")).font(.headline)
             } else {
                 Image(systemName: "gauge.with.dots.needle.50percent")
                     .font(.title3)
@@ -213,15 +213,15 @@ struct PanelView: View {
     private var healthHints: [(symbol: String, title: String, action: String, section: MainSection)] {
         var hints: [(symbol: String, title: String, action: String, section: MainSection)] = []
         if stats.disk.percent >= 80 {
-            hints.append(("internaldrive", String(format: "Disk %%%.0f dolu", stats.disk.percent), "Diskler", .disks))
+            hints.append(("internaldrive", L("Disk %%%.0f dolu", stats.disk.percent), L("Diskler"), .disks))
         }
         if stats.memory.percent >= 85 {
-            hints.append(("memorychip", String(format: "Bellek %%%.0f dolu", stats.memory.percent), "Süreçler", .processes))
+            hints.append(("memorychip", L("Bellek %%%.0f dolu", stats.memory.percent), L("Süreçler"), .processes))
         } else if stats.pressure.needsAttention {
-            hints.append(("memorychip", "Bellek baskısı: \(stats.pressure.label)", "Süreçler", .processes))
+            hints.append(("memorychip", L("Bellek baskısı: %@", stats.pressure.label), L("Süreçler"), .processes))
         }
         if stats.cpuTotal >= 80 {
-            hints.append(("cpu", String(format: "CPU %%%.0f yüklü", stats.cpuTotal), "Süreçler", .processes))
+            hints.append(("cpu", L("CPU %%%.0f yüklü", stats.cpuTotal), L("Süreçler"), .processes))
         }
         return hints
     }
@@ -235,7 +235,7 @@ struct PanelView: View {
             CardHeader(
                 symbol: "cpu",
                 title: "Çekirdekler",
-                trailing: String(format: "%.0f%% toplam · %d çekirdek", stats.cpuTotal, stats.cpuPerCore.count)
+                trailing: L("%.0f%% toplam · %ld çekirdek", stats.cpuTotal, stats.cpuPerCore.count)
             )
             HStack(alignment: .bottom, spacing: 0) {
                 ForEach(Array(stats.cpuPerCore.enumerated()), id: \.offset) { index, usage in
@@ -367,8 +367,8 @@ struct PanelView: View {
                 .frame(width: 22)
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 0) {
-                Text(title).font(.subheadline).lineLimit(1)
-                Text(detail)
+                Text(L(title)).font(.subheadline).lineLimit(1)
+                Text(L(detail))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -384,7 +384,7 @@ struct PanelView: View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
-            Text(String(format: "Ana disk %%%.0f dolu", stats.disk.percent))
+            Text(L("Ana disk %%%.0f dolu", stats.disk.percent))
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -400,7 +400,7 @@ struct PanelView: View {
 
     private var volumesCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            CardHeader(symbol: "internaldrive", title: "Diskler", trailing: "\(stats.volumes.count) birim")
+            CardHeader(symbol: "internaldrive", title: "Diskler", trailing: L("%ld birim", stats.volumes.count))
             ForEach(stats.volumes) { volume in
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 6) {
@@ -418,7 +418,7 @@ struct PanelView: View {
                             .fixedSize()
                     }
                     UsageBar(percent: volume.percent, height: 5)
-                    Text("\(formatBytes(volume.freeBytes)) boş · toplam \(formatBytes(volume.totalBytes))")
+                    Text(L("%@ boş · toplam %@", formatBytes(volume.freeBytes), formatBytes(volume.totalBytes)))
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -492,7 +492,7 @@ struct PanelView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
                 if row.pids.count > 1 {
-                    Text("\(row.pids.count) süreç")
+                    Text(L("%ld süreç", row.pids.count))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)

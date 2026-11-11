@@ -64,7 +64,7 @@ enum ProjectScanner {
         }
         let dates = candidates.compactMap { modified(parent.appendingPathComponent($0)) }
         // Hiçbiri yoksa proje klasörünün kendi tarihi kullanılır. Tarihsiz proje eski sayılmaz.
-        let disk = (try? url.resourceValues(forKeys: [.volumeNameKey]))?.volumeName ?? "Bilinmeyen disk"
+        let disk = (try? url.resourceValues(forKeys: [.volumeNameKey]))?.volumeName ?? L("Bilinmeyen disk")
         return ProjectArtifact(url: url, kind: kind, project: parent.lastPathComponent, lastActive: dates.max() ?? modified(parent), disk: disk)
     }
 }
@@ -257,7 +257,7 @@ final class ProjectCleaner: ObservableObject {
                 selected.remove(item.url)
             } catch { failed += 1 }
         }
-        notice = "\(formatBytes(moved)) Çöp Kutusu'na taşındı." + (failed > 0 ? " \(failed) öğe taşınamadı." : " Finder'dan geri alınabilir.")
+        notice = L("%@ Çöp Kutusu'na taşındı.", formatBytes(moved)) + (failed > 0 ? L(" %ld öğe taşınamadı.", failed) : L(" Finder'dan geri alınabilir."))
         saveReclaim()
     }
 }
@@ -282,7 +282,7 @@ struct ProjectsPage: View {
                 Text("Son etkinlik").font(.caption).foregroundStyle(.secondary)
                 Picker("Son etkinlik", selection: $cleaner.ageIndex) {
                     ForEach(Array(ProjectCleaner.ageOptions.enumerated()), id: \.offset) { index, option in
-                        Text(option.label).tag(index)
+                        Text(L(option.label)).tag(index)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -337,7 +337,7 @@ struct ProjectsPage: View {
     /// Aramayla eşleşen projelerin klasör toplamı ve içindeki çıktılar. Klasör toplamı arka planda ölçülür.
     private var matchedCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            CardHeader(symbol: "folder", title: "Eşleşen projeler", trailing: "\(cleaner.matchedProjects.count) proje")
+            CardHeader(symbol: "folder", title: "Eşleşen projeler", trailing: L("%ld proje", cleaner.matchedProjects.count))
             ForEach(Array(cleaner.matchedProjects.enumerated()), id: \.element.id) { index, project in
                 HStack(alignment: .firstTextBaseline) {
                     VStack(alignment: .leading, spacing: 0) {
@@ -358,11 +358,11 @@ struct ProjectsPage: View {
                         } else {
                             Text("ölçülmedi").font(.caption2).foregroundStyle(.secondary)
                         }
-                        Text("çıktılar \(formatBytes(project.artifactBytes))").font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
+                        Text(L("çıktılar %@", formatBytes(project.artifactBytes))).font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                     }
                 }
             }
-            Text("Klasör toplamı projenin tüm dosyalarını sayar. Yalnızca çıktısı (node_modules, vendor vb.) olan projeler bulunur. En çok \(ProjectCleaner.maxSizedProjects) proje ölçülür.")
+            Text(L("Klasör toplamı projenin tüm dosyalarını sayar. Yalnızca çıktısı (node_modules, vendor vb.) olan projeler bulunur. En çok %ld proje ölçülür.", ProjectCleaner.maxSizedProjects))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -377,7 +377,7 @@ struct ProjectsPage: View {
         HStack(spacing: 10) {
             Text("Disk").font(.caption).foregroundStyle(.secondary)
             Picker("Disk", selection: $cleaner.diskFilter) {
-                Text("Hepsi \(formatBytes(cleaner.bytes(onDisk: nil)))").tag(String?.none)
+                Text(L("Hepsi %@", formatBytes(cleaner.bytes(onDisk: nil)))).tag(String?.none)
                 ForEach(cleaner.diskNames, id: \.self) { name in
                     Text("\(name) \(formatBytes(cleaner.bytes(onDisk: name)))").tag(String?.some(name))
                 }
@@ -391,7 +391,7 @@ struct ProjectsPage: View {
     @ViewBuilder
     private var content: some View {
         if cleaner.visible.isEmpty {
-            Text(cleaner.isScanning ? "Taranıyor..." : (cleaner.isSearching ? "Aramayla eşleşen proje çıktısı yok." : "Bu süreden eski proje çıktısı yok."))
+            Text(L(cleaner.isScanning ? "Taranıyor..." : (cleaner.isSearching ? "Aramayla eşleşen proje çıktısı yok." : "Bu süreden eski proje çıktısı yok.")))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
@@ -445,15 +445,15 @@ struct ProjectsPage: View {
     }
 
     private func activity(_ item: ProjectArtifact) -> String {
-        guard let date = item.lastActive else { return "tarih yok" }
+        guard let date = item.lastActive else { return L("tarih yok") }
         let days = Int(Date().timeIntervalSince(date) / 86_400)
-        return days <= 0 ? "bugün" : "\(days) gün önce"
+        return days <= 0 ? L("bugün") : L("%ld gün önce", days)
     }
 
     private var footer: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(cleaner.selected.isEmpty ? "Öğe seçin." : "\(cleaner.selectedItems.count) öğe · \(formatBytes(cleaner.selectedBytes))")
+                Text(cleaner.selected.isEmpty ? L("Öğe seçin.") : L("%ld öğe · %@", cleaner.selectedItems.count, formatBytes(cleaner.selectedBytes)))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()

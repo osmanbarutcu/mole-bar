@@ -75,9 +75,9 @@ struct MetricHistoryTests {
     func peakText() {
         let utc = TimeZone(identifier: "UTC")!
         // 1970-01-01 Perşembe 00:00 UTC + 14 saat 30 dakika.
-        let text = MetricHistory.peakText("En yüksek bellek", value: 91.6, sample: sample(52_200), process: "Chrome", timeZone: utc)
+        let text = MetricHistory.peakText("En yüksek bellek", value: 91.6, sample: sample(52_200), process: "Chrome", timeZone: utc, locale: Locale(identifier: "tr_TR"))
         #expect(text == "En yüksek bellek: %92, Per 14:30, Chrome")
-        let noProcess = MetricHistory.peakText("En yüksek CPU", value: 5, sample: sample(0), process: nil, timeZone: utc)
+        let noProcess = MetricHistory.peakText("En yüksek CPU", value: 5, sample: sample(0), process: nil, timeZone: utc, locale: Locale(identifier: "tr_TR"))
         #expect(noProcess == "En yüksek CPU: %5, Per 00:00")
     }
 

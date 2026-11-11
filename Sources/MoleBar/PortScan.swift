@@ -6,9 +6,9 @@ struct ListeningPort: Identifiable, Equatable {
 
         var label: String {
             switch self {
-            case .all: return "Tüm ağa açık"
-            case .interface: return "Ağ arayüzü"
-            case .local: return "Yerel"
+            case .all: return L("Tüm ağa açık")
+            case .interface: return L("Ağ arayüzü")
+            case .local: return L("Yerel")
             }
         }
 
@@ -129,12 +129,12 @@ struct PortScanCard: View {
                     .accessibilityLabel("Yeniden tara")
             }
             if model.ports.isEmpty {
-                Text(model.loaded ? "Dinleyen port bulunamadı." : "Taranıyor...").font(.caption).foregroundStyle(.secondary)
+                Text(model.loaded ? L("Dinleyen port bulunamadı.") : L("Taranıyor...")).font(.caption).foregroundStyle(.secondary)
             } else {
                 ForEach(model.ports) { port in
                     HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 0) {
-                            Text(port.process.isEmpty ? "bilinmeyen" : port.process).font(.caption).lineLimit(1)
+                            Text(port.process.isEmpty ? L("bilinmeyen") : port.process).font(.caption).lineLimit(1)
                             Text(verbatim: port.detail).font(.caption2.monospacedDigit()).foregroundStyle(.secondary)
                         }
                         Spacer(minLength: 6)
@@ -158,6 +158,6 @@ struct PortScanCard: View {
     private var trailing: String {
         guard model.loaded else { return "" }
         let exposed = PortScan.exposedCount(model.ports)
-        return "\(model.ports.count) port" + (exposed > 0 ? " · \(exposed) tüm ağa açık" : "")
+        return L("%ld port", model.ports.count) + (exposed > 0 ? " · " + L("%ld tüm ağa açık", exposed) : "")
     }
 }

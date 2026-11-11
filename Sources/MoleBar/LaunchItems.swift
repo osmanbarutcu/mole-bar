@@ -6,9 +6,9 @@ enum LaunchScope: CaseIterable {
 
     var title: String {
         switch self {
-        case .userAgent: return "Kullanıcı ajanları"
-        case .systemAgent: return "Sistem ajanları"
-        case .systemDaemon: return "Sistem servisleri"
+        case .userAgent: return L("Kullanıcı ajanları")
+        case .systemAgent: return L("Sistem ajanları")
+        case .systemDaemon: return L("Sistem servisleri")
         }
     }
 
@@ -81,9 +81,9 @@ struct LaunchItemsCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CardHeader(symbol: "bolt.horizontal", title: "Başlatma öğeleri", trailing: model.checked ? "\(model.items.count) öğe" : "")
+            CardHeader(symbol: "bolt.horizontal", title: "Başlatma öğeleri", trailing: model.checked ? L("%ld öğe", model.items.count) : "")
             if model.items.isEmpty {
-                Text(model.checked ? "Başlatma öğesi bulunamadı." : "Taranıyor...")
+                Text(model.checked ? L("Başlatma öğesi bulunamadı.") : L("Taranıyor..."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -126,10 +126,10 @@ struct LaunchItemsCard: View {
 
     private func tags(_ item: LaunchItem) -> String {
         var parts: [String] = []
-        if item.missing { parts.append("hedef yok") }
-        if item.runAtLoad { parts.append("açılışta") }
-        if item.keepAlive { parts.append("sürekli") }
-        if parts.isEmpty { parts.append("istek üzerine") }
+        if item.missing { parts.append(L("hedef yok")) }
+        if item.runAtLoad { parts.append(L("açılışta")) }
+        if item.keepAlive { parts.append(L("sürekli")) }
+        if parts.isEmpty { parts.append(L("istek üzerine")) }
         return parts.joined(separator: " · ")
     }
 }

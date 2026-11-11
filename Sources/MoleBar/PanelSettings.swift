@@ -41,7 +41,7 @@ struct PanelSettingsPage: View {
                     .glassCard()
 
                     VStack(alignment: .leading, spacing: 10) {
-                        CardHeader(symbol: "arrow.down.circle", title: "Güncellemeler", trailing: "Sürüm \(UpdateCheck.currentVersion)")
+                        CardHeader(symbol: "arrow.down.circle", title: "Güncellemeler", trailing: L("Sürüm %@", UpdateCheck.currentVersion))
                         Toggle("Yeni sürümü GitHub'dan denetle", isOn: $updateCheckEnabled)
                             .toggleStyle(RightSwitchStyle())
                             .controlSize(.small)
@@ -49,7 +49,7 @@ struct PanelSettingsPage: View {
                                 if enabled { stats.checkForUpdateIfDue() }
                             }
                         if let update = stats.availableUpdate, updateCheckEnabled {
-                            Text("Yeni sürüm var: \(update.version)").font(.caption.weight(.semibold))
+                            Text(L("Yeni sürüm var: %@", update.version)).font(.caption.weight(.semibold))
                             Button("Sürüm sayfasını aç") { NSWorkspace.shared.open(update.url) }
                                 .glassButton()
                                 .controlSize(.small)
@@ -148,11 +148,11 @@ struct PanelSettingsPage: View {
                         Toggle("Bir uygulama 5 dakika toplam %90 üstü CPU kullanırsa bildir", isOn: $cpuAlertEnabled)
                             .toggleStyle(RightSwitchStyle())
                             .controlSize(.small)
-                        Stepper("Eşik: %\(diskAlertThreshold)", value: $diskAlertThreshold, in: 70...98)
+                        Stepper(L("Eşik: %%%ld", diskAlertThreshold), value: $diskAlertThreshold, in: 70...98)
                             .disabled(!diskAlertEnabled)
                             .controlSize(.small)
                             .font(.callout)
-                        Stepper(cacheAlertGB == 0 ? "Önbellek uyarısı: kapalı" : "Önbellek uyarısı: \(cacheAlertGB) GB", value: $cacheAlertGB, in: 0...50)
+                        Stepper(cacheAlertGB == 0 ? L("Önbellek uyarısı: kapalı") : L("Önbellek uyarısı: %ld GB", cacheAlertGB), value: $cacheAlertGB, in: 0...50)
                             .controlSize(.small)
                             .font(.callout)
                         Text("Haftalık tarama önbellek toplamı eşiği aşarsa ayrı bildirim gönderir. 0 kapatır.")

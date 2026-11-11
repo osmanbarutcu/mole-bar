@@ -15,6 +15,9 @@ enum MainSection: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Görünen başlık. Ham değer `mainSection` ayarında saklanır, bu yüzden çevrilmez.
+    var title: String { L(rawValue) }
+
     /// ⌘1 ... ⌘9 ve Ayarlar için ⌘0. Projeler sayfasının kısayolu yoktur.
     var shortcut: KeyEquivalent? {
         switch self {
@@ -78,7 +81,7 @@ struct MainWindowView: View {
         )
         NavigationSplitView {
             List(MainSection.allCases, selection: selection) { section in
-                Label(section.rawValue, systemImage: section.symbol)
+                Label(section.title, systemImage: section.symbol)
                     .tag(section)
             }
             .navigationSplitViewColumnWidth(min: 170, ideal: 190, max: 240)
@@ -104,7 +107,7 @@ struct MainWindowView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(Color(nsColor: .controlBackgroundColor))
         }
-        .navigationTitle(current.rawValue)
+        .navigationTitle(current.title)
         .navigationSubtitle("MoleBar")
         .frame(minWidth: 820, minHeight: 560)
     }

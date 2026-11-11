@@ -70,7 +70,7 @@ struct DiskGrowthCard: View {
             CardHeader(symbol: "chart.line.uptrend.xyaxis", title: "Disk büyümesi", trailing: "son 30 gün")
             if let delta = model.weekDelta {
                 let sign = delta.bytes >= 0 ? "+" : "-"
-                Text("Son \(delta.days) günde \(sign)\(formatBytes(UInt64(abs(delta.bytes)))) kullanım")
+                Text(L("Son %ld günde %@%@ kullanım", delta.days, sign, formatBytes(UInt64(abs(delta.bytes)))))
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(delta.bytes > 0 ? Color.orange : Color.green)
                 trend
@@ -96,9 +96,9 @@ struct DiskGrowthCard: View {
             Text("En çok büyüyenler").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
             ForEach(model.growing) { entry in
                 HStack {
-                    Text(entry.name).font(.caption)
+                    Text(L(entry.name)).font(.caption)
                     Spacer(minLength: 8)
-                    Text("+\(formatBytes(entry.bytes)) · \(entry.days) gün")
+                    Text(L("+%@ · %ld gün", formatBytes(entry.bytes), entry.days))
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }

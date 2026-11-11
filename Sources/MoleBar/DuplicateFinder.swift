@@ -86,7 +86,7 @@ final class DuplicateFinder: ObservableObject {
         pendingTrash = nil
         guard let index = groups.firstIndex(where: { $0.id == groupID }), groups[index].files.count > 1 else { return }
         guard TrashGuard.canTrash(url) else {
-            notice = "\(url.lastPathComponent) korumalı bir yolda. Finder'da gösterin."
+            notice = L("%@ korumalı bir yolda. Finder'da gösterin.", url.lastPathComponent)
             return
         }
         do {
@@ -94,9 +94,9 @@ final class DuplicateFinder: ObservableObject {
             groups[index].files.removeAll { $0 == url }
             if groups[index].files.count < 2 { groups.remove(at: index) }
             ReclaimStore.save(.duplicates, bytes: totalWasted)
-            notice = "\(url.lastPathComponent) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
+            notice = L("%@ Çöp Kutusu'na taşındı. Finder'dan geri alınabilir.", url.lastPathComponent)
         } catch {
-            notice = "\(url.lastPathComponent) taşınamadı: \(error.localizedDescription)"
+            notice = L("%@ taşınamadı: %@", url.lastPathComponent, error.localizedDescription)
         }
     }
 
@@ -144,8 +144,8 @@ final class DuplicateFinder: ObservableObject {
         }
         ReclaimStore.save(.duplicates, bytes: totalWasted)
         notice = failed == 0
-            ? "\(formatBytes(moved)) Çöp Kutusu'na taşındı. Finder'dan geri alınabilir."
-            : "\(formatBytes(moved)) taşındı. \(failed) dosya taşınamadı."
+            ? L("%@ Çöp Kutusu'na taşındı. Finder'dan geri alınabilir.", formatBytes(moved))
+            : L("%@ taşındı. %ld dosya taşınamadı.", formatBytes(moved), failed)
     }
 
     // MARK: Tarama
@@ -172,7 +172,7 @@ final class DuplicateFinder: ObservableObject {
         let candidates = bySize.filter { $0.value.count > 1 }
         let total = candidates.values.reduce(0) { $0 + $1.count }
         var done = 0
-        emit(.progress("Özet hesaplanıyor", 0, total, errors))
+        emit(.progress(L("Özet hesaplanıyor"), 0, total, errors))
 
         for (size, urls) in candidates.sorted(by: { $0.key > $1.key }) {
             if Task.isCancelled { return }
@@ -193,7 +193,7 @@ final class DuplicateFinder: ObservableObject {
                 }
             }
             done += urls.count
-            emit(.progress("Özet hesaplanıyor", done, total, errors))
+            emit(.progress(L("Özet hesaplanıyor"), done, total, errors))
         }
     }
 
@@ -223,7 +223,7 @@ final class DuplicateFinder: ObservableObject {
             }
             guard values?.isRegularFile == true else { continue }
             count += 1
-            if count % 2000 == 0 { emit(.progress("Dosyalar listeleniyor", count, 0, failed)) }
+            if count % 2000 == 0 { emit(.progress(L("Dosyalar listeleniyor"), count, 0, failed)) }
             let size = UInt64(values?.fileSize ?? 0)
             if size >= minSize { bySize[size, default: []].append(url) }
         }
@@ -261,7 +261,7 @@ struct DuplicatesPage: View {
                     Text(progressText).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                     Button("Durdur") { finder.cancel() }.glassButton().controlSize(.small)
                 } else if !finder.groups.isEmpty {
-                    Text("\(formatBytes(finder.totalWasted)) boşa").font(.headline.monospacedDigit())
+                    Text(L("%@ boşa", formatBytes(finder.totalWasted))).font(.headline.monospacedDigit())
                 }
             }
             HStack(spacing: 10) {
@@ -328,7 +328,7 @@ struct DuplicatesPage: View {
             if finder.scannedHidden {
                 Text("Gizli klasör taramasında toplu işlem kapalı.").font(.caption2).foregroundStyle(.orange)
             } else if finder.confirmingBulk {
-                Text("\(plan.count) dosya · \(formatBytes(bytes)) taşınacak").font(.caption)
+                Text(L("%ld dosya · %@ taşınacak", plan.count, formatBytes(bytes))).font(.caption)
                 Button("Taşı") { finder.applyBulk() }.glassProminentButton().controlSize(.small)
                 Button("Vazgeç") { finder.confirmingBulk = false }.glassButton().controlSize(.small)
             } else {
@@ -347,7 +347,7 @@ struct DuplicatesPage: View {
     @ViewBuilder
     private var content: some View {
         if finder.groups.isEmpty {
-            Text(finder.isScanning ? "Taranıyor..." : (finder.finished ? "Yinelenen dosya bulunamadı." : "Henüz sonuç yok. Tara'ya basın."))
+            Text(finder.isScanning ? L("Taranıyor...") : (finder.finished ? L("Yinelenen dosya bulunamadı.") : L("Henüz sonuç yok. Tara'ya basın.")))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .padding(16)
@@ -364,8 +364,8 @@ struct DuplicatesPage: View {
         VStack(alignment: .leading, spacing: 8) {
             CardHeader(
                 symbol: "square.on.square",
-                title: "\(group.files.count) kopya · \(formatBytes(group.size))",
-                trailing: "\(formatBytes(group.wasted)) boşa"
+                title: L("%ld kopya · %@", group.files.count, formatBytes(group.size)),
+                trailing: L("%@ boşa", formatBytes(group.wasted))
             )
             ForEach(group.files, id: \.self) { url in
                 row(url, group: group)
@@ -407,7 +407,7 @@ struct DuplicatesPage: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(allowed ? Color.secondary : Color.secondary.opacity(0.3))
                     .disabled(!allowed)
-                    .help(allowed ? "Çöp Kutusu'na taşı" : "Bu öğe korumalı")
+                    .help(allowed ? L("Çöp Kutusu'na taşı") : L("Bu öğe korumalı"))
             }
         }
     }

@@ -50,8 +50,8 @@ enum GlobalHotKey {
     static func failureText(_ status: OSStatus) -> String? {
         switch status {
         case noErr: return nil
-        case OSStatus(eventHotKeyExistsErr): return "Kısayol ⌥⌘M kaydedilemedi: başka bir uygulama bu kısayolu tutuyor."
-        default: return "Kısayol ⌥⌘M kaydedilemedi (hata \(status))."
+        case OSStatus(eventHotKeyExistsErr): return L("Kısayol ⌥⌘M kaydedilemedi: başka bir uygulama bu kısayolu tutuyor.")
+        default: return L("Kısayol ⌥⌘M kaydedilemedi (hata %d).", status)
         }
     }
 }

@@ -38,7 +38,9 @@ struct CPUHogAlert {
     }
 
     static func body(for names: [String]) -> String {
-        "\(names.joined(separator: ", ")) \(Int(defaultDuration / 60)) dakikadır toplam %\(Int(defaultThreshold)) üstü CPU kullanıyor. "
-            + "Süreçler sayfasından inceleyin."
+        L(
+            "%@ %ld dakikadır toplam %%%ld üstü CPU kullanıyor. Süreçler sayfasından inceleyin.",
+            names.joined(separator: ", "), Int(defaultDuration / 60), Int(defaultThreshold)
+        )
     }
 }

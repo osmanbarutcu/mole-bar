@@ -78,3 +78,47 @@ Deneysel seçenek:
 1. Ayarlar'da görünümü sırayla Açık ve Koyu yapın.
 2. Harita, Yetim artıklar, Homebrew ve Dış bağlantılar kartlarına bakın.
 3. Beklenen: Metin okunur. Karolar zemin ile ayırt edilir.
+
+## 10. İngilizce arayüz
+
+Ekran görüntüsüyle doğrulanmadı. Kapsam testi (`LocalizationTests`) yalnızca tabloyu denetler.
+
+1. Uygulamayı İngilizce açın: `/Applications/MoleBar.app/Contents/MacOS/MoleBar -AppleLanguages "(en)"`.
+2. Kalıcı denemek için: `defaults write local.molebar AppleLanguages -array en`. Geri almak için: `defaults delete local.molebar AppleLanguages`.
+3. Panelde Genel, Diskler, Süreçler, Araçlar sekmelerine bakın. Ana pencerede tüm sayfalara bakın.
+4. Beklenen: Metin İngilizcedir. Yüzde işareti sayının sonundadır ("92%").
+5. Türkçe kalan metni not edin. Metin kesilmesi veya taşma varsa Kaldı yazın.
+6. Sistem dili Türkçeyken uygulamayı açın. Beklenen: Arayüz Türkçedir.
+
+## 11. Yüksek CPU bildirimi
+
+1. Terminal'de bir çekirdeği doldurun: `yes > /dev/null`.
+2. 5 dakika bekleyin.
+3. Beklenen: "Yüksek CPU kullanımı" bildirimi gelir ve "yes" adını yazar. Bildirime tıklayınca Süreçler sayfası açılır.
+4. 5 dakika daha bekleyin. Beklenen: İkinci bildirim gelmez.
+5. `yes` sürecini Ctrl+C ile durdurun.
+
+## 12. Geçmiş kartı (7 gün)
+
+1. MoleBar'ı en az 2 dakika açık tutun.
+2. Genel sayfasında Geçmiş kartında 1 sa, 24 sa ve 7 gün seçeneklerine tıklayın.
+3. Beklenen: Grafik değişir. "En yüksek CPU" ve "En yüksek bellek" satırları süreç adını gösterir.
+4. MoleBar'ı kapatıp açın. Beklenen: Önceki örnekler kartta durur.
+5. Dosya: `~/Library/Application Support/MoleBar/metrics.jsonl`.
+
+## 13. Haftalık tarama (proje çıktıları)
+
+1. Ayarlar'da "Haftalık otomatik tarama" anahtarını açın.
+2. Son tarama tarihini silin: `defaults delete local.molebar lastScheduledScan`.
+3. MoleBar'ı yeniden başlatın. 1 dakika bekleyin.
+4. Beklenen: "Haftalık tarama bitti" bildirimi gelir. 90 günden eski proje çıktısı varsa toplamı yazılır.
+5. Ağ diski bağlıyken tarama takılmamalıdır.
+
+## 14. Noter onayı
+
+Developer ID sertifikası olmadığı için doğrulanmadı.
+
+1. Depoya README'deki 5 secret'ı ekleyin.
+2. Yeni etiket push edin: `git tag vX.Y.Z && git push --tags`.
+3. Beklenen: Release iş akışı noter adımlarını çalıştırır. Notlar "Developer ID imzalı ve noter onaylı sürüm" der.
+4. DMG'yi başka bir Mac'te açın. Beklenen: Gatekeeper uyarısı çıkmaz. `spctl -a -vvv -t install MoleBar.dmg` "accepted" der.

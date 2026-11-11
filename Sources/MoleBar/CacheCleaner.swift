@@ -140,8 +140,8 @@ final class CacheCleaner: ObservableObject {
         trashBytes += moved
         persist()
         notice = failed == 0
-            ? "\(formatBytes(moved)) Çöp Kutusu'na taşındı. Alan, Çöp Kutusu boşalınca açılır."
-            : "\(formatBytes(moved)) taşındı. \(failed) öğe taşınamadı."
+            ? L("%@ Çöp Kutusu'na taşındı. Alan, Çöp Kutusu boşalınca açılır.", formatBytes(moved))
+            : L("%@ taşındı. %ld öğe taşınamadı.", formatBytes(moved), failed)
     }
 
     /// Finder ile Çöp Kutusu'nu boşaltır. KALICIDIR.
@@ -150,11 +150,11 @@ final class CacheCleaner: ObservableObject {
         var error: NSDictionary?
         NSAppleScript(source: "tell application \"Finder\" to empty trash")?.executeAndReturnError(&error)
         if let error {
-            notice = "Çöp Kutusu boşaltılamadı: \(error[NSAppleScript.errorMessage] as? String ?? "bilinmeyen hata")"
+            notice = L("Çöp Kutusu boşaltılamadı: %@", error[NSAppleScript.errorMessage] as? String ?? L("bilinmeyen hata"))
         } else {
             trashBytes = 0
             persist()
-            notice = "Çöp Kutusu boşaltıldı."
+            notice = L("Çöp Kutusu boşaltıldı.")
         }
     }
 
@@ -303,7 +303,7 @@ struct CachePage: View {
                             if !rows.isEmpty { section(category, rows) }
                         }
                         if cleaner.items.isEmpty {
-                            Text(cleaner.isScanning ? "Taranıyor..." : "Listelenecek önbellek bulunamadı.")
+                            Text(L(cleaner.isScanning ? "Taranıyor..." : "Listelenecek önbellek bulunamadı."))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .padding(16)
@@ -351,9 +351,9 @@ struct CachePage: View {
             CardHeader(symbol: "shippingbox", title: "Konteyner verisi", trailing: containerTotal == 0 ? "" : formatBytes(containerTotal))
             ForEach(cleaner.containers) { item in
                 HStack {
-                    Text(item.name).font(.subheadline)
+                    Text(L(item.name)).font(.subheadline)
                     Spacer(minLength: 8)
-                    Text(item.bytes.map(formatBytes) ?? "Okunamadı (Tam Disk Erişimi)").font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                    Text(item.bytes.map(formatBytes) ?? L("Okunamadı (Tam Disk Erişimi)")).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                 }
             }
             if !cleaner.dockerRows.isEmpty {
@@ -363,7 +363,7 @@ struct CachePage: View {
                     HStack {
                         Text(row.type).font(.caption)
                         Spacer(minLength: 8)
-                        Text("\(row.size) · geri kazanılabilir \(row.reclaimable)")
+                        Text(L("%@ · geri kazanılabilir %@", row.size, row.reclaimable))
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
@@ -391,14 +391,14 @@ struct CachePage: View {
                 Divider().opacity(0.4)
                 Text("Yerel Time Machine anlık görüntüleri").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                 HStack {
-                    Text("\(cleaner.snapshots.count) adet").font(.caption)
+                    Text(L("%ld adet", cleaner.snapshots.count)).font(.caption)
                     Spacer(minLength: 8)
-                    Text("en eskisi \(LocalSnapshots.ageText(of: oldest)) · \(oldest.formatted(date: .abbreviated, time: .shortened))")
+                    Text(L("en eskisi %@ · %@", LocalSnapshots.ageText(of: oldest), oldest.formatted(date: .abbreviated, time: .shortened)))
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
                 if LocalSnapshots.isUnusuallyOld(oldest) {
-                    Text("En eski görüntü \(Int(LocalSnapshots.unusualAge / 86_400)) günden eski. Time Machine yedeği takılmış olabilir. Sistem Ayarları > Time Machine'i kontrol edin.")
+                    Text(L("En eski görüntü %ld günden eski. Time Machine yedeği takılmış olabilir. Sistem Ayarları > Time Machine'i kontrol edin.", Int(LocalSnapshots.unusualAge / 86_400)))
                         .font(.caption2)
                         .foregroundStyle(.orange)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -411,7 +411,7 @@ struct CachePage: View {
                     if let snapshot = cleaner.snapshots.min(by: { $0.date < $1.date }) {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(LocalSnapshots.deleteCommand(for: snapshot), forType: .string)
-                        cleaner.notice = "Komut panoya kopyalandı. Terminal'de çalıştırın."
+                        cleaner.notice = L("Komut panoya kopyalandı. Terminal'de çalıştırın.")
                     }
                 }
                 .glassButton()
@@ -424,7 +424,7 @@ struct CachePage: View {
             Button("docker system df") {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString("docker system df", forType: .string)
-                cleaner.notice = "Komut panoya kopyalandı. Terminal'de çalıştırın."
+                cleaner.notice = L("Komut panoya kopyalandı. Terminal'de çalıştırın.")
             }
             .glassButton()
             .controlSize(.small)
@@ -438,7 +438,7 @@ struct CachePage: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 CardHeader(symbol: "internaldrive", title: category.rawValue, trailing: formatBytes(rows.reduce(0) { $0 + $1.bytes }))
-                Button(rows.allSatisfy({ cleaner.selection.contains($0.url) }) ? "Seçimi kaldır" : "Hepsini seç") {
+                Button(L(rows.allSatisfy({ cleaner.selection.contains($0.url) }) ? "Seçimi kaldır" : "Hepsini seç")) {
                     cleaner.selectAll(in: category)
                 }
                 .buttonStyle(.plain)
@@ -464,7 +464,7 @@ struct CachePage: View {
     @ViewBuilder
     private var footer: some View {
         HStack(spacing: 10) {
-            Text(cleaner.selection.isEmpty ? "Öğe seçin." : "\(cleaner.selection.count) öğe · \(formatBytes(cleaner.selectedBytes))")
+            Text(cleaner.selection.isEmpty ? L("Öğe seçin.") : L("%ld öğe · %@", cleaner.selection.count, formatBytes(cleaner.selectedBytes)))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
             Spacer()

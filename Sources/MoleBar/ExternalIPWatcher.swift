@@ -9,7 +9,7 @@ enum ExternalIPChange {
     /// İlk okuma taban değerdir, bildirim üretmez. Adres aynıysa da nil döner.
     static func message(previous: String?, current: String) -> (title: String, body: String)? {
         guard let previous, previous != current else { return nil }
-        return ("Dış IP değişti", "\(previous) → \(current). VPN bağlantısı düşmüş veya ağ değişmiş olabilir.")
+        return (L("Dış IP değişti"), L("%@ → %@. VPN bağlantısı düşmüş veya ağ değişmiş olabilir.", previous, current))
     }
 }
 

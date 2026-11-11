@@ -87,7 +87,7 @@ Otomatik test kapsamayan adımlar [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md)
 - Yeni sürüm denetimi isteğe bağlıdır ve varsayılan kapalıdır. Açarsanız günde en çok 1 kez api.github.com adresine istek gider. GitHub IP adresinizi görür.
 - Araçlar sayfasındaki ağ özellikleri yalnızca siz isteyince dış servise bağlanır. Dış IP: api.ipify.org ve api6.ipify.org. Ülke ve servis sağlayıcı: ipwho.is (IP adresiniz bu servise de gider). Hız ölçümü: Apple sunucuları (`networkQuality`, yüzlerce MB veri harcar). "Dış IP değişince bildir" açıksa 5 dakikada bir api.ipify.org sorgulanır. Varsayılan hepsi kapalıdır.
 - DNS ve ARP önbelleği temizleme ile bellek önbelleği boşaltma, macOS'un yönetici parolası penceresini açar (`osascript`). MoleBar parolayı görmez. Parola penceresi ve Wi-Fi adı (SSID) için konum izni akışı gerçek uygulamada doğrulanmadı.
-- Arayüz yalnızca Türkçedir. İngilizce yerelleştirme yapılmadı.
+- Arayüz Türkçe ve İngilizcedir. Dil sistem diline göre seçilir. İngilizce denemek için: `defaults write local.molebar AppleLanguages -array en`, geri almak için `defaults delete local.molebar AppleLanguages`. Mole'un kendi çıktısı (temizlik önizlemesi satırları, sağlık mesajı) İngilizce kalır. Çoğul ekleri sabittir ("1 items" görünebilir). Panelin Genel sayfası iki dilde ekran görüntüsüyle doğrulandı, diğer sayfalar doğrulanmadı.
 - Disk analizi ve Büyük dosyalar sayfası, bazı klasörler için Tam Disk Erişimi ister. Erişilemeyen öğe sayısı ekranda görünür. İzin yoksa sonuçlar eksik kalır. Örnek: 426 bin dosya görüldü, izinli betik 626 bin dosya gördü.
 - `mo purge` Mole'da hata verebilir (`discovered[@]: unbound variable`). Doğrulanmadı.
 - Gerçek `mo clean` çıktı biçimi doğrulanmadı. Boşalan alan diskten ölçülür.

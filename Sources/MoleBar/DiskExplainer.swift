@@ -129,7 +129,7 @@ struct DiskExplainerCard: View {
             ForEach(DiskExplainer.grouped(entries, bootDisk: boot)) { group in
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text(group.disk + (group.disk == boot ? " (ana disk)" : "")).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        Text(group.disk == boot ? L("%@ (ana disk)", group.disk) : group.disk).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                         Spacer()
                         if !group.entries.isEmpty { Text(formatBytes(group.total)).font(.caption.monospacedDigit()).foregroundStyle(.secondary) }
                     }
@@ -140,8 +140,8 @@ struct DiskExplainerCard: View {
                 }
             }
             Text(missing.isEmpty
-                 ? "Büyük dosyalar listesi ayrıdır. OrbStack ve Spotlight dosyalarını da içerdiği için buraya eklenmedi."
-                 : "Taranmadı: \(missing.joined(separator: ", ")). Listede eksik olabilir.")
+                 ? L("Büyük dosyalar listesi ayrıdır. OrbStack ve Spotlight dosyalarını da içerdiği için buraya eklenmedi.")
+                 : L("Taranmadı: %@. Listede eksik olabilir.", missing.map { L($0) }.joined(separator: ", ")))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
             if let notice = cleaner.notice {
@@ -158,8 +158,8 @@ struct DiskExplainerCard: View {
     private func row(_ entry: DiskExplainer.Entry) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(entry.name).font(.subheadline)
-                Text(entry.advice).font(.caption2).foregroundStyle(.secondary)
+                Text(L(entry.name)).font(.subheadline)
+                Text(L(entry.advice)).font(.caption2).foregroundStyle(.secondary)
             }
             Spacer(minLength: 8)
             Text(formatBytes(entry.bytes)).font(.subheadline.weight(.medium).monospacedDigit())
@@ -171,9 +171,9 @@ struct DiskExplainerCard: View {
 
     private func label(_ action: DiskExplainer.Action) -> String {
         switch action {
-        case .openPage: return "Aç"
-        case .openApp(_, _, let label): return label
-        case .copyCommand: return "Komutu kopyala"
+        case .openPage: return L("Aç")
+        case .openApp(_, _, let label): return L(label)
+        case .copyCommand: return L("Komutu kopyala")
         }
     }
 
@@ -183,15 +183,15 @@ struct DiskExplainerCard: View {
             open(section)
         case .openApp(let bundleID, let name, _):
             guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else {
-                cleaner.notice = "\(name) uygulaması bulunamadı."
+                cleaner.notice = L("%@ uygulaması bulunamadı.", name)
                 return
             }
             NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
-            cleaner.notice = "\(name) açıldı. MoleBar silmez. Satırdaki adımı \(name) içinde uygulayın."
+            cleaner.notice = L("%1$@ açıldı. MoleBar silmez. Satırdaki adımı %1$@ içinde uygulayın.", name)
         case .copyCommand(let command):
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(command, forType: .string)
-            cleaner.notice = "Komut panoya kopyalandı: \(command). Terminal'de siz çalıştırın."
+            cleaner.notice = L("Komut panoya kopyalandı: %@. Terminal'de siz çalıştırın.", command)
         }
     }
 }

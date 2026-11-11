@@ -90,7 +90,7 @@ final class HomebrewModel: ObservableObject {
         let command = Homebrew.upgradeCommand(for: name)
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(command, forType: .string)
-        notice = "Komut panoya kopyalandı: \(command). Terminal'de siz çalıştırın."
+        notice = L("Komut panoya kopyalandı: %@. Terminal'de siz çalıştırın.", command)
     }
 }
 
@@ -106,7 +106,7 @@ struct HomebrewCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 CardHeader(symbol: "shippingbox", title: "Homebrew güncellemeleri",
-                           trailing: model.loaded ? "\(model.updates.count) paket" : "")
+                           trailing: model.loaded ? L("%ld paket", model.updates.count) : "")
                 if model.loading { ProgressView().controlSize(.small) }
                 Button { model.reload() } label: { Image(systemName: "arrow.clockwise") }
                     .glassButton()
@@ -116,7 +116,7 @@ struct HomebrewCard: View {
                     .accessibilityLabel("Yeniden denetle")
             }
             if model.updates.isEmpty {
-                Text(model.loaded ? "Tüm paketler güncel." : "Denetleniyor...").font(.caption).foregroundStyle(.secondary)
+                Text(model.loaded ? L("Tüm paketler güncel.") : L("Denetleniyor...")).font(.caption).foregroundStyle(.secondary)
             } else {
                 ForEach(model.updates.prefix(12)) { update in
                     HStack(spacing: 8) {
@@ -131,7 +131,7 @@ struct HomebrewCard: View {
                     }
                 }
                 if model.updates.count > 12 {
-                    Text("\(model.updates.count - 12) paket daha var.").font(.caption2).foregroundStyle(.secondary)
+                    Text(L("%ld paket daha var.", model.updates.count - 12)).font(.caption2).foregroundStyle(.secondary)
                 }
                 Button { model.copyUpgrade(nil) } label: { Label("Tümü için komutu kopyala", systemImage: "doc.on.doc") }
                     .glassButton()

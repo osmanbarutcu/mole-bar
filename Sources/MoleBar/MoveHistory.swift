@@ -19,12 +19,12 @@ final class MoveHistoryModel: ObservableObject {
         do {
             try MoveRestore.restore(record)
             MoveLog.remove(id: record.id)
-            notice = "\(record.name) özgün yerine geri konuldu."
+            notice = L("%@ özgün yerine geri konuldu.", record.name)
         } catch let failure as MoveRestore.Failure {
             notice = failure.message
             ErrorLog.add(source: "Geri alma", message: "\(record.name): \(failure.message)")
         } catch {
-            notice = "\(record.name) geri alınamadı: \(error.localizedDescription)"
+            notice = L("%1$@ geri alınamadı: %2$@", record.name, error.localizedDescription)
             ErrorLog.add(source: "Geri alma", message: "\(record.name): \(error.localizedDescription)")
         }
         reload()
@@ -37,14 +37,14 @@ struct MoveHistoryCard: View {
 
     private static let dateFormat: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = .current
         formatter.dateFormat = "d MMM HH:mm"
         return formatter
     }()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CardHeader(symbol: "clock.arrow.circlepath", title: "Son işlemler", trailing: model.records.isEmpty ? "" : "\(model.records.count) kayıt")
+            CardHeader(symbol: "clock.arrow.circlepath", title: "Son işlemler", trailing: model.records.isEmpty ? "" : L("%ld kayıt", model.records.count))
             if model.records.isEmpty {
                 Text("Henüz Çöp Kutusu'na taşıma yok.").font(.caption).foregroundStyle(.secondary)
             } else {
@@ -52,7 +52,7 @@ struct MoveHistoryCard: View {
                     HStack(spacing: 8) {
                         VStack(alignment: .leading, spacing: 0) {
                             Text(record.name).font(.caption.weight(.medium)).lineLimit(1).truncationMode(.middle)
-                            Text("\(record.source) · \(Self.dateFormat.string(from: record.date))")
+                            Text("\(L(record.source)) · \(Self.dateFormat.string(from: record.date))")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
@@ -111,21 +111,21 @@ struct ErrorHistoryCard: View {
 
     private static let dateFormat: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.locale = .current
         formatter.dateFormat = "d MMM HH:mm"
         return formatter
     }()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CardHeader(symbol: "exclamationmark.triangle", title: "Son hatalar", trailing: model.records.isEmpty ? "" : "\(model.records.count) kayıt")
+            CardHeader(symbol: "exclamationmark.triangle", title: "Son hatalar", trailing: model.records.isEmpty ? "" : L("%ld kayıt", model.records.count))
             if model.records.isEmpty {
                 Text("Kayıtlı hata yok.").font(.caption).foregroundStyle(.secondary)
             } else {
                 ForEach(model.records.prefix(6)) { record in
                     VStack(alignment: .leading, spacing: 0) {
                         Text(record.message).font(.caption).fixedSize(horizontal: false, vertical: true)
-                        Text("\(record.source) · \(Self.dateFormat.string(from: record.date))")
+                        Text("\(L(record.source)) · \(Self.dateFormat.string(from: record.date))")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }

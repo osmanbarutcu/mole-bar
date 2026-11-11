@@ -20,8 +20,8 @@ enum FullDiskAccess {
     /// Erişilemeyen öğe notu. İzin verilmişse sistem korumalı öğeler olduğunu söyler, izin istemez.
     static func inaccessibleNote(_ count: Int) -> String {
         status() == .granted
-            ? "\(count) öğe okunamadı (sistem korumalı). Sonuçlar bu öğeler dışında eksiksizdir."
-            : "\(count) öğeye erişilemedi (izin yok). Sonuçlar eksik. Sistem Ayarları > Gizlilik > Tam Disk Erişimi altında MoleBar'a izin verin."
+            ? L("%ld öğe okunamadı (sistem korumalı). Sonuçlar bu öğeler dışında eksiksizdir.", count)
+            : L("%ld öğeye erişilemedi (izin yok). Sonuçlar eksik. Sistem Ayarları > Gizlilik > Tam Disk Erişimi altında MoleBar'a izin verin.", count)
     }
 
     static func openSettings() {
@@ -60,17 +60,17 @@ struct FullDiskAccessCard: View {
 
     private var label: String {
         switch status {
-        case .granted: return "Verildi"
-        case .denied: return "Verilmedi"
-        case .unknown: return "Bilinmiyor"
+        case .granted: return L("Verildi")
+        case .denied: return L("Verilmedi")
+        case .unknown: return L("Bilinmiyor")
         }
     }
 
     private var detail: String {
         switch status {
-        case .granted: return "Mail, Çöp Kutusu ve korumalı klasörler okunabilir. Tarama sonuçları eksiksizdir."
-        case .denied: return "Mail boyutu, Çöp Kutusu ve bazı klasörler okunamaz. Listede MoleBar'ı kaldırıp yeniden ekleyin, sonra uygulamayı kapatıp açın."
-        case .unknown: return "Denetlenecek korumalı klasör bulunamadı."
+        case .granted: return L("Mail, Çöp Kutusu ve korumalı klasörler okunabilir. Tarama sonuçları eksiksizdir.")
+        case .denied: return L("Mail boyutu, Çöp Kutusu ve bazı klasörler okunamaz. Listede MoleBar'ı kaldırıp yeniden ekleyin, sonra uygulamayı kapatıp açın.")
+        case .unknown: return L("Denetlenecek korumalı klasör bulunamadı.")
         }
     }
 }

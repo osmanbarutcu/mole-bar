@@ -11,7 +11,7 @@ enum InterfaceKind: String, Equatable {
         case .wifi: "Wi-Fi"
         case .ethernet: "Ethernet"
         case .vpn: "VPN"
-        case .other: "Diğer"
+        case .other: L("Diğer")
         }
     }
 
@@ -80,8 +80,8 @@ enum VPNHint: Equatable {
 
     var text: String {
         switch self {
-        case .routed: "Varsayılan rota VPN arayüzünden geçiyor."
-        case .notDefault: "VPN arayüzü açık, ama varsayılan rota VPN'den geçmiyor. Trafik VPN dışına çıkıyor olabilir (split tunnel)."
+        case .routed: L("Varsayılan rota VPN arayüzünden geçiyor.")
+        case .notDefault: L("VPN arayüzü açık, ama varsayılan rota VPN'den geçmiyor. Trafik VPN dışına çıkıyor olabilir (split tunnel).")
         }
     }
 
@@ -360,7 +360,7 @@ struct NetworkInterfacesCard: View {
     }
 
     private func detailLine(_ title: String, _ value: String) -> some View {
-        Text(verbatim: "\(title): \(value)")
+        Text(verbatim: "\(L(title)): \(value)")
             .font(.caption2)
             .foregroundStyle(.secondary)
             .textSelection(.enabled)
@@ -385,7 +385,7 @@ struct NetworkInterfacesCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 CardHeader(symbol: "network", title: "IP adresleri",
-                           trailing: model.loaded ? "\(model.items.count) arayüz" : "")
+                           trailing: model.loaded ? L("%ld arayüz", model.items.count) : "")
                 Button { copyAll() } label: { Image(systemName: "doc.on.clipboard") }
                     .glassButton()
                     .controlSize(.small)
@@ -421,13 +421,13 @@ struct NetworkInterfacesCard: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             if model.items.isEmpty {
-                Text(model.loaded ? "Adresi olan arayüz bulunamadı." : "Okunuyor...").font(.caption).foregroundStyle(.secondary)
+                Text(model.loaded ? L("Adresi olan arayüz bulunamadı.") : L("Okunuyor...")).font(.caption).foregroundStyle(.secondary)
             } else {
                 ForEach(model.items) { item in
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: item.kind.symbol).frame(width: 22).foregroundStyle(.secondary)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("\(item.kind.title) (\(item.name))").font(.caption)
+                            Text(verbatim: "\(item.kind.title) (\(item.name))").font(.caption)
                             ForEach(item.ipv4 + item.ipv6, id: \.self) { address in
                                 Text(verbatim: address)
                                     .font(.caption2.monospacedDigit())
@@ -459,7 +459,7 @@ struct NetworkInterfacesCard: View {
                             .glassButton()
                             .controlSize(.small)
                             .help("İlk adresi kopyala")
-                            .accessibilityLabel("\(item.name) adresini kopyala")
+                            .accessibilityLabel(L("%@ adresini kopyala", item.name))
                     }
                 }
             }

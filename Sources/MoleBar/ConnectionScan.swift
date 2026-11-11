@@ -66,7 +66,7 @@ enum ConnectionScan {
             var tally: [String: Int] = [:]
             for item in list { tally[item, default: 0] += 1 }
             let ordered = tally.sorted { $0.value == $1.value ? $0.key < $1.key : $0.value > $1.value }.map(\.key)
-            return ProcessConnections(pid: pid, process: names[pid] ?? "bilinmeyen", remotes: ordered, count: list.count)
+            return ProcessConnections(pid: pid, process: names[pid] ?? L("bilinmeyen"), remotes: ordered, count: list.count)
         }
         .sorted { $0.count == $1.count ? $0.pid < $1.pid : $0.count > $1.count }
     }
@@ -117,7 +117,7 @@ struct ConnectionCard: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 CardHeader(symbol: "arrow.left.arrow.right", title: "Dış bağlantılar",
-                           trailing: model.loaded ? "\(model.items.count) süreç" : "")
+                           trailing: model.loaded ? L("%ld süreç", model.items.count) : "")
                 if model.loading { ProgressView().controlSize(.small) }
                 Button { model.reload() } label: { Image(systemName: "arrow.clockwise") }
                     .glassButton()
@@ -127,7 +127,7 @@ struct ConnectionCard: View {
                     .accessibilityLabel("Yeniden tara")
             }
             if model.items.isEmpty {
-                Text(model.loaded ? "Dış bağlantı bulunamadı." : "Taranıyor...").font(.caption).foregroundStyle(.secondary)
+                Text(model.loaded ? L("Dış bağlantı bulunamadı.") : L("Taranıyor...")).font(.caption).foregroundStyle(.secondary)
             } else {
                 ForEach(model.items.prefix(12)) { item in
                     HStack(alignment: .top, spacing: 8) {
@@ -144,7 +144,7 @@ struct ConnectionCard: View {
                     }
                 }
                 if model.items.count > 12 {
-                    Text("\(model.items.count - 12) süreç daha var.").font(.caption2).foregroundStyle(.secondary)
+                    Text(L("%ld süreç daha var.", model.items.count - 12)).font(.caption2).foregroundStyle(.secondary)
                 }
             }
             Text("Yalnızca kurulu TCP bağlantıları listelenir. Adresler bu Mac'ten çıkmaz, ülke sorgusu yapılmaz. Yönetici yetkisi olmadan yalnızca sizin süreçleriniz görünür. MoleBar bağlantıyı engellemez.")

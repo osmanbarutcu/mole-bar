@@ -39,10 +39,10 @@ enum LocalSnapshots {
     /// "5 dk önce", "3 saat önce", "4 gün önce". Gelecek tarih ve bir dakikadan yeni kayıt "az önce" olur.
     static func ageText(of date: Date, now: Date = Date()) -> String {
         let seconds = Int(now.timeIntervalSince(date))
-        if seconds < 60 { return "az önce" }
-        if seconds < 3_600 { return "\(seconds / 60) dk önce" }
-        if seconds < 86_400 { return "\(seconds / 3_600) saat önce" }
-        return "\(seconds / 86_400) gün önce"
+        if seconds < 60 { return L("az önce") }
+        if seconds < 3_600 { return L("%ld dk önce", seconds / 60) }
+        if seconds < 86_400 { return L("%ld saat önce", seconds / 3_600) }
+        return L("%ld gün önce", seconds / 86_400)
     }
 
     static func deleteCommand(for snapshot: LocalSnapshot) -> String {

@@ -50,7 +50,7 @@ struct HistoryCard: View {
     private func legend(_ name: String, color: Color, average: Double) -> some View {
         HStack(spacing: 4) {
             Circle().fill(color).frame(width: 6, height: 6)
-            Text(String(format: "%@ ort. %.0f%%", name, average))
+            Text(L("%@ ort. %.0f%%", name, average))
                 .font(.caption2.monospacedDigit())
                 .foregroundStyle(.secondary)
         }

@@ -189,17 +189,17 @@ struct DockerProjectsCard: View {
                 ForEach(groups) { group in
                     VStack(alignment: .leading, spacing: 2) {
                         HStack {
-                            Text(group.name).font(.subheadline.weight(.medium))
+                            Text(group.name == DockerProjects.otherName ? L(group.name) : group.name).font(.subheadline.weight(.medium))
                             Spacer(minLength: 8)
                             Text(formatBytes(group.total)).font(.subheadline.monospacedDigit())
                         }
-                        Text("konteyner \(formatBytes(group.bytes(.container))) · hacim \(formatBytes(group.bytes(.volume))) · imaj \(formatBytes(group.bytes(.image)))")
+                        Text(L("konteyner %@ · hacim %@ · imaj %@", formatBytes(group.bytes(.container)), formatBytes(group.bytes(.volume)), formatBytes(group.bytes(.image))))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         if searching {
                             ForEach(Array(group.entries.enumerated()), id: \.offset) { _, entry in
                                 HStack {
-                                    Text("\(label(entry.kind)) · \(entry.name)").font(.caption2).lineLimit(1).truncationMode(.middle)
+                                    Text(verbatim: "\(label(entry.kind)) · \(entry.name)").font(.caption2).lineLimit(1).truncationMode(.middle)
                                     Spacer(minLength: 8)
                                     Text(formatBytes(entry.bytes)).font(.caption2.monospacedDigit())
                                 }
@@ -222,16 +222,16 @@ struct DockerProjectsCard: View {
     }
 
     private var message: String {
-        if model.loading || !model.loaded { return "Docker verisi okunuyor..." }
-        if model.entries.isEmpty { return "Docker verisi yok. Docker kapalı olabilir." }
-        return "Bu aramayla eşleşen Docker öğesi yok."
+        if model.loading || !model.loaded { return L("Docker verisi okunuyor...") }
+        if model.entries.isEmpty { return L("Docker verisi yok. Docker kapalı olabilir.") }
+        return L("Bu aramayla eşleşen Docker öğesi yok.")
     }
 
     private func label(_ kind: DockerEntry.Kind) -> String {
         switch kind {
-        case .container: return "konteyner"
-        case .volume: return "hacim"
-        case .image: return "imaj"
+        case .container: return L("konteyner")
+        case .volume: return L("hacim")
+        case .image: return L("imaj")
         }
     }
 }

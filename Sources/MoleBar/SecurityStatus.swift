@@ -13,10 +13,10 @@ enum SecurityCheck {
 
         var title: String {
             switch self {
-            case .fileVault: return "FileVault (disk şifreleme)"
-            case .gatekeeper: return "Gatekeeper (uygulama denetimi)"
-            case .firewall: return "Güvenlik duvarı"
-            case .sip: return "SIP (sistem bütünlüğü koruması)"
+            case .fileVault: return L("FileVault (disk şifreleme)")
+            case .gatekeeper: return L("Gatekeeper (uygulama denetimi)")
+            case .firewall: return L("Güvenlik duvarı")
+            case .sip: return L("SIP (sistem bütünlüğü koruması)")
             }
         }
 
@@ -32,10 +32,10 @@ enum SecurityCheck {
         /// Ayar kapalıysa kullanıcıya gösterilen yol. MoleBar bunu uygulamaz.
         var hint: String {
             switch self {
-            case .fileVault: return "Sistem Ayarları > Gizlilik ve Güvenlik > FileVault'tan açın."
-            case .gatekeeper: return "Terminal'de `sudo spctl --master-enable` çalıştırın."
-            case .firewall: return "Sistem Ayarları > Ağ > Güvenlik Duvarı'ndan açın."
-            case .sip: return "Kurtarma modunda `csrutil enable` çalıştırın."
+            case .fileVault: return L("Sistem Ayarları > Gizlilik ve Güvenlik > FileVault'tan açın.")
+            case .gatekeeper: return L("Terminal'de `sudo spctl --master-enable` çalıştırın.")
+            case .firewall: return L("Sistem Ayarları > Ağ > Güvenlik Duvarı'ndan açın.")
+            case .sip: return L("Kurtarma modunda `csrutil enable` çalıştırın.")
             }
         }
     }
@@ -102,7 +102,7 @@ struct SecurityCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            CardHeader(symbol: "lock.shield", title: "Güvenlik özeti", trailing: attentionCount == 0 ? "" : "\(attentionCount) uyarı")
+            CardHeader(symbol: "lock.shield", title: "Güvenlik özeti", trailing: attentionCount == 0 ? "" : L("%ld uyarı", attentionCount))
             if !model.loaded {
                 Text("Okunuyor...").font(.caption).foregroundStyle(.secondary)
             } else {
@@ -141,9 +141,9 @@ struct SecurityCard: View {
 
     private func label(_ state: SecurityCheck.State) -> String {
         switch state {
-        case .on: return "Açık"
-        case .off: return "Kapalı"
-        case .unknown: return "Okunamadı"
+        case .on: return L("Etkin")
+        case .off: return L("Kapalı")
+        case .unknown: return L("Okunamadı")
         }
     }
 

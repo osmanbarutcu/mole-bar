@@ -63,27 +63,27 @@ struct SystemInfo: Equatable {
         let total = Int(max(seconds, 0))
         let days = total / 86_400
         let hours = (total % 86_400) / 3_600
-        if days > 0 { return "\(days) gün \(hours) saat" }
+        if days > 0 { return L("%ld gün %ld saat", days, hours) }
         let minutes = (total % 3_600) / 60
-        return hours > 0 ? "\(hours) saat \(minutes) dk" : "\(minutes) dk"
+        return hours > 0 ? L("%ld saat %ld dk", hours, minutes) : L("%ld dk", minutes)
     }
 
     static func thermalText(_ state: ProcessInfo.ThermalState) -> String {
         switch state {
-        case .nominal: return "Normal"
-        case .fair: return "Hafif yüksek"
-        case .serious: return "Yüksek"
-        case .critical: return "Kritik"
-        @unknown default: return "Bilinmiyor"
+        case .nominal: return L("Normal")
+        case .fair: return L("Hafif yüksek")
+        case .serious: return L("Yüksek")
+        case .critical: return L("Kritik")
+        @unknown default: return L("Bilinmiyor")
         }
     }
 
     static func batteryText(_ battery: BatteryInfo) -> String {
-        var text = "%\(battery.percent)"
-        if battery.isCharging { text += " · şarj oluyor" }
-        else if battery.onACPower { text += " · şarjda" }
-        else if let minutes = battery.minutesRemaining { text += " · \(minutes / 60) sa \(minutes % 60) dk kaldı" }
-        else { text += " · pilde" }
+        var text = L("%%%ld", battery.percent)
+        if battery.isCharging { text += " · " + L("şarj oluyor") }
+        else if battery.onACPower { text += " · " + L("şarjda") }
+        else if let minutes = battery.minutesRemaining { text += " · " + L("%ld sa %ld dk kaldı", minutes / 60, minutes % 60) }
+        else { text += " · " + L("pilde") }
         return text
     }
 
@@ -99,12 +99,12 @@ struct SystemInfoCard: View {
         VStack(alignment: .leading, spacing: 10) {
             CardHeader(symbol: "macbook", title: "Sistem")
             if let battery = info.battery {
-                row("battery.100", "Pil", SystemInfo.batteryText(battery) + (battery.cycleCount.map { " · \($0) döngü" } ?? ""))
+                row("battery.100", "Pil", SystemInfo.batteryText(battery) + (battery.cycleCount.map { " · " + L("%ld döngü", $0) } ?? ""))
             }
             if let health {
-                row("heart.text.square", "Pil sağlığı", "%\(health.maximumCapacity) kapasite · \(health.condition)")
+                row("heart.text.square", "Pil sağlığı", L("%%%ld kapasite · %@", health.maximumCapacity, health.condition))
                 if health.needsAttention {
-                    Text("Pil kapasitesi %\(BatteryHealth.attentionBelow) altında. Apple bu düzeyde pil değişimini önerir.")
+                    Text(L("Pil kapasitesi %%%ld altında. Apple bu düzeyde pil değişimini önerir.", BatteryHealth.attentionBelow))
                         .font(.caption)
                         .foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
@@ -116,12 +116,12 @@ struct SystemInfoCard: View {
                     row("thermometer.high", "Sıcaklık", text)
                 }
                 if !sensors.fanRPM.isEmpty {
-                    row("fan", "Fan", sensors.fanRPM.map { "\($0) dev/dk" }.joined(separator: " · "))
+                    row("fan", "Fan", sensors.fanRPM.map { L("%ld dev/dk", $0) }.joined(separator: " · "))
                 }
             }
             row("clock", "Açık kalma", SystemInfo.uptimeText(info.uptime))
             if info.needsReboot {
-                Text("Mac \(SystemInfo.rebootHintDays) günden uzun süredir açık. Yeniden başlatmak belleği ve geçici dosyaları temizler.")
+                Text(L("Mac %ld günden uzun süredir açık. Yeniden başlatmak belleği ve geçici dosyaları temizler.", SystemInfo.rebootHintDays))
                     .font(.caption)
                     .foregroundStyle(.orange)
                     .fixedSize(horizontal: false, vertical: true)
@@ -142,7 +142,7 @@ struct SystemInfoCard: View {
     private func row(_ symbol: String, _ title: String, _ value: String) -> some View {
         HStack(spacing: 8) {
             Image(systemName: symbol).frame(width: 18).foregroundStyle(.secondary)
-            Text(title).font(.subheadline)
+            Text(L(title)).font(.subheadline)
             Spacer(minLength: 8)
             Text(value).font(.caption.monospacedDigit()).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.8)
         }

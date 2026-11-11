@@ -109,7 +109,7 @@ extension TrashGuard {
         do {
             try FileManager.default.trashItem(at: url, resultingItemURL: &result)
         } catch {
-            ErrorLog.add(source: source, message: "\(url.lastPathComponent) taşınamadı: \(error.localizedDescription)")
+            ErrorLog.add(source: source, message: L("%@ taşınamadı: %@", url.lastPathComponent, error.localizedDescription))
             throw error
         }
         MoveLog.add(MoveRecord(
@@ -127,12 +127,12 @@ enum MoveRestore {
 
         var message: String {
             switch self {
-            case .noTrashedPath: return "Kayıtta Çöp Kutusu yolu yok. Finder'da arayın."
-            case .notInTrash: return "Dosya Çöp Kutusu'nda değil. Geri alınmadı."
-            case .trashedMissing: return "Dosya Çöp Kutusu'nda bulunamadı. Boşaltılmış olabilir."
-            case .destinationNotAllowed: return "Özgün yol korumalı. Finder'dan elle geri alın."
-            case .destinationExists: return "Özgün yolda aynı adlı öğe var. Üzerine yazılmadı."
-            case .parentMissing: return "Özgün klasör artık yok. Geri alınmadı."
+            case .noTrashedPath: return L("Kayıtta Çöp Kutusu yolu yok. Finder'da arayın.")
+            case .notInTrash: return L("Dosya Çöp Kutusu'nda değil. Geri alınmadı.")
+            case .trashedMissing: return L("Dosya Çöp Kutusu'nda bulunamadı. Boşaltılmış olabilir.")
+            case .destinationNotAllowed: return L("Özgün yol korumalı. Finder'dan elle geri alın.")
+            case .destinationExists: return L("Özgün yolda aynı adlı öğe var. Üzerine yazılmadı.")
+            case .parentMissing: return L("Özgün klasör artık yok. Geri alınmadı.")
             }
         }
     }

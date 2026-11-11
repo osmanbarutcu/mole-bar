@@ -119,8 +119,8 @@ final class StatsModel: ObservableObject {
         let memoryAlertEnabled = UserDefaults.standard.object(forKey: "memoryAlertEnabled") as? Bool ?? true
         if memoryAlertEnabled, memoryAlert.shouldNotify(pressure) {
             DiskNotifier.post(
-                title: "Bellek baskısı kritik",
-                body: "Mac belleği yetersiz kalıyor. Süreçler sayfasından büyük uygulamaları kapatın.",
+                title: L("Bellek baskısı kritik"),
+                body: L("Mac belleği yetersiz kalıyor. Süreçler sayfasından büyük uygulamaları kapatın."),
                 id: "molebar.memory"
             )
         }
@@ -144,7 +144,7 @@ final class StatsModel: ObservableObject {
         guard UserDefaults.standard.object(forKey: "cpuAlertEnabled") as? Bool ?? true else { return }
         let names = cpuHogAlert.evaluate(processGroups.map { ($0.name, $0.cpu) }, now: Date())
         guard !names.isEmpty else { return }
-        DiskNotifier.post(title: "Yüksek CPU kullanımı", body: CPUHogAlert.body(for: names), id: "molebar.cpu")
+        DiskNotifier.post(title: L("Yüksek CPU kullanımı"), body: CPUHogAlert.body(for: names), id: "molebar.cpu")
     }
 
     /// Örneği belleğe ve dosyaya ekler. Dosya yazımı ana iş parçacığını bekletmez.
@@ -199,8 +199,8 @@ final class StatsModel: ObservableObject {
             }
             if availableUpdate?.version != latest.version {
                 DiskNotifier.post(
-                    title: "MoleBar \(latest.version) çıktı",
-                    body: "Kurulu sürüm \(UpdateCheck.currentVersion). Sürüm sayfası Ayarlar'da.",
+                    title: L("MoleBar %@ çıktı", latest.version),
+                    body: L("Kurulu sürüm %@. Sürüm sayfası Ayarlar'da.", UpdateCheck.currentVersion),
                     id: "molebar.update"
                 )
             }

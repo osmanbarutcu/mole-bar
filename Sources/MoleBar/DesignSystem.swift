@@ -93,11 +93,11 @@ struct GlassGroup<Content: View>: View {
 /// VoiceOver için okunur metinler. Görsel olarak çizilen değerler ekran okuyucuya bu metinlerle iletilir.
 enum A11y {
     static func percent(_ value: Double) -> String {
-        "yüzde \(Int(min(max(value, 0), 100).rounded()))"
+        L("yüzde %ld", Int(min(max(value, 0), 100).rounded()))
     }
 
     static func tile(name: String, bytes: UInt64, isDirectory: Bool) -> String {
-        "\(name), \(isDirectory ? "klasör" : "dosya"), \(formatBytes(bytes))"
+        "\(name), \(isDirectory ? L("klasör") : L("dosya")), \(formatBytes(bytes))"
     }
 }
 
@@ -125,7 +125,7 @@ struct RingGauge: View {
                     .monospacedDigit()
             }
             .frame(width: 58, height: 58)
-            Text(title)
+            Text(L(title))
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.secondary)
         }
@@ -133,7 +133,7 @@ struct RingGauge: View {
         .padding(.vertical, 16)
         .glassCard(cornerRadius: 16)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(title)
+        .accessibilityLabel(L(title))
         .accessibilityValue(A11y.percent(percent))
     }
 }
@@ -186,7 +186,7 @@ struct CoreBar: View {
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Çekirdek \(index + 1)")
+        .accessibilityLabel(L("Çekirdek %ld", index + 1))
         .accessibilityValue(A11y.percent(percent))
     }
 }
@@ -224,13 +224,13 @@ struct CardHeader: View {
             Image(systemName: symbol)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
-            Text(title)
+            Text(L(title))
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer(minLength: 4)
             if !trailing.isEmpty {
-                Text(trailing)
+                Text(L(trailing))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -253,7 +253,7 @@ struct RateChip: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 0) {
-                Text(label)
+                Text(L(label))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)

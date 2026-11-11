@@ -11,14 +11,14 @@ struct QuickCleanCard: View {
             HStack {
                 Text("Çöp Kutusu").font(.subheadline)
                 Spacer(minLength: 8)
-                Text(cleaner.hasScanned ? formatBytes(cleaner.trashBytes) : "Taranmadı")
+                Text(cleaner.hasScanned ? formatBytes(cleaner.trashBytes) : L("Taranmadı"))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
             HStack {
                 Text("Önbellek").font(.subheadline)
                 Spacer(minLength: 8)
-                Text(cleaner.hasScanned ? formatBytes(cleaner.items.reduce(0) { $0 + $1.bytes }) : "Taranmadı")
+                Text(cleaner.hasScanned ? formatBytes(cleaner.items.reduce(0) { $0 + $1.bytes }) : L("Taranmadı"))
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }

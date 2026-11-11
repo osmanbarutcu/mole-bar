@@ -47,9 +47,9 @@ struct ReclaimCard: View {
     private func row(_ symbol: String, _ title: String, _ bytes: Int, _ section: MainSection) -> some View {
         HStack(spacing: 8) {
             Image(systemName: symbol).frame(width: 20).foregroundStyle(.secondary)
-            Text(title).font(.subheadline)
+            Text(L(title)).font(.subheadline)
             Spacer(minLength: 8)
-            Text(bytes < 0 ? "Taranmadı" : formatBytes(UInt64(bytes)))
+            Text(bytes < 0 ? L("Taranmadı") : formatBytes(UInt64(bytes)))
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(bytes < 0 ? .tertiary : .secondary)
             Button("Aç") { open(section) }

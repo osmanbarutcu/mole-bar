@@ -70,6 +70,7 @@ A prebuilt zip is on the Releases page. It is ad-hoc signed and not notarized. O
 - The app is signed with a local Apple Development certificate. Without one, an ad-hoc signature is used. Gatekeeper can warn on another Mac.
 - Disk analysis and the Large files page need Full Disk Access for some folders. The number of unreadable items is shown. Without the permission, results are incomplete.
 - The shortcut opens the main window, not the menu bar panel.
+- The UI is in Turkish and English and follows the system language. To try English: `defaults write local.molebar AppleLanguages -array en`; to undo: `defaults delete local.molebar AppleLanguages`. Mole's own output (cleanup preview lines, health message) stays in English. Plurals are fixed ("1 items" can appear). The panel's General page was verified by screenshot in both languages; other pages were not.
 - Several UI paths are verified by tests only. See [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md) for the manual steps.
 
 ## Development
