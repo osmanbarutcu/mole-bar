@@ -45,6 +45,7 @@ A prebuilt zip is on the Releases page. It is ad-hoc signed and not notarized. O
 ## Features
 
 - General: CPU, memory, disk, cores, battery health (maximum capacity), CPU and GPU temperature. Fan speed shows only on Macs with fans.
+- History: CPU, memory and disk are recorded every 30 seconds. The card shows 1 hour, 24 hours or 7 days. The highest CPU and memory moments show the process name at that time. The data is in `~/Library/Application Support/MoleBar/metrics.jsonl`. Lines older than 7 days are removed at launch.
 - Analyze: list view or treemap view. The Analyze and Large files lists export to CSV. You choose the path in the save dialog.
 - Apps: uninstall and orphan leftovers (`~/Library` leftovers of apps that are no longer installed). Items move to the Trash.
 - Tools: listening ports, outbound connections per process, Homebrew updates (check only, the command is copied to the clipboard).

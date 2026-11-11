@@ -48,6 +48,7 @@ Uygulama ad-hoc imzalıdır ve notarize edilmemiştir. İlk açılışta sağ t�
 ## Özellikler
 
 - Genel: CPU, bellek, disk, çekirdekler, pil sağlığı (azami kapasite), CPU/GPU sıcaklığı. Fan hızı yalnızca fanlı Mac'lerde görünür.
+- Geçmiş: CPU, bellek ve disk 30 saniyede bir kaydedilir. Kart 1 saat, 24 saat veya 7 gün gösterir. En yüksek CPU ve bellek anı, o andaki süreç adıyla yazılır. Kayıt `~/Library/Application Support/MoleBar/metrics.jsonl` dosyasındadır. 7 günden eski satırlar açılışta silinir.
 - Analiz: liste veya treemap harita görünümü. Analiz ve Büyük dosyalar listesi CSV olarak kaydedilir. Kaydetme penceresinde yolu siz seçersiniz.
 - Uygulamalar: kaldırma ve yetim artıklar (kurulu uygulaması olmayan `~/Library` kalıntıları, Çöp Kutusu'na taşınır).
 - Araçlar: açık portlar, dış bağlantılar (süreç başına), Homebrew güncellemeleri (yalnızca denetim, komut panoya kopyalanır).

@@ -36,6 +36,7 @@ struct PanelView: View {
     @AppStorage("diskAlertEnabled") private var diskAlertEnabled = true
     @AppStorage("memoryAlertEnabled") private var memoryAlertEnabled = true
     @AppStorage("graphMetric") private var graphMetric = "cpu"
+    @AppStorage("historyWindow") private var historyWindow = HistoryWindow.hour.rawValue
     @AppStorage("updateCheckEnabled") private var updateCheckEnabled = false
     @AppStorage(StatusItemController.defaultsKey) private var customStatusItem = false
     @AppStorage("diskAlertThreshold") private var diskAlertThreshold = 90
@@ -400,15 +401,19 @@ struct PanelView: View {
 
     @ViewBuilder
     private var historyCard: some View {
-        if stats.history.count > 1 {
-            let cpu = stats.history.map(\.cpu)
-            let ram = stats.history.map(\.memory)
+        let window = HistoryWindow(rawValue: historyWindow) ?? .hour
+        let samples = MetricHistory.window(stats.longHistory, duration: window.seconds)
+        if samples.count > 1 {
+            let points = MetricHistory.downsample(samples, maxPoints: 120)
+            let cpu = points.map(\.cpu)
+            let ram = points.map(\.memory)
             VStack(alignment: .leading, spacing: 10) {
-                CardHeader(
-                    symbol: "chart.xyaxis.line",
-                    title: "Geçmiş",
-                    trailing: "son \(max(stats.history.count / 2, 1)) dk"
-                )
+                CardHeader(symbol: "chart.xyaxis.line", title: "Geçmiş")
+                Picker("Süre", selection: $historyWindow) {
+                    ForEach(HistoryWindow.allCases, id: \.rawValue) { Text($0.label).tag($0.rawValue) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
                 Sparkline(values: cpu, color: .blue)
                     .frame(height: 38)
                 Sparkline(values: ram, color: .purple)
@@ -417,10 +422,23 @@ struct PanelView: View {
                     legend("CPU", color: .blue, average: cpu.reduce(0, +) / Double(cpu.count))
                     legend("RAM", color: .purple, average: ram.reduce(0, +) / Double(ram.count))
                 }
+                peakLine("En yüksek CPU", MetricHistory.peak(samples, \.cpu), process: \.topCPU)
+                peakLine("En yüksek bellek", MetricHistory.peak(samples, \.memory), process: \.topMemory)
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCard()
+        }
+    }
+
+    @ViewBuilder
+    private func peakLine(_ title: String, _ peak: (value: Double, sample: MetricSample)?,
+                          process: KeyPath<MetricSample, String?>) -> some View {
+        if let peak {
+            Text(MetricHistory.peakText(title, value: peak.value, sample: peak.sample, process: peak.sample[keyPath: process]))
+                .font(.caption2.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
         }
     }
 

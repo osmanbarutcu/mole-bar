@@ -1,11 +1,6 @@
 import Foundation
 import SwiftUI
 
-struct HistoryPoint {
-    let cpu: Double
-    let memory: Double
-}
-
 @MainActor
 final class StatsModel: ObservableObject {
     /// Uygulama genelinde tek örnek. Menü çubuğu paneli, ana pencere ve özel durum çubuğu öğesi aynı ölçümleri paylaşır.
@@ -38,8 +33,11 @@ final class StatsModel: ObservableObject {
     @Published var netByPid: [Int32: Double] = [:]
     private var netLoading = false
     @Published var diskAlert = false
-    /// Son 1 saat, 30 saniyelik örnek (en çok 120 nokta). Yalnızca bellekte tutulur.
-    @Published var history: [HistoryPoint] = []
+    /// Son 7 gün, 30 saniyelik örnek. `MetricStore` dosyasından yüklenir ve her örnekte dosyaya eklenir.
+    @Published private(set) var longHistory: [MetricSample] = []
+    private let metricStore = MetricStore.shared
+    /// Açılıştaki yükleme dosyayı sıkıştırır. Eklemeler bu iş bitince yapılır, yoksa satır kaybolabilir.
+    private var historyLoad: Task<Void, Never>?
     /// Menü çubuğu grafiği için son 30 CPU örneği. Her turda bir örnek alınır.
     @Published private(set) var recentCPU: [Double] = []
     @Published private(set) var recentRAM: [Double] = []
@@ -69,6 +67,12 @@ final class StatsModel: ObservableObject {
     private let interval: TimeInterval = 2
 
     init() {
+        let store = metricStore
+        historyLoad = Task {
+            let loaded = await Task.detached(priority: .utility) { store.load() }.value
+            // Yükleme sürerken alınan örnekler kaybolmaz.
+            longHistory = loaded + longHistory.filter { sample in sample.time > (loaded.last?.time ?? .distantPast) }
+        }
         refresh()
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.refresh() }
@@ -124,9 +128,26 @@ final class StatsModel: ObservableObject {
         diskWrite = io.write
         evaluateDiskAlert()
         if tick % 15 == 1 { DiskLog.record(disk) }
-        if tick % 15 == 1 {
-            history.append(HistoryPoint(cpu: cpuTotal, memory: memory.percent))
-            if history.count > 120 { history.removeFirst(history.count - 120) }
+        // İlk turda CPU yüzdesi 0 ve süreç listesi boştur. Kayıt 30 saniyede bir, ilk tur atlanarak alınır.
+        if tick % 15 == 0 { recordLongHistory() }
+    }
+
+    /// Örneği belleğe ve dosyaya ekler. Dosya yazımı ana iş parçacığını bekletmez.
+    private func recordLongHistory() {
+        let sample = MetricSample(
+            time: Date(),
+            cpu: cpuTotal,
+            memory: memory.percent,
+            disk: disk.percent,
+            topCPU: processGroups.max { $0.cpu < $1.cpu }?.name,
+            topMemory: processGroups.max { $0.memoryBytes < $1.memoryBytes }?.name
+        )
+        longHistory = MetricHistory.prune(longHistory + [sample], now: sample.time, maxAge: MetricHistory.maxAge)
+        let store = metricStore
+        let load = historyLoad
+        Task {
+            await load?.value
+            await Task.detached(priority: .utility) { store.append(sample) }.value
         }
     }
 
