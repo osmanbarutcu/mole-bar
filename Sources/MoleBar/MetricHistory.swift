@@ -127,10 +127,16 @@ struct MetricStore {
             if !FileManager.default.fileExists(atPath: file.path) {
                 try Data().write(to: file)
             }
-            let handle = try FileHandle(forWritingTo: file)
+            let handle = try FileHandle(forUpdating: file)
             defer { try? handle.close() }
-            try handle.seekToEnd()
-            try handle.write(contentsOf: Data((line + "\n").utf8))
+            // Çökme sonrası son satır yarım kalabilir. Yeni satır ona yapışmasın diye önce satır sonu eklenir.
+            let end = try handle.seekToEnd()
+            var prefix = ""
+            if end > 0 {
+                try handle.seek(toOffset: end - 1)
+                if handle.readData(ofLength: 1) != Data("\n".utf8) { prefix = "\n" }
+            }
+            try handle.write(contentsOf: Data((prefix + line + "\n").utf8))
         } catch {
             ErrorLog.add(source: "Geçmiş", message: "Yazılamadı: \(error.localizedDescription)")
         }

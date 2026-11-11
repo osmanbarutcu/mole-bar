@@ -122,6 +122,22 @@ struct MetricStoreTests {
         #expect(MetricHistory.decode(text).count == 1)
     }
 
+    @Test("yarım kalmış son satır yeni satırı bozmaz")
+    func partialLastLine() throws {
+        let file = tempFile()
+        defer { try? FileManager.default.removeItem(at: file.deletingLastPathComponent()) }
+        let store = MetricStore(file: file)
+        store.append(sample(100))
+        // Çökme: son satır yeni satır karakteri olmadan yarım kalır.
+        let handle = try FileHandle(forWritingTo: file)
+        try handle.seekToEnd()
+        try handle.write(contentsOf: Data("{\"t\":15".utf8))
+        try handle.close()
+        store.append(sample(200))
+        let loaded = store.load(now: Date(timeIntervalSince1970: 300), maxAge: 1_000)
+        #expect(loaded.map(\.time.timeIntervalSince1970) == [100, 200])
+    }
+
     @Test("dosya yoksa boş liste döner")
     func missingFile() {
         #expect(MetricStore(file: tempFile()).load(now: Date(), maxAge: 10).isEmpty)

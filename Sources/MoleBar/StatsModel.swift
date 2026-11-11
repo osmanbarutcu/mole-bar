@@ -36,8 +36,12 @@ final class StatsModel: ObservableObject {
     /// Son 7 gün, 30 saniyelik örnek. `MetricStore` dosyasından yüklenir ve her örnekte dosyaya eklenir.
     @Published private(set) var longHistory: [MetricSample] = []
     private let metricStore = MetricStore.shared
-    /// Açılıştaki yükleme dosyayı sıkıştırır. Eklemeler bu iş bitince yapılır, yoksa satır kaybolabilir.
-    private var historyLoad: Task<Void, Never>?
+    /// Geçmiş dosyasına yapılan son iş. Yükleme, ekleme ve sıkıştırma bu zincirle sırayla çalışır.
+    /// Sıkıştırma dosyayı yeniden yazar. Aynı anda yapılan ekleme kaybolmasın diye işler birbirini bekler.
+    private var historyWrite: Task<Void, Never>?
+    private var samplesSinceCompact = 0
+    /// Günde bir sıkıştırma: 30 saniyelik 2880 örnek.
+    private let compactEvery = 2_880
     /// Menü çubuğu grafiği için son 30 CPU örneği. Her turda bir örnek alınır.
     @Published private(set) var recentCPU: [Double] = []
     @Published private(set) var recentRAM: [Double] = []
@@ -69,7 +73,7 @@ final class StatsModel: ObservableObject {
 
     init() {
         let store = metricStore
-        historyLoad = Task {
+        historyWrite = Task {
             let loaded = await Task.detached(priority: .utility) { store.load() }.value
             // Yükleme sürerken alınan örnekler kaybolmaz.
             longHistory = loaded + longHistory.filter { sample in sample.time > (loaded.last?.time ?? .distantPast) }
@@ -154,11 +158,17 @@ final class StatsModel: ObservableObject {
             topMemory: processGroups.max { $0.memoryBytes < $1.memoryBytes }?.name
         )
         longHistory = MetricHistory.prune(longHistory + [sample], now: sample.time, maxAge: MetricHistory.maxAge)
+        samplesSinceCompact += 1
+        let compact = samplesSinceCompact >= compactEvery
+        if compact { samplesSinceCompact = 0 }
         let store = metricStore
-        let load = historyLoad
-        Task {
-            await load?.value
-            await Task.detached(priority: .utility) { store.append(sample) }.value
+        let previous = historyWrite
+        historyWrite = Task {
+            await previous?.value
+            await Task.detached(priority: .utility) {
+                store.append(sample)
+                if compact { _ = store.load() }
+            }.value
         }
     }
 
