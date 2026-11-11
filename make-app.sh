@@ -42,7 +42,12 @@ fi
 # Sabit imza, Tam Disk Erişimi ve Finder izninin kurulumlar arasında kalmasını sağlar.
 # SIGN_IDENTITY ile geçersiz kılınır. Sertifika yoksa ad-hoc imza kullanılır.
 IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning | sed -n 's/.*"\(Apple Development: .*\)"/\1/p' | head -1)}"
-if [ -n "$IDENTITY" ]; then
+if [[ "$IDENTITY" == "Developer ID Application:"* ]]; then
+  # Noter onayı hardened runtime ve güvenilir zaman damgası ister.
+  echo "İmza (Developer ID, hardened runtime): $IDENTITY"
+  codesign --force --options runtime --timestamp \
+    --entitlements Resources/MoleBar.entitlements --sign "$IDENTITY" "$APP"
+elif [ -n "$IDENTITY" ]; then
   echo "İmza: $IDENTITY"
   codesign --force --sign "$IDENTITY" "$APP"
 else

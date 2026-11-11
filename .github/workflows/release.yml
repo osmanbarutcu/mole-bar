@@ -11,17 +11,52 @@ permissions:
 jobs:
   release:
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 45
+    env:
+      # Adım koşulu secrets bağlamını doğrudan okuyamaz. Bu bayrak okunur.
+      # Secret yoksa sürüm ad-hoc imzalı çıkar ve noter adımları atlanır.
+      HAS_SIGNING: ${{ secrets.MACOS_CERT_P12 != '' && secrets.NOTARY_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Testler
         run: swift test
+      - name: Developer ID sertifikasını içe aktar
+        if: env.HAS_SIGNING == 'true'
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD=$(uuidgen)
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/cert.p12"
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | sed -n 's/.*"\(Developer ID Application: .*\)"/\1/p' | head -1)
+          [ -n "$IDENTITY" ] || { echo "Developer ID Application sertifikası bulunamadı." >&2; exit 1; }
+          echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
       - name: Uygulamayı derle
         env:
           TAG: ${{ github.ref_name }}
         run: |
-          # CI'da sertifika yoktur. make-app.sh ad-hoc imza kullanır.
+          # SIGN_IDENTITY yoksa make-app.sh ad-hoc imza kullanır.
           MOLEBAR_VERSION="${TAG#v}" ./make-app.sh
+      - name: Uygulamaya noter onayı al
+        if: env.HAS_SIGNING == 'true'
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          # Zip içindeki uygulama da zımbalı olsun diye önce uygulama onaylanır.
+          ditto -c -k --keepParent MoleBar.app "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
+            --apple-id "$NOTARY_APPLE_ID" --team-id "$NOTARY_TEAM_ID" --password "$NOTARY_PASSWORD" --wait
+          xcrun stapler staple MoleBar.app
       - name: Paketleri üret
         env:
           TAG: ${{ github.ref_name }}
@@ -30,12 +65,32 @@ jobs:
           ./scripts/make-dmg.sh
           mkdir -p dist
           ditto -c -k --keepParent MoleBar.app "dist/MoleBar-$VERSION-macos.zip"
-          (cd dist && shasum -a 256 "MoleBar-$VERSION-macos.zip" > "MoleBar-$VERSION-macos.zip.sha256")
+      - name: DMG'ye noter onayı al
+        if: env.HAS_SIGNING == 'true'
+        env:
+          TAG: ${{ github.ref_name }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: ./scripts/notarize.sh "dist/MoleBar-${TAG#v}.dmg"
+      - name: Özetleri üret
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          # Zımba DMG'yi değiştirir. Özet en son hesaplanır.
+          VERSION="${TAG#v}"
+          cd dist
+          shasum -a 256 "MoleBar-$VERSION.dmg" > "MoleBar-$VERSION.dmg.sha256"
+          shasum -a 256 "MoleBar-$VERSION-macos.zip" > "MoleBar-$VERSION-macos.zip.sha256"
       - name: Release oluştur
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
+          if [ "$HAS_SIGNING" = "true" ]; then
+            NOTES="Developer ID imzalı ve noter onaylı sürüm. SHA-256 dosyaları eklidir."
+          else
+            NOTES="Ad-hoc imzalı, notarize edilmemiş sürüm. İlk açılışta sağ tık > Aç gerekir. SHA-256 dosyaları eklidir."
+          fi
           gh release create "$TAG" dist/MoleBar-*.dmg dist/MoleBar-*.zip dist/*.sha256 \
-            --title "MoleBar ${TAG#v}" \
-            --notes "Ad-hoc imzalı, notarize edilmemiş sürüm. İlk açılışta sağ tık > Aç gerekir. SHA-256 dosyaları eklidir."
+            --title "MoleBar ${TAG#v}" --notes "$NOTES"

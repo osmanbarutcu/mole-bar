@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Hardened runtime izinleri. Yalnızca Developer ID imzasında kullanılır. -->
+<plist version="1.0">
+<dict>
+    <!-- Çöp Kutusu'nu boşaltmak için Finder'a Apple Event gönderilir. -->
+    <key>com.apple.security.automation.apple-events</key><true/>
+    <!-- Wi-Fi adı (SSID) konum izni ister. -->
+    <key>com.apple.security.personal-information.location</key><true/>
+</dict>
+</plist>

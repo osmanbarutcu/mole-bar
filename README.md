@@ -93,6 +93,7 @@ Otomatik test kapsamayan adımlar [docs/MANUAL-CHECKS.md](docs/MANUAL-CHECKS.md)
 ## Geliştirme
 
 - Sürüm çıkarmak için: `Casks/molebar.rb` içindeki `version` ve `sha256` değerlerini güncelleyin. Sonra `git tag vX.Y.Z` ve `git push --tags` çalıştırın. `.github/workflows/release.yml` zip ve DMG üretip release'e yükler.
+- Noter onayı (isteğe bağlı): depoya şu secret'ları ekleyin: `MACOS_CERT_P12` (Developer ID Application sertifikası, base64), `MACOS_CERT_PASSWORD`, `NOTARY_APPLE_ID`, `NOTARY_TEAM_ID`, `NOTARY_PASSWORD` (uygulamaya özel parola). Secret varsa iş akışı hardened runtime ile imzalar, uygulamayı ve DMG'yi onaylatır. Secret yoksa ad-hoc imza kullanılır. Yerelde: `SIGN_IDENTITY="Developer ID Application: …" ./make-app.sh`, `./scripts/make-dmg.sh`, sonra `./scripts/notarize.sh dist/MoleBar-<sürüm>.dmg`. Noter akışı doğrulanmadı, çünkü Developer ID sertifikası yok.
 - DMG üretin: `./make-app.sh`, ardından `./scripts/make-dmg.sh`. Çıktı `dist/MoleBar-<sürüm>.dmg` dosyasıdır. Uygulama ad-hoc imzalıdır, notarize edilmez. İlk açılışta sağ tık > Aç gerekir. DMG'nin başka Mac'te açılışı doğrulanmadı.
 - Simgeyi yeniden üretin: `swift scripts/make-icon.swift /tmp/AppIcon.iconset`, ardından `iconutil -c icns /tmp/AppIcon.iconset -o Resources/AppIcon.icns`.
 - Testleri çalıştırın: `swift test`. Testler Swift Testing kullanır (`Tests/MoleBarTests`). XCTest gerekmez.

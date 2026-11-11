@@ -1,7 +1,9 @@
 #!/bin/bash
 # MoleBar.app dosyasından DMG üretir. Önce ./make-app.sh çalıştırın.
 # Çıktı: dist/MoleBar-<sürüm>.dmg ve .sha256 dosyası.
-# Uygulama ad-hoc imzalanır. Apple notarization yapılmaz. İlk açılışta sağ tık > Aç gerekir.
+# Uygulama Developer ID ile imzalıysa imza korunur ve DMG de aynı kimlikle imzalanır.
+# Noter onayı için sonra scripts/notarize.sh çalıştırın.
+# Diğer durumda uygulama ad-hoc imzalanır. İlk açılışta sağ tık > Aç gerekir.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -18,12 +20,18 @@ trap 'rm -rf "$STAGE"' EXIT
 
 # Kaynak uygulama değişmez. İmza kopya üzerinde atılır.
 ditto "$APP" "$STAGE/$APP"
-codesign --force --deep -s - "$STAGE/$APP"
+AUTHORITY=$(codesign -dvv "$APP" 2>&1 | sed -n 's/^Authority=\(Developer ID Application: .*\)/\1/p' | head -1)
+if [ -z "$AUTHORITY" ]; then
+  codesign --force --deep -s - "$STAGE/$APP"
+fi
 ln -s /Applications "$STAGE/Applications"
 
 rm -f "$DMG"
 hdiutil create -volname "MoleBar $VERSION" -srcfolder "$STAGE" -fs HFS+ -format UDZO -ov "$DMG" >/dev/null
 hdiutil verify "$DMG" >/dev/null
+if [ -n "$AUTHORITY" ]; then
+  codesign --force --timestamp --sign "$AUTHORITY" "$DMG"
+fi
 
 (cd "$OUT_DIR" && shasum -a 256 "$(basename "$DMG")" | tee "$(basename "$DMG").sha256")
 echo "Hazır: $DMG"

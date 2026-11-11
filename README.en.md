@@ -74,6 +74,7 @@ A prebuilt zip is on the Releases page. It is ad-hoc signed and not notarized. O
 ## Development
 
 - Build a DMG: run `./make-app.sh`, then `./scripts/make-dmg.sh`. The output is `dist/MoleBar-<version>.dmg`. The app is ad-hoc signed and not notarized. Opening the DMG on another Mac is not verified.
+- Notarization (optional): add these repository secrets: `MACOS_CERT_P12` (Developer ID Application certificate, base64), `MACOS_CERT_PASSWORD`, `NOTARY_APPLE_ID`, `NOTARY_TEAM_ID`, `NOTARY_PASSWORD` (app-specific password). With the secrets, the release workflow signs with hardened runtime and notarizes the app and the DMG. Without them, it uses an ad-hoc signature. Locally: `SIGN_IDENTITY="Developer ID Application: …" ./make-app.sh`, `./scripts/make-dmg.sh`, then `./scripts/notarize.sh dist/MoleBar-<version>.dmg`. The notarization flow is not verified, because no Developer ID certificate is available.
 - Run the tests: `swift test`. Tests use Swift Testing (`Tests/MoleBarTests`). XCTest is not required.
 - If `swift test` reports a `TestingMacros` plugin error, run: `swift test -Xswiftc -plugin-path -Xswiftc /Library/Developer/CommandLineTools/usr/lib/swift/host/plugins/testing`.
 - To see the panel in a window: `MOLEBAR_PANEL_PREVIEW=1 /Applications/MoleBar.app/Contents/MacOS/MoleBar`.
