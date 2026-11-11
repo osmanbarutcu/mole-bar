@@ -12,12 +12,16 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/MoleBar"
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+# Arayüz çevirileri. Türkçe geliştirme dilidir, İngilizce en.lproj içindedir.
+for lproj in Resources/*.lproj; do cp -R "$lproj" "$APP/Contents/Resources/"; done
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>CFBundleDevelopmentRegion</key><string>tr</string>
+    <key>CFBundleLocalizations</key><array><string>tr</string><string>en</string></array>
     <key>CFBundleExecutable</key><string>MoleBar</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundleIdentifier</key><string>local.molebar</string>
