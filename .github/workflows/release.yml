@@ -15,7 +15,7 @@ jobs:
     env:
       # Adım koşulu secrets bağlamını doğrudan okuyamaz. Bu bayrak okunur.
       # Secret yoksa sürüm ad-hoc imzalı çıkar ve noter adımları atlanır.
-      HAS_SIGNING: ${{ secrets.MACOS_CERT_P12 != '' && secrets.NOTARY_PASSWORD != '' }}
+      HAS_SIGNING: ${{ secrets.MACOS_CERT_P12 != '' && secrets.MACOS_CERT_PASSWORD != '' && secrets.NOTARY_APPLE_ID != '' && secrets.NOTARY_TEAM_ID != '' && secrets.NOTARY_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Testler

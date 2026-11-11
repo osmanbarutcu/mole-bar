@@ -21,4 +21,6 @@ xcrun notarytool submit "$DMG" \
   --wait
 xcrun stapler staple "$DMG"
 xcrun stapler validate "$DMG"
+# Zımba DMG'yi değiştirir. make-dmg.sh'in yazdığı özet eskidir.
+(cd "$(dirname "$DMG")" && shasum -a 256 "$(basename "$DMG")" > "$(basename "$DMG").sha256")
 echo "Noter onayı tamam: $DMG"
