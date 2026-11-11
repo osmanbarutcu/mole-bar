@@ -81,7 +81,7 @@ Deneysel seçenek:
 
 ## 10. İngilizce arayüz
 
-Ekran görüntüsüyle doğrulanmadı. Kapsam testi (`LocalizationTests`) yalnızca tabloyu denetler.
+Panelin Genel sayfası iki dilde ekran görüntüsüyle doğrulandı. Diğer sayfalar ve ana pencere doğrulanmadı. Kapsam testi (`LocalizationTests`) yalnızca tabloyu denetler.
 
 1. Uygulamayı İngilizce açın: `/Applications/MoleBar.app/Contents/MacOS/MoleBar -AppleLanguages "(en)"`.
 2. Kalıcı denemek için: `defaults write local.molebar AppleLanguages -array en`. Geri almak için: `defaults delete local.molebar AppleLanguages`.
@@ -89,6 +89,7 @@ Ekran görüntüsüyle doğrulanmadı. Kapsam testi (`LocalizationTests`) yalnı
 4. Beklenen: Metin İngilizcedir. Yüzde işareti sayının sonundadır ("92%").
 5. Türkçe kalan metni not edin. Metin kesilmesi veya taşma varsa Kaldı yazın.
 6. Sistem dili Türkçeyken uygulamayı açın. Beklenen: Arayüz Türkçedir.
+7. Sistem dili İngilizceyken `defaults write local.molebar AppleLanguages -array tr` çalıştırın. Beklenen: Arayüz Türkçedir.
 
 ## 11. Yüksek CPU bildirimi
 
