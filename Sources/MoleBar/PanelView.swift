@@ -25,25 +25,7 @@ struct PanelView: View {
     @ObservedObject var preview: CleanPreview
     /// Doluysa ana pencerede gömülü çalışır: üst çubuk, sekme seçici ve sabit boyut yoktur.
     var embedded: MainSection? = nil
-    @StateObject private var loginItem = LoginItem()
-    @AppStorage("hotkeyEnabled") private var hotkeyEnabled = true
-    @AppStorage("weeklyScan") private var weeklyScan = false
-    @AppStorage("displayMode") private var displayMode = "text"
-    @AppStorage("showCPU") private var showCPU = true
-    @AppStorage("showRAM") private var showRAM = true
-    @AppStorage("showDisk") private var showDisk = true
-    @AppStorage("showLabels") private var showLabels = true
-    @AppStorage("diskAlertEnabled") private var diskAlertEnabled = true
-    @AppStorage("memoryAlertEnabled") private var memoryAlertEnabled = true
-    @AppStorage("cpuAlertEnabled") private var cpuAlertEnabled = true
-    @AppStorage("graphMetric") private var graphMetric = "cpu"
-    @AppStorage("historyWindow") private var historyWindow = HistoryWindow.hour.rawValue
-    @AppStorage("updateCheckEnabled") private var updateCheckEnabled = false
-    @AppStorage(StatusItemController.defaultsKey) private var customStatusItem = false
-    @AppStorage("diskAlertThreshold") private var diskAlertThreshold = 90
-    @AppStorage("cacheAlertGB") private var cacheAlertGB = 0
     @AppStorage("procSort") private var procSort = "cpu"
-    @AppStorage("appearance") private var appearance = "system"
 
     private let panelHeight: CGFloat = 620
 
@@ -67,7 +49,7 @@ struct PanelView: View {
             .padding(24)
             .frame(maxWidth: 760, alignment: .leading)
         } else if section == .settings {
-            settingsPage
+            PanelSettingsPage(stats: stats)
                 .padding(24)
                 .frame(maxWidth: 640, alignment: .leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -97,7 +79,7 @@ struct PanelView: View {
             if layout.showPreview {
                 CleanPreviewPage(preview: preview)
             } else if layout.showSettings {
-                settingsPage
+                PanelSettingsPage(stats: stats)
             } else {
                 Picker("Sekme", selection: $layout.tab) {
                     ForEach(PanelTab.allCases) { Text($0.rawValue).tag($0) }
@@ -187,7 +169,7 @@ struct PanelView: View {
             }
             healthCard
             coresCard
-            historyCard
+            HistoryCard(stats: stats)
             memoryCard
             SystemInfoCard(info: stats.systemInfo, health: stats.batteryHealth, sensors: stats.sensors)
             HStack(spacing: 12) {
@@ -398,60 +380,6 @@ struct PanelView: View {
         }
     }
 
-    // MARK: Geçmiş
-
-    @ViewBuilder
-    private var historyCard: some View {
-        let window = HistoryWindow(rawValue: historyWindow) ?? .hour
-        let samples = MetricHistory.window(stats.longHistory, duration: window.seconds)
-        if samples.count > 1 {
-            let points = MetricHistory.downsample(samples, maxPoints: 120)
-            let cpu = points.map(\.cpu)
-            let ram = points.map(\.memory)
-            VStack(alignment: .leading, spacing: 10) {
-                CardHeader(symbol: "chart.xyaxis.line", title: "Geçmiş")
-                Picker("Süre", selection: $historyWindow) {
-                    ForEach(HistoryWindow.allCases, id: \.rawValue) { Text($0.label).tag($0.rawValue) }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                Sparkline(values: cpu, color: .blue)
-                    .frame(height: 38)
-                Sparkline(values: ram, color: .purple)
-                    .frame(height: 38)
-                HStack(spacing: 12) {
-                    legend("CPU", color: .blue, average: cpu.reduce(0, +) / Double(cpu.count))
-                    legend("RAM", color: .purple, average: ram.reduce(0, +) / Double(ram.count))
-                }
-                peakLine("En yüksek CPU", MetricHistory.peak(samples, \.cpu), process: \.topCPU)
-                peakLine("En yüksek bellek", MetricHistory.peak(samples, \.memory), process: \.topMemory)
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCard()
-        }
-    }
-
-    @ViewBuilder
-    private func peakLine(_ title: String, _ peak: (value: Double, sample: MetricSample)?,
-                          process: KeyPath<MetricSample, String?>) -> some View {
-        if let peak {
-            Text(MetricHistory.peakText(title, value: peak.value, sample: peak.sample, process: peak.sample[keyPath: process]))
-                .font(.caption2.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
-    }
-
-    private func legend(_ name: String, color: Color, average: Double) -> some View {
-        HStack(spacing: 4) {
-            Circle().fill(color).frame(width: 6, height: 6)
-            Text(String(format: "%@ ort. %.0f%%", name, average))
-                .font(.caption2.monospacedDigit())
-                .foregroundStyle(.secondary)
-        }
-    }
-
     private var diskAlertBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
@@ -607,158 +535,4 @@ struct PanelView: View {
         }
     }
 
-    // MARK: Ayarlar
-
-    private var settingsPage: some View {
-        ScrollView(showsIndicators: false) {
-            GlassGroup(spacing: 12) {
-                VStack(spacing: 14) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        CardHeader(symbol: "circle.lefthalf.filled", title: "Tema")
-                        Picker("Tema", selection: $appearance) {
-                            Text("Sistem").tag("system")
-                            Text("Açık").tag("light")
-                            Text("Koyu").tag("dark")
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                        .onChange(of: appearance) { _, value in AppDelegate.applyAppearance(value) }
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassCard()
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        CardHeader(symbol: "arrow.down.circle", title: "Güncellemeler", trailing: "Sürüm \(UpdateCheck.currentVersion)")
-                        Toggle("Yeni sürümü GitHub'dan denetle", isOn: $updateCheckEnabled)
-                            .toggleStyle(RightSwitchStyle())
-                            .controlSize(.small)
-                            .onChange(of: updateCheckEnabled) { _, enabled in
-                                if enabled { stats.checkForUpdateIfDue() }
-                            }
-                        if let update = stats.availableUpdate, updateCheckEnabled {
-                            Text("Yeni sürüm var: \(update.version)").font(.caption.weight(.semibold))
-                            Button("Sürüm sayfasını aç") { NSWorkspace.shared.open(update.url) }
-                                .glassButton()
-                                .controlSize(.small)
-                        }
-                        Text("Kapalıdır. Açarsanız MoleBar günde en çok 1 kez api.github.com adresine istek gönderir. GitHub IP adresinizi görür. Veri gönderilmez, indirme yapılmaz.")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassCard()
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        CardHeader(symbol: "menubar.rectangle", title: "Menü çubuğu")
-                        Picker("Görünüm", selection: $displayMode) {
-                            Text("Metin").tag("text")
-                            Text("İkon").tag("icon")
-                            Text("Grafik").tag("graph")
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                        Toggle("Özel menü çubuğu öğesi (deneysel)", isOn: $customStatusItem)
-                            .toggleStyle(RightSwitchStyle())
-                            .controlSize(.small)
-                        Text("Açıkken ⌥⌘M menü çubuğu panelini açar ve kapatır. Kapalıyken kısayol ana pencereyi açar. Değişiklik için MoleBar'ı yeniden başlatın.")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if displayMode == "graph" {
-                            Picker("Grafik ölçümü", selection: $graphMetric) {
-                                ForEach(GraphMetric.allCases, id: \.rawValue) { Text($0.title).tag($0.rawValue) }
-                            }
-                            .pickerStyle(.segmented)
-                            .labelsHidden()
-                        }
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassCard()
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        CardHeader(symbol: "textformat.123", title: "Metin modunda göster")
-                        Toggle("CPU", isOn: $showCPU)
-                        Toggle("RAM", isOn: $showRAM)
-                        Toggle("Disk", isOn: $showDisk)
-                        Toggle("Etiketler", isOn: $showLabels)
-                    }
-                    .toggleStyle(RightSwitchStyle())
-                    .controlSize(.small)
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassCard()
-                    .disabled(displayMode != "text")
-                    .opacity(displayMode == "text" ? 1 : 0.5)
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        CardHeader(symbol: "power", title: "Başlatma ve kısayol")
-                        Toggle("Girişte başlat", isOn: Binding(
-                            get: { loginItem.isEnabled },
-                            set: { loginItem.set($0) }
-                        ))
-                        if let error = loginItem.errorText {
-                            Text(error).font(.caption2).foregroundStyle(.red)
-                        }
-                        Toggle("Kısayol ⌥⌘M ile ana pencereyi aç veya kapat", isOn: Binding(
-                            get: { hotkeyEnabled },
-                            set: { value in
-                                hotkeyEnabled = value
-                                if value { GlobalHotKey.register() } else { GlobalHotKey.unregister() }
-                            }
-                        ))
-                        if hotkeyEnabled, let failure = GlobalHotKey.failureText(GlobalHotKey.lastStatus) {
-                            Text(failure).font(.caption2).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
-                        }
-                        Toggle("Haftalık otomatik tarama", isOn: $weeklyScan)
-                        Text("Tarama yalnızca önizlemedir ve sonucu bildirir. Mole önizlemesini, önbellek toplamını ve 90 günden eski proje çıktılarını ölçer. Hiçbir şey silmez. Uygulama açıkken çalışır.")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .toggleStyle(RightSwitchStyle())
-                    .controlSize(.small)
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassCard()
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        CardHeader(symbol: "bell.badge", title: "Uyarılar")
-                        Toggle("Eşik aşılınca bildir", isOn: $diskAlertEnabled)
-                            .toggleStyle(RightSwitchStyle())
-                            .controlSize(.small)
-                        Toggle("Bellek baskısı kritikken bildir", isOn: $memoryAlertEnabled)
-                            .toggleStyle(RightSwitchStyle())
-                            .controlSize(.small)
-                        Toggle("Bir süreç 5 dakika %90 üstü CPU kullanırsa bildir", isOn: $cpuAlertEnabled)
-                            .toggleStyle(RightSwitchStyle())
-                            .controlSize(.small)
-                        Stepper("Eşik: %\(diskAlertThreshold)", value: $diskAlertThreshold, in: 70...98)
-                            .disabled(!diskAlertEnabled)
-                            .controlSize(.small)
-                            .font(.callout)
-                        Stepper(cacheAlertGB == 0 ? "Önbellek uyarısı: kapalı" : "Önbellek uyarısı: \(cacheAlertGB) GB", value: $cacheAlertGB, in: 0...50)
-                            .controlSize(.small)
-                            .font(.callout)
-                        Text("Haftalık tarama önbellek toplamı eşiği aşarsa ayrı bildirim gönderir. 0 kapatır.")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .glassCard()
-
-                    FullDiskAccessCard()
-                    MoveHistoryCard()
-                    ErrorHistoryCard()
-                }
-                .padding(.vertical, 8)
-            }
-        }
-        .shadowSafeScroll(vertical: 0) // İçerik zaten dikey padding(8) taşıyor.
-    }
 }
