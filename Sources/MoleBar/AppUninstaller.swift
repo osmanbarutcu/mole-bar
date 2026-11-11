@@ -95,9 +95,10 @@ final class AppUninstaller: ObservableObject {
 
     // MARK: Tarama
 
-    private nonisolated static func findApps() -> [AppEntry] {
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        let roots = [URL(fileURLWithPath: "/Applications"), home.appendingPathComponent("Applications")]
+    nonisolated static func findApps(roots: [URL] = [
+        URL(fileURLWithPath: "/Applications"),
+        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications")
+    ]) -> [AppEntry] {
         var result: [AppEntry] = []
         for root in roots {
             let items = (try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)) ?? []
@@ -111,8 +112,10 @@ final class AppUninstaller: ObservableObject {
         return result
     }
 
-    private nonisolated static func findLeftovers(for app: AppEntry) -> [Leftover] {
-        let library = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library")
+    nonisolated static func findLeftovers(
+        for app: AppEntry,
+        library: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library")
+    ) -> [Leftover] {
         var names: [(dir: String, file: String)] = []
         if let id = app.bundleID {
             names += [

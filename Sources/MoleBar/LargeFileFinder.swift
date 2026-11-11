@@ -89,9 +89,7 @@ final class LargeFileFinder: ObservableObject {
                     self.scanned = count
                     self.inaccessible = errors
                 case .hit(let file):
-                    self.files.append(file)
-                    self.files.sort { $0.bytes > $1.bytes }
-                    if self.files.count > cap { self.files.removeLast() }
+                    self.files = Self.inserting(file, into: self.files, cap: cap)
                 }
             }
             self?.isScanning = false
@@ -122,15 +120,20 @@ final class LargeFileFinder: ObservableObject {
 
     // MARK: Tarama
 
-    private enum Event {
+    enum Event {
         case progress(Int, Int)
         case hit(LargeFile)
+    }
+
+    /// Dosyayı listeye ekler. Liste büyükten küçüğe sıralı kalır ve `cap` sınırını aşmaz.
+    nonisolated static func inserting(_ file: LargeFile, into files: [LargeFile], cap: Int) -> [LargeFile] {
+        Array((files + [file]).sorted { $0.bytes > $1.bytes }.prefix(cap))
     }
 
     private nonisolated static func stream(limit: UInt64) -> AsyncStream<Event> {
         AsyncStream { continuation in
             let worker = Task.detached {
-                walkHome(limit: limit) { continuation.yield($0) }
+                walk(root: FileManager.default.homeDirectoryForCurrentUser, limit: limit) { continuation.yield($0) }
                 continuation.finish()
             }
             continuation.onTermination = { _ in worker.cancel() }
@@ -138,12 +141,11 @@ final class LargeFileFinder: ObservableObject {
     }
 
     /// Senkron gezinti. Async bağlamda NSEnumerator kullanılmaz.
-    private nonisolated static func walkHome(limit: UInt64, emit: (Event) -> Void) {
+    nonisolated static func walk(root: URL, limit: UInt64, emit: (Event) -> Void) {
         let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey, .isVolumeKey, .totalFileAllocatedSizeKey]
-        let home = FileManager.default.homeDirectoryForCurrentUser
         var errors = 0
         guard let enumerator = FileManager.default.enumerator(
-            at: home,
+            at: root,
             includingPropertiesForKeys: keys,
             options: [.skipsPackageDescendants],
             errorHandler: { _, _ in errors += 1; return true }

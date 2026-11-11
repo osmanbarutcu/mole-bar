@@ -54,7 +54,20 @@ final class CacheCleaner: ObservableObject {
     private var task: Task<Void, Never>?
     private var started = false
 
-    var selectedBytes: UInt64 { items.filter { selection.contains($0.url) }.reduce(0) { $0 + $1.bytes } }
+    var selectedBytes: UInt64 { Self.bytes(of: items, selected: selection) }
+
+    nonisolated static func bytes(of items: [CacheItem], selected: Set<URL>) -> UInt64 {
+        items.filter { selected.contains($0.url) }.reduce(0) { $0 + $1.bytes }
+    }
+
+    nonisolated static func toggled(_ selection: Set<URL>, _ url: URL) -> Set<URL> {
+        selection.contains(url) ? selection.subtracting([url]) : selection.union([url])
+    }
+
+    /// Kategorideki tüm öğeler seçiliyse seçimi kaldırır. Değilse hepsini ekler.
+    nonisolated static func selectingAll(_ urls: [URL], in selection: Set<URL>) -> Set<URL> {
+        urls.allSatisfy(selection.contains) ? selection.subtracting(urls) : selection.union(urls)
+    }
 
     func items(in category: CacheCategory) -> [CacheItem] { items.filter { $0.category == category } }
 
@@ -100,13 +113,12 @@ final class CacheCleaner: ObservableObject {
     }
 
     func toggle(_ item: CacheItem) {
-        if selection.contains(item.url) { selection.remove(item.url) } else { selection.insert(item.url) }
+        selection = Self.toggled(selection, item.url)
         confirmingMove = false
     }
 
     func selectAll(in category: CacheCategory) {
-        let urls = items(in: category).map(\.url)
-        if urls.allSatisfy({ selection.contains($0) }) { selection.subtract(urls) } else { selection.formUnion(urls) }
+        selection = Self.selectingAll(items(in: category).map(\.url), in: selection)
         confirmingMove = false
     }
 
@@ -234,8 +246,7 @@ final class CacheCleaner: ObservableObject {
         }
     }
 
-    private nonisolated static func candidates() -> [(URL, CacheCategory)] {
-        let home = FileManager.default.homeDirectoryForCurrentUser
+    nonisolated static func candidates(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> [(URL, CacheCategory)] {
         func children(_ relative: String, _ category: CacheCategory, skipApple: Bool = false) -> [(URL, CacheCategory)] {
             let dir = home.appendingPathComponent(relative)
             let urls = (try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []

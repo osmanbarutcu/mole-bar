@@ -12,7 +12,7 @@ struct DiskEntry: Identifiable {
     var name: String { url.lastPathComponent }
 }
 
-private struct Measured {
+struct DiskMeasure {
     let url: URL
     let bytes: UInt64
     let items: Int
@@ -108,7 +108,7 @@ final class DiskAnalyzer: ObservableObject {
         isScanning = !children.isEmpty
 
         task = Task { [weak self] in
-            await withTaskGroup(of: Measured.self) { group in
+            await withTaskGroup(of: DiskMeasure.self) { group in
                 for child in children {
                     group.addTask { Self.measure(child) }
                 }
@@ -121,17 +121,29 @@ final class DiskAnalyzer: ObservableObject {
         }
     }
 
-    private func apply(_ result: Measured) {
-        guard let index = entries.firstIndex(where: { $0.url == result.url }) else { return }
-        entries[index].bytes = result.bytes
-        entries[index].items = result.items
-        entries[index].sized = true
-        entries.sort { $0.bytes > $1.bytes }
+    private func apply(_ result: DiskMeasure) {
+        guard entries.contains(where: { $0.url == result.url }) else { return }
+        entries = Self.applying(result, to: entries)
         pending = max(pending - 1, 0)
         inaccessible += result.errors
     }
 
-    private nonisolated static func children(of url: URL) throws -> [DiskEntry] {
+    /// Ölçümü ilgili satıra yazar ve listeyi büyükten küçüğe sıralar. Listede olmayan ölçüm yok sayılır.
+    nonisolated static func applying(_ result: DiskMeasure, to entries: [DiskEntry]) -> [DiskEntry] {
+        guard entries.contains(where: { $0.url == result.url }) else { return entries }
+        return entries
+            .map { entry in
+                guard entry.url == result.url else { return entry }
+                var updated = entry
+                updated.bytes = result.bytes
+                updated.items = result.items
+                updated.sized = true
+                return updated
+            }
+            .sorted { $0.bytes > $1.bytes }
+    }
+
+    nonisolated static func children(of url: URL) throws -> [DiskEntry] {
         let keys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey, .isPackageKey]
         let urls = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: keys, options: [])
         return urls.map { child in
@@ -144,11 +156,11 @@ final class DiskAnalyzer: ObservableObject {
         }
     }
 
-    private nonisolated static func measure(_ entry: DiskEntry) -> Measured {
+    nonisolated static func measure(_ entry: DiskEntry) -> DiskMeasure {
         let sizeKeys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .isDirectoryKey, .isVolumeKey]
         if !entry.isDirectory && !entry.isPackage {
             let size = (try? entry.url.resourceValues(forKeys: [.totalFileAllocatedSizeKey]))?.totalFileAllocatedSize ?? 0
-            return Measured(url: entry.url, bytes: UInt64(size), items: 1, errors: 0)
+            return DiskMeasure(url: entry.url, bytes: UInt64(size), items: 1, errors: 0)
         }
 
         var bytes: UInt64 = 0
@@ -159,7 +171,7 @@ final class DiskAnalyzer: ObservableObject {
             includingPropertiesForKeys: sizeKeys,
             options: [],
             errorHandler: { _, _ in errors += 1; return true }
-        ) else { return Measured(url: entry.url, bytes: 0, items: 0, errors: 1) }
+        ) else { return DiskMeasure(url: entry.url, bytes: 0, items: 0, errors: 1) }
 
         for case let fileURL as URL in enumerator {
             if Task.isCancelled { break }
@@ -171,7 +183,7 @@ final class DiskAnalyzer: ObservableObject {
             bytes += UInt64(values?.totalFileAllocatedSize ?? 0)
             items += 1
         }
-        return Measured(url: entry.url, bytes: bytes, items: items, errors: errors)
+        return DiskMeasure(url: entry.url, bytes: bytes, items: items, errors: errors)
     }
 }
 
