@@ -216,6 +216,16 @@ final class ProjectCleaner: ObservableObject {
         UserDefaults.standard.set(ProjectDiskTotals.encode(totals), forKey: ProjectDiskTotals.key)
     }
 
+    /// Haftalık tarama için `minDays` günden eski proje çıktılarının toplamı. Listeyi ve seçimi değiştirmez.
+    nonisolated static func staleBytes(minDays: Int) -> UInt64 {
+        let found = scanRoots().0.map { artifact -> ProjectArtifact in
+            var sized = artifact
+            sized.bytes = FileSizer.size(of: artifact.url)
+            return sized
+        }
+        return ProjectFilter.apply(found, disk: nil, minDays: minDays).reduce(0) { $0 + $1.bytes }
+    }
+
     /// Ev klasörü ve bağlı harici diskler. Başlangıç diskinin /Volumes bağlantısı atlanır.
     private nonisolated static func scanRoots() -> ([ProjectArtifact], [String]) {
         let fm = FileManager.default

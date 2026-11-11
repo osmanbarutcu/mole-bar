@@ -51,10 +51,12 @@ final class CleanPreview: ObservableObject {
     /// Haftalık otomatik tarama (yalnızca önizleme). Ayar açıksa, 7 günden eskiyse ve düşük güç modunda değilse çalışır.
     func startIfDue() {
         let defaults = UserDefaults.standard
-        guard defaults.bool(forKey: "weeklyScan"), phase != .running,
-              !ProcessInfo.processInfo.isLowPowerModeEnabled else { return }
-        let last = defaults.object(forKey: "lastScheduledScan") as? Date ?? .distantPast
-        guard Date().timeIntervalSince(last) > 7 * 24 * 3600 else { return }
+        guard phase != .running, WeeklyScan.isDue(
+            enabled: defaults.bool(forKey: "weeklyScan"),
+            lowPower: ProcessInfo.processInfo.isLowPowerModeEnabled,
+            last: defaults.object(forKey: "lastScheduledScan") as? Date,
+            now: Date()
+        ) else { return }
         defaults.set(Date(), forKey: "lastScheduledScan")
         start(.cleanPreview, background: true)
     }
@@ -137,18 +139,17 @@ final class CleanPreview: ObservableObject {
                 let value = MoleOutput.summaryValue(summary)
                 Task {
                     let cache = await Task.detached { CacheCleaner.totalCacheBytes() }.value
+                    let stale = await Task.detached { ProjectCleaner.staleBytes(minDays: WeeklyScan.staleProjectDays) }.value
                     ReclaimStore.save(.cache, bytes: cache)
                     FolderLog.record(["Önbellek": cache])
                     let growth = FolderGrowth.summaryLine(FolderGrowth.compute(Array(FolderLog.load().suffix(30))))
                     DiskNotifier.post(
                         title: "Haftalık tarama bitti",
-                        body: "Temizlenebilir alan: \(value). Önbellek: \(formatBytes(cache)). "
-                            + (growth.map { $0 + " " } ?? "")
-                            + "Araçlar sekmesinden inceleyin. Hiçbir şey silinmedi.",
+                        body: WeeklyScan.body(cleanable: value, cacheBytes: cache, staleProjectBytes: stale, growth: growth),
                         id: "molebar.scan"
                     )
                     let limitGB = UserDefaults.standard.integer(forKey: "cacheAlertGB")
-                    if limitGB > 0, cache >= UInt64(limitGB) * 1_000_000_000 {
+                    if WeeklyScan.exceedsCacheLimit(cacheBytes: cache, limitGB: limitGB) {
                         DiskNotifier.post(
                             title: "Önbellek eşiği aşıldı",
                             body: "Önbellek \(formatBytes(cache)). Eşik \(limitGB) GB. Önbellek sekmesinden inceleyin.",

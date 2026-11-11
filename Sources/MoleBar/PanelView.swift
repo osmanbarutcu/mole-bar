@@ -714,7 +714,7 @@ struct PanelView: View {
                             Text(failure).font(.caption2).foregroundStyle(.orange).fixedSize(horizontal: false, vertical: true)
                         }
                         Toggle("Haftalık otomatik tarama", isOn: $weeklyScan)
-                        Text("Tarama yalnızca önizlemedir ve sonucu bildirir. Hiçbir şey silmez. Uygulama açıkken çalışır.")
+                        Text("Tarama yalnızca önizlemedir ve sonucu bildirir. Mole önizlemesini, önbellek toplamını ve 90 günden eski proje çıktılarını ölçer. Hiçbir şey silmez. Uygulama açıkken çalışır.")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
