@@ -35,6 +35,7 @@ struct PanelView: View {
     @AppStorage("showLabels") private var showLabels = true
     @AppStorage("diskAlertEnabled") private var diskAlertEnabled = true
     @AppStorage("memoryAlertEnabled") private var memoryAlertEnabled = true
+    @AppStorage("cpuAlertEnabled") private var cpuAlertEnabled = true
     @AppStorage("graphMetric") private var graphMetric = "cpu"
     @AppStorage("historyWindow") private var historyWindow = HistoryWindow.hour.rawValue
     @AppStorage("updateCheckEnabled") private var updateCheckEnabled = false
@@ -725,11 +726,14 @@ struct PanelView: View {
                     .glassCard()
 
                     VStack(alignment: .leading, spacing: 10) {
-                        CardHeader(symbol: "bell.badge", title: "Disk uyarısı")
+                        CardHeader(symbol: "bell.badge", title: "Uyarılar")
                         Toggle("Eşik aşılınca bildir", isOn: $diskAlertEnabled)
                             .toggleStyle(RightSwitchStyle())
                             .controlSize(.small)
                         Toggle("Bellek baskısı kritikken bildir", isOn: $memoryAlertEnabled)
+                            .toggleStyle(RightSwitchStyle())
+                            .controlSize(.small)
+                        Toggle("Bir süreç 5 dakika %90 üstü CPU kullanırsa bildir", isOn: $cpuAlertEnabled)
                             .toggleStyle(RightSwitchStyle())
                             .controlSize(.small)
                         Stepper("Eşik: %\(diskAlertThreshold)", value: $diskAlertThreshold, in: 70...98)

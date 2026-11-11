@@ -53,6 +53,7 @@ Uygulama ad-hoc imzalıdır ve notarize edilmemiştir. İlk açılışta sağ t�
 - Uygulamalar: kaldırma ve yetim artıklar (kurulu uygulaması olmayan `~/Library` kalıntıları, Çöp Kutusu'na taşınır).
 - Araçlar: açık portlar, dış bağlantılar (süreç başına), Homebrew güncellemeleri (yalnızca denetim, komut panoya kopyalanır).
 - Kritik bellek baskısında bir kez bildirim gelir. Bildirime tıklayınca ilgili sayfa açılır.
+- Bir süreç 5 dakika kesintisiz %90 üstü CPU kullanırsa bir kez bildirim gelir. Süreç eşiğin altına inince kural yeniden kurulur. Değer tek çekirdek yüzdesidir. Ayarlar > Uyarılar kartından kapatılır.
 
 ## Doğrulama
 

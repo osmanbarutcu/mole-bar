@@ -59,6 +59,7 @@ final class StatsModel: ObservableObject {
     private var healthLoading = false
     private var diskNotified = false
     private var memoryAlert = MemoryAlert()
+    private var cpuHogAlert = CPUHogAlert()
     private var tick = 0
     private var cpu = CPUSampler()
     private var network = NetworkSampler()
@@ -93,7 +94,10 @@ final class StatsModel: ObservableObject {
     func refresh() {
         tick += 1
         if tick % 3 == 1 { volumes = sampleVolumes() }
-        if tick % 2 == 0 { processGroups = procSampler.sample() }
+        if tick % 2 == 0 {
+            processGroups = procSampler.sample()
+            evaluateCPUHogs()
+        }
         if tick % 15 == 1 { refreshHealth(); systemInfo = SystemInfo.sample() }
         if tick % 5 == 1 { refreshSensors() }
         if tick == 45 || tick % 1800 == 0 { checkForUpdateIfDue() }
@@ -130,6 +134,13 @@ final class StatsModel: ObservableObject {
         if tick % 15 == 1 { DiskLog.record(disk) }
         // İlk turda CPU yüzdesi 0 ve süreç listesi boştur. Kayıt 30 saniyede bir, ilk tur atlanarak alınır.
         if tick % 15 == 0 { recordLongHistory() }
+    }
+
+    private func evaluateCPUHogs() {
+        guard UserDefaults.standard.object(forKey: "cpuAlertEnabled") as? Bool ?? true else { return }
+        let names = cpuHogAlert.evaluate(processGroups.map { ($0.name, $0.cpu) }, now: Date())
+        guard !names.isEmpty else { return }
+        DiskNotifier.post(title: "Yüksek CPU kullanımı", body: CPUHogAlert.body(for: names), id: "molebar.cpu")
     }
 
     /// Örneği belleğe ve dosyaya ekler. Dosya yazımı ana iş parçacığını bekletmez.
