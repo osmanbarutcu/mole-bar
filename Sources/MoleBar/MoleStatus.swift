@@ -27,7 +27,7 @@ enum MoleCLI {
 
     /// "Mole version 1.32.0" gibi satırdan sürümü alır.
     static func parseVersion(_ output: String) -> String? {
-        let range = output.range(of: #"\d+\.\d+\.\d+[0-9A-Za-z.\-]*"#, options: .regularExpression)
+        let range = output.range(of: #"\d+\.\d+\.\d+(?:-[0-9A-Za-z.]*[0-9A-Za-z])?"#, options: .regularExpression)
         return range.map { String(output[$0]) }
     }
 

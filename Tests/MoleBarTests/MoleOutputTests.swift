@@ -141,6 +141,7 @@ struct MoleCLITests {
     func parseVersion() {
         #expect(MoleCLI.parseVersion("Mole version 1.32.0\nmacOS: 27.0.1\n") == "1.32.0")
         #expect(MoleCLI.parseVersion("mo 2.0.1-beta") == "2.0.1-beta")
+        #expect(MoleCLI.parseVersion("Mole 1.32.0.") == "1.32.0")
         #expect(MoleCLI.parseVersion("bilinmeyen çıktı") == nil)
     }
 
