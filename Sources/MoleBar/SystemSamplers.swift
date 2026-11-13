@@ -92,7 +92,7 @@ func sampleDisk(path: String = "/") -> DiskSnapshot {
     return DiskSnapshot(usedBytes: UInt64(max(total - free, 0)), totalBytes: UInt64(total))
 }
 
-struct VolumeInfo: Identifiable {
+struct VolumeInfo: Identifiable, Equatable {
     var id: String { path }
     let path: String
     let name: String

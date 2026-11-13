@@ -52,9 +52,21 @@ enum MainSection: String, CaseIterable, Identifiable {
     }
 }
 
+/// Analiz sayfası. Birim listesi değiştikçe yalnızca bu görünüm yeniden çizilir.
+private struct AnalyzeSection: View {
+    @ObservedObject var stats: StatsModel
+    @ObservedObject var analyzer: DiskAnalyzer
+
+    var body: some View {
+        AnalyzePage(analyzer: analyzer, volumes: stats.volumes)
+    }
+}
+
 /// Çift tıklayınca açılan ana pencere. Yan menü seçimine göre panelle aynı sayfaları gösterir.
 struct MainWindowView: View {
-    @ObservedObject var stats: StatsModel
+    /// Gözlemci değil. Her ölçüm turunda kenar çubuğu ve sayfa seçimi yeniden hesaplanmasın diye.
+    /// Canlı değerleri izleyen görünümler kendi `@ObservedObject` alanını taşır.
+    let stats: StatsModel
     @ObservedObject var preview: CleanPreview
     @AppStorage("mainSection") private var storedSection = MainSection.general.rawValue
     @StateObject private var analyzer = DiskAnalyzer()
@@ -88,7 +100,7 @@ struct MainWindowView: View {
         } detail: {
             Group {
                 if current == .analyze {
-                    AnalyzePage(analyzer: analyzer, volumes: stats.volumes)
+                    AnalyzeSection(stats: stats, analyzer: analyzer)
                 } else if current == .large {
                     LargeFilesPage(finder: largeFinder)
                 } else if current == .duplicates {

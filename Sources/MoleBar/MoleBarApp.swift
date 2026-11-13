@@ -4,7 +4,8 @@ import SwiftUI
 @main
 struct MoleBarApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @ObservedObject private var stats = StatsModel.shared
+    /// Gözlemci değil. Her ölçüm turunda bütün sahneleri yeniden kurmamak için. Görünümler kendi gözlemini yapar.
+    private let stats = StatsModel.shared
     @AppStorage(StatusItemController.defaultsKey) private var customStatusItem = false
 
     init() {
