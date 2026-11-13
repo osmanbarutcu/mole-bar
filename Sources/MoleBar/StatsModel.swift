@@ -1,6 +1,14 @@
 import Foundation
 import SwiftUI
 
+/// Ölçüm turlarının zamanlaması. Bir tur 2 saniyedir.
+enum SamplingSchedule {
+    /// Mole sağlık skoru (`mo status -json`) pahalıdır. Her 120 saniyede bir istenir.
+    static let healthEveryTicks = 60
+
+    static func isHealthDue(tick: Int) -> Bool { tick % healthEveryTicks == 1 }
+}
+
 @MainActor
 final class StatsModel: ObservableObject {
     /// Uygulama genelinde tek örnek. Menü çubuğu paneli, ana pencere ve özel durum çubuğu öğesi aynı ölçümleri paylaşır.
@@ -60,6 +68,7 @@ final class StatsModel: ObservableObject {
     /// Panel ve ana pencere aynı önbellek modelini paylaşır.
     let cacheCleaner = CacheCleaner()
     private var procSampler = ProcessSampler()
+    private var processLoading = false
     private var healthLoading = false
     private var diskNotified = false
     private var memoryAlert = MemoryAlert()
@@ -97,12 +106,10 @@ final class StatsModel: ObservableObject {
 
     func refresh() {
         tick += 1
-        if tick % 3 == 1 { volumes = sampleVolumes() }
-        if tick % 2 == 0 {
-            processGroups = procSampler.sample()
-            evaluateCPUHogs()
-        }
-        if tick % 15 == 1 { refreshHealth(); systemInfo = SystemInfo.sample() }
+        if tick % 3 == 1 { assignIfChanged(\.volumes, sampleVolumes()) }
+        if tick % 2 == 0 { refreshProcesses() }
+        if SamplingSchedule.isHealthDue(tick: tick) { refreshHealth() }
+        if tick % 15 == 1 { assignIfChanged(\.systemInfo, SystemInfo.sample()) }
         if tick % 5 == 1 { refreshSensors() }
         if tick == 45 || tick % 1800 == 0 { checkForUpdateIfDue() }
         if tick == 1, systemInfo.battery != nil {
@@ -115,7 +122,7 @@ final class StatsModel: ObservableObject {
         recentCPU = MenuBarGraph.push(recentCPU, cpuResult.total, limit: 30)
         cpuPerCore = cpuResult.perCore
         memory = sampleMemory()
-        pressure = MemoryPressure.sample()
+        assignIfChanged(\.pressure, MemoryPressure.sample())
         let memoryAlertEnabled = UserDefaults.standard.object(forKey: "memoryAlertEnabled") as? Bool ?? true
         if memoryAlertEnabled, memoryAlert.shouldNotify(pressure) {
             DiskNotifier.post(
@@ -124,7 +131,7 @@ final class StatsModel: ObservableObject {
                 id: "molebar.memory"
             )
         }
-        swap = SwapUsage.sample()
+        assignIfChanged(\.swap, SwapUsage.sample())
         disk = sampleDisk()
         let net = network.sample()
         netDown = net.down
@@ -138,6 +145,24 @@ final class StatsModel: ObservableObject {
         if tick % 15 == 1 { DiskLog.record(disk) }
         // İlk turda CPU yüzdesi 0 ve süreç listesi boştur. Kayıt 30 saniyede bir, ilk tur atlanarak alınır.
         if tick % 15 == 0 { recordLongHistory() }
+    }
+
+    /// Süreç taraması ana iş parçacığını bekletmez. Önceki tur bitmeden yeni tur başlamaz.
+    private func refreshProcesses() {
+        guard !processLoading else { return }
+        processLoading = true
+        let sampler = procSampler
+        Task {
+            let (updated, groups) = await Task.detached(priority: .utility) { () -> (ProcessSampler, [ProcessGroup]) in
+                var worker = sampler
+                let groups = worker.sample()
+                return (worker, groups)
+            }.value
+            procSampler = updated
+            processGroups = groups
+            evaluateCPUHogs()
+            processLoading = false
+        }
     }
 
     private func evaluateCPUHogs() {
@@ -213,7 +238,7 @@ final class StatsModel: ObservableObject {
         sensorsLoading = true
         Task {
             let reading = await Task.detached(priority: .utility) { smc.read() }.value
-            sensors = reading.isEmpty ? nil : reading
+            assignIfChanged(\.sensors, reading.isEmpty ? nil : reading)
             sensorsLoading = false
         }
     }
@@ -235,17 +260,22 @@ final class StatsModel: ObservableObject {
         let enabled = defaults.object(forKey: "diskAlertEnabled") as? Bool ?? true
         let stored = defaults.integer(forKey: "diskAlertThreshold")
         let limit = Double(stored == 0 ? 90 : stored)
-        guard enabled else { diskAlert = false; return }
+        guard enabled else { assignIfChanged(\.diskAlert, false); return }
         if disk.percent >= limit {
-            diskAlert = true
+            assignIfChanged(\.diskAlert, true)
             if !diskNotified {
                 diskNotified = true
                 DiskNotifier.notify(percent: disk.percent)
             }
         } else if disk.percent < limit - 3 {
-            diskAlert = false
+            assignIfChanged(\.diskAlert, false)
             diskNotified = false
         }
+    }
+
+    /// Değer değişmediyse yazmaz. `@Published` her yazımda görünümlere haber verir.
+    private func assignIfChanged<Value: Equatable>(_ path: ReferenceWritableKeyPath<StatsModel, Value>, _ value: Value) {
+        if self[keyPath: path] != value { self[keyPath: path] = value }
     }
 }
 
